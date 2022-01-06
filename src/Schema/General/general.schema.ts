@@ -61,7 +61,7 @@ export class General {
   liked_users: string[];
 
   @Prop({ default: 0 })
-  likes: { type: number };
+  likes: number;
 
   @Prop({ default: false })
   hide: boolean;
