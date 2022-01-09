@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import { Body, Controller, Get, Post, Put, Delete } from "@nestjs/common";
 import { NotificationService } from "../../Service";
 import { Notification } from "../../Schema";
 
@@ -6,10 +6,12 @@ import { Notification } from "../../Schema";
 export class NotificationController {
   constructor(private readonly notificationService: NotificationService) {}
 
-  // Get Requests
-  // 테스트 API
-  @Get("")
-  async testNotificationRouter() {
-    return await this.notificationService.testNotificationRouter();
+  // Put Requests
+  // 알림 확인 업데이트
+  @Put("check")
+  async setNotificationChecked(@Body() body: { notification_id: string }) {
+    return await this.notificationService.setNotificationChecked(
+      body.notification_id,
+    );
   }
 }

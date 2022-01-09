@@ -10,7 +10,35 @@ export class FeedbackService {
     private readonly Feedback: Model<FeedbackDocument>,
   ) {}
 
-  async testFeedbackRouter() {
+  // Get Requests
+  // 전체 피드백 반환
+  async getAllFeedback() {
+    return;
+  }
+  // 특정 피드백 반환
+  async getCertainFeedbackById() {
+    return;
+  }
+
+  // Post Requests
+  // 피드백 생성
+  async createFeedback() {
+    return;
+  }
+  // 피드백 댓글 생성
+  async createFeedbackComment() {
+    return;
+  }
+
+  // Put Requests
+  // 피드백 수정
+  async updateFeedback() {
+    return;
+  }
+
+  // Delete Requests
+  // 피드백 삭제
+  async deleteFeedback() {
     return;
   }
 }

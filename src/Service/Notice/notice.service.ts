@@ -9,7 +9,31 @@ export class NoticeService {
     @InjectModel(Notice.name) private readonly Notice: Model<NoticeDocument>,
   ) {}
 
-  async testNoticeRouter() {
+  // Get Requests
+  // 전체 공지 반환
+  //# @Get()
+  async getAllNotice() {
+    return;
+  }
+
+  // Post Requests
+  // 공지 생성
+  //# @Post()
+  async createNotice() {
+    return;
+  }
+
+  // Put Requests
+  // 공지 수정
+  //# @Put()
+  async updateNotice() {
+    return;
+  }
+
+  // Delete Requests
+  // 공지 삭제
+  //# @Delete()
+  async deleteNotice() {
     return;
   }
 }

@@ -10,7 +10,9 @@ export class NotificationService {
     private readonly Notification: Model<NotificationDocument>,
   ) {}
 
-  async testNotificationRouter() {
+  // Put Requests
+  // 알림 확인 업데이트
+  async setNotificationChecked(notification_id: string) {
     return;
   }
 }

@@ -2,9 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { User, UserDocument } from "../../Schema";
-import { UserSignupDto } from "src/Constant";
+import { UserSignupDto } from "../../Dto";
 import { DuplicateUserIdException, UserNotFoundError } from "src/Response";
-import { getCurrentTime } from "src/Util";
+import { getCurrentTime } from "../../Util";
 // libraries
 import bcrypt from "bcrypt";
 
@@ -14,10 +14,12 @@ export class UserService {
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
   ) {}
 
+  // Get Requests
   async testUserRouter() {
     throw new UserNotFoundError();
   }
 
+  // Post Requests
   // 회원가입
   async signup(userSignupDto: UserSignupDto) {
     try {
