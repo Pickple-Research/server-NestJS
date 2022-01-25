@@ -1,111 +1,82 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
-import { General } from "..";
-import { Notification } from "..";
-import { Post } from "..";
+import {
+  ParticipatedResearch,
+  ParticipatedResearchSchema,
+} from "./PartialEmbeddedSchema/user.participatedResearch.schema";
+import {
+  ParticipatedVote,
+  ParticipatedVoteSchema,
+} from "./PartialEmbeddedSchema/user.participatedVoteSchema";
 
 export type UserDocument = User & Document;
 
 @Schema()
 export class User {
-  @Prop({ unique: true, trim: true }) // 아이디(이메일 형식)
-  userID: string;
-
-  @Prop() // 비밀번호 // TODO : 추후 암호화 필요
-  userPassword: string;
-
-  @Prop({ unique: true, trim: true }) // 닉네임
-  name: string;
-
-  @Prop() // 이메일
+  // #Independent Prop :
+  @Prop({ required: true, unique: true, trim: true }) // 이메일
   email: string;
 
-  @Prop({ default: 0 }) // 점수
-  points: number;
+  @Prop({ required: true }) // 비밀번호
+  password: string;
+
+  @Prop({ unique: true, trim: true }) // 닉네임
+  nickname: string;
 
   @Prop() // 인증 토큰
   jsonWebToken: string;
 
+  @Prop() // Firebase cloud messaging을 위한 기기 토큰 저장
+  fcmToken: string;
+
   @Prop({ default: 1 }) // 레벨
   level: number;
 
-  @Prop({
-    // 참여한 게시글들 // reference type
-    type: [{ type: MongooseSchema.Types.ObjectId, ref: "Post" }],
-    default: [],
-  })
-  participations: Post[];
-
-  @Prop({ default: 2 }) // 성별(0: 남성, 1: 여성)
-  gender: number;
-
-  @Prop({ default: 0 }) // 출생 연도
-  yearBirth: number;
-
-  @Prop({ trim: true }) // 전화번호
-  phoneNumber: string;
-
-  //   @Prop({default: [] }) // 당첨 기프티콘들
-  //   prizes: ;
-
-  @Prop({ default: 0 }) // 마지막으로 확인한 경품 갯수(NEW 표시용)
-  prize_check: number;
+  @Prop({ default: 0 }) // 점수
+  point: number;
 
   @Prop() // 이메일 인증 여부
-  email_confirmed: boolean;
+  emailConfirmed: boolean;
 
-  @Prop() // 비번 변경을 위한 이메일 인증 여부
-  password_change: boolean;
+  @Prop() // 비번 변경을 위한 이메일 인증 여부 (??)
+  passwordChanged: boolean;
 
-  @Prop() // 비번 변경 이메일 인증 시간(1시간 지나면 다시 false로 바꾸기 위함)
-  last_password_confirm_time: Date;
+  @Prop({ default: true }) // 알림 허용
+  allowNotification: boolean;
 
-  @Prop() // Firebase cloud messaging을 위한 기기 토큰 저장
-  fcm_token: string;
+  @Prop() // 회원가입 일시
+  signUpAt: Date;
 
-  @Prop({
-    // 알림들
-    type: [{ type: MongooseSchema.Types.ObjectId, ref: "Notification" }],
-    default: [],
-  })
-  notifications: Notification[];
+  @Prop() // 마지막 로그인 일시
+  lastLoginAt: Date;
 
-  @Prop() // 알림 허용
-  notification_allow: boolean;
+  @Prop() // 비번 변경 이메일 인증 시간 (1시간 지나면 다시 false로 바꾸기 위함)
+  lastPasswordConfirmedTime: Date;
 
-  @Prop({
-    // 차단한 사용자들
-    type: [{ type: MongooseSchema.Types.ObjectId, ref: "User" }],
-    default: [],
-  })
-  blocked_users: User[];
+  // #Referencing Prop (참조하는 스키마의 id만 저장) :
+  @Prop() // 유저 별 알림에 대한 정보들을 갖고 있는 스키마 id
+  userNotificationId: string;
 
-  @Prop({
-    // 내가 참여한 투표
-    type: [{ type: MongooseSchema.Types.ObjectId, ref: "General" }],
-    default: [],
-  })
-  general_participations: General[];
+  @Prop() // 유저 별 세부 정보를 담고 있는 스키마 id
+  userDetailedInfoId: string;
 
-  @Prop({
-    // 내가 작성한 투표
-    type: [{ type: MongooseSchema.Types.ObjectId, ref: "General" }],
-    default: [],
-  })
-  my_generals: General[];
+  @Prop({ type: [String], default: [] }) // 차단한 유저 id
+  blockedUserIds: string[];
 
-  @Prop({
-    // 내가 작성한 설문
-    type: [{ type: MongooseSchema.Types.ObjectId, ref: "Post" }],
-    default: [],
-  })
-  my_posts: Post[];
+  @Prop({ type: [String], default: [] }) // 내가 작성한 설문 id
+  myResearchIds: string[];
 
-  @Prop()
-  createdAt: Date;
+  @Prop({ type: [String], default: [] }) // 내가 작성한 투표 id
+  myVoteIds: string[];
 
-  @Prop()
-  loginAt: Date;
+  // #Partial Embedded Prop (참조하는 스키마 정보의 일부만 떼어내 저장) :
+  @Prop({ type: [ParticipatedResearchSchema], default: [] }) // 참여한 리서치 정보
+  participatedResearchs: ParticipatedResearch[];
+
+  @Prop({ type: [ParticipatedVoteSchema], default: [] }) // 참여한 투표 정보
+  participatedVotes: ParticipatedVote[];
+
+  // #Fully Embedded Prop (참조하는 스키마 정보를 모두 저장) :
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

@@ -7,10 +7,9 @@ import { BannerModule } from "./banner.module";
 import { ContentModule } from "./content.module";
 import { FeedbackModule } from "./feedback.module";
 import { GeneralModule } from "./general.module";
-// import {MessageModule} from "./message.module";
+// import { MessageModule } from "./message.module";
 import { NoticeModule } from "./notice.module";
-import { NotificationModule } from "./notification.module";
-import { PostModule } from "./post.module";
+import { ResearchModule } from "./research.module";
 import { SurveytipModule } from "./surveytip.module";
 import { UserModule } from "./user.module";
 
@@ -26,8 +25,7 @@ import { UserModule } from "./user.module";
     GeneralModule,
     //  MessageModule,
     NoticeModule,
-    NotificationModule,
-    PostModule,
+    ResearchModule,
     SurveytipModule,
     UserModule,
   ],

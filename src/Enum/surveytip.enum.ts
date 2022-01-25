@@ -1,0 +1,4 @@
+export enum SurveytipCategory {
+  RESEARCH_CONSTRUCT = "RESEARCH_CONSTRUCT",
+  RESEARCH_TIP = "RESEARCH_TIP",
+}

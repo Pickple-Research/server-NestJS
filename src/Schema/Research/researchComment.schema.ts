@@ -2,10 +2,10 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
 import { Reply } from "..";
 
-export type PostCommentDocument = PostComment & Document;
+export type ResearchCommentDocument = ResearchComment & Document;
 
 @Schema()
-export class PostComment {
+export class ResearchComment {
   @Prop()
   writer: string;
 
@@ -31,4 +31,5 @@ export class PostComment {
   // report_reasons: ;
 }
 
-export const PostCommentSchema = SchemaFactory.createForClass(PostComment);
+export const ResearchCommentSchema =
+  SchemaFactory.createForClass(ResearchComment);

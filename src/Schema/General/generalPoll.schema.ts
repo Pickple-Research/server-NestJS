@@ -9,10 +9,10 @@ export class GeneralPoll {
   content: string;
 
   @Prop({ type: [String], default: [] }) // 항목 참여자들
-  participants_userids: string[];
+  participatedUserIds: string[];
 
   @Prop({ type: [String], default: null }) // 이미지 url
-  image: string[];
+  imageUrl: string[];
 }
 
 export const GeneralPollSchema = SchemaFactory.createForClass(GeneralPoll);
