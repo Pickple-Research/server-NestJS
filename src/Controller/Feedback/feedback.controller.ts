@@ -10,7 +10,7 @@ import {
 import { FeedbackService } from "../../Service";
 import { Feedback } from "../../Schema";
 
-@Controller("feedback")
+@Controller("feedbacks")
 export class FeedbackController {
   constructor(private readonly feedbackService: FeedbackService) {}
 

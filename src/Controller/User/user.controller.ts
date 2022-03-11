@@ -1,16 +1,30 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import {
+  Request,
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  NotFoundException,
+  Post,
+  UseFilters,
+  UseGuards,
+} from "@nestjs/common";
 import { UserService } from "../../Service";
 import { User } from "../../Schema";
 import { UserSignupDto } from "../../Dto";
+import { httpExceptionFilter } from "src/Exception/httpException.filter";
+import { JWTAuthGuard, LocalAuthGuard } from "../../Auth";
 
-@Controller("user")
+@Controller("users")
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   // Get Requests
   // 테스트 API
   @Get("")
+  @UseFilters(httpExceptionFilter)
   async testUserRouter() {
+    console.log("testUserRouter function called in user.controller");
     return await this.userService.testUserRouter();
   }
 
@@ -22,9 +36,11 @@ export class UserController {
   }
 
   // 로그인
+  @UseGuards(LocalAuthGuard)
   @Post("login")
-  async findAll() {
-    return this.userService.login();
+  async login(@Request() req) {
+    const payload = { email: req.email };
+    return this.userService.login(payload);
   }
 
   // Put Requests

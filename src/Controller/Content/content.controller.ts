@@ -10,7 +10,7 @@ import {
 import { ContentService } from "../../Service";
 import { Content } from "../../Schema";
 
-@Controller("content")
+@Controller("contents")
 export class ContentController {
   constructor(private readonly contentService: ContentService) {}
 

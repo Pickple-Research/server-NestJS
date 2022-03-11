@@ -10,7 +10,7 @@ import {
 import { GeneralService } from "../../Service";
 import { General } from "../../Schema";
 
-@Controller("general")
+@Controller("votes")
 export class GeneralController {
   constructor(private readonly generalService: GeneralService) {}
 

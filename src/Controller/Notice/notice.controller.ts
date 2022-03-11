@@ -10,7 +10,7 @@ import {
 import { NoticeService } from "../../Service";
 import { Notice } from "../../Schema";
 
-@Controller("notice")
+@Controller("notices")
 export class NoticeController {
   constructor(private readonly noticeService: NoticeService) {}
 

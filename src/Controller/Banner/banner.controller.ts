@@ -2,7 +2,7 @@ import { Headers, Body, Controller, Delete, Get, Post } from "@nestjs/common";
 import { BannerService } from "../../Service";
 import { Banner } from "../../Schema";
 
-@Controller("banner")
+@Controller("banners")
 export class BannerController {
   constructor(private readonly bannerService: BannerService) {}
 

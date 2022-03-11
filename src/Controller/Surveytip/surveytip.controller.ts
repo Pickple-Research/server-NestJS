@@ -10,7 +10,7 @@ import {
 import { SurveytipService } from "../../Service";
 import { Surveytip } from "../../Schema";
 
-@Controller("surveytip")
+@Controller("surveytips")
 export class SurveytipController {
   constructor(private readonly surveytipService: SurveytipService) {}
 

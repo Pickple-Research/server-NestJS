@@ -2,7 +2,7 @@
 // import { MessageService } from "../../Service";
 // import { Message } from "../../Schema";
 
-// @Controller("message")
+// @Controller("messages")
 // export class MessageController {
 //   constructor(private readonly messageService: MessageService) {}
 
