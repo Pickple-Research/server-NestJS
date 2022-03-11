@@ -1,4 +1,4 @@
-import { Status403 } from "..";
+import { Status403 } from "./Status";
 
 export class DuplicateUserIdException {}
 

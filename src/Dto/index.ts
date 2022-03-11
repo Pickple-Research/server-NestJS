@@ -1,1 +1,1 @@
-export * from "./User/user.dto";
+export * from "./user.dto";

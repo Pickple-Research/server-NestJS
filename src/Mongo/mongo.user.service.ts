@@ -12,8 +12,7 @@ import {
   UserNotificationDocument,
   UserDetailedInfo,
   UserDetailedInfoDocument,
-} from "../../Schema";
-import { asyncMongoWrapper } from "src/Util/wrapper.util";
+} from "../Schema";
 
 @Injectable()
 export class MongoUserService {
@@ -26,12 +25,9 @@ export class MongoUserService {
   ) {}
 
   async getUserByEmail(email: string, allowDuplicate: boolean) {
-    async function getUserByEmail() {
-      console.log("inner function is working");
-      const result = Math.random();
-      return { value: result, message: "successed!" };
-    }
-    return asyncMongoWrapper<void, void>(getUserByEmail);
+    console.log("inner function is working");
+    const result = Math.random();
+    return { value: result, message: "successed!" };
   }
 
   async createNewUser() {

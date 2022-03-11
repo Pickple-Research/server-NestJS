@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
 import { ResearchComment } from "..";
-import { ResearchEstimatedTime } from "../../Enum";
+import { ResearchEstimatedTime } from "../../Object/Enum";
 
 export type ResearchDocument = Research & Document;
 

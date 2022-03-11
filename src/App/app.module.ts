@@ -11,15 +11,15 @@ import { MongooseModule } from "@nestjs/mongoose";
 // Middlewares
 import { JWTParserMiddleware } from "../Middleware";
 // Main Modules
-import { BannerModule } from "./banner.module";
-import { ContentModule } from "./content.module";
-import { FeedbackModule } from "./feedback.module";
-import { GeneralModule } from "./general.module";
+import { BannerModule } from "../Module/banner.module";
+import { ContentModule } from "../Module/content.module";
+import { FeedbackModule } from "../Module/feedback.module";
+import { GeneralModule } from "../Module/general.module";
 // import { MessageModule } from "./message.module";
-import { NoticeModule } from "./notice.module";
-import { ResearchModule } from "./research.module";
-import { SurveytipModule } from "./surveytip.module";
-import { UserModule } from "./user.module";
+import { NoticeModule } from "../Module/notice.module";
+import { ResearchModule } from "../Module/research.module";
+import { SurveytipModule } from "../Module/surveytip.module";
+import { UserModule } from "../Module/user.module";
 
 @Module({
   imports: [
@@ -28,6 +28,7 @@ import { UserModule } from "./user.module";
     ConfigModule.forRoot({ isGlobal: true }),
     // MongooseModule : forRoot에 지정된 주소의 MongoDB와 연결
     MongooseModule.forRoot(process.env.MONGODB_ENDPOINT),
+
     BannerModule,
     ContentModule,
     FeedbackModule,

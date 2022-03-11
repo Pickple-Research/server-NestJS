@@ -1,5 +1,3 @@
-export * from "./app.module";
-
 export * from "./banner.module";
 export * from "./content.module";
 export * from "./feedback.module";

@@ -2,10 +2,10 @@ import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
-import { JWTStrategy, LocalStrategy } from "../Auth";
+import { JWTStrategy, LocalStrategy } from "../Security/Strategy";
 import { UserController } from "../Controller";
 import { UserService } from "../Service";
-import { MongoUserService } from "../Service/Mongo";
+import { MongoUserService } from "../Mongo";
 import {
   User,
   UserSchema,

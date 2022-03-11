@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
 import { User } from "..";
-import { SurveytipCategory } from "../../Enum";
+import { SurveytipCategory } from "../../Object/Enum";
 
 export type SurveytipDocument = Surveytip & Document;
 

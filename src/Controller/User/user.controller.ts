@@ -2,18 +2,18 @@ import {
   Request,
   Body,
   Controller,
-  ForbiddenException,
   Get,
-  NotFoundException,
   Post,
   UseFilters,
   UseGuards,
+  ForbiddenException,
+  NotFoundException,
 } from "@nestjs/common";
 import { UserService } from "../../Service";
 import { User } from "../../Schema";
 import { UserSignupDto } from "../../Dto";
-import { httpExceptionFilter } from "src/Exception/httpException.filter";
-import { JWTAuthGuard, LocalAuthGuard } from "../../Auth";
+import { httpExceptionFilter } from "../../Exception/Filter";
+import { JWTAuthGuard, LocalAuthGuard } from "../../Security/Guard";
 
 @Controller("users")
 export class UserController {

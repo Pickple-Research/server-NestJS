@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { UserSignupDto } from "../../Dto";
-import { MongoUserService } from "../Mongo/mongo.user.service";
+import { MongoUserService } from "../../Mongo/mongo.user.service";
 // libraries
 import bcrypt from "bcrypt";
 

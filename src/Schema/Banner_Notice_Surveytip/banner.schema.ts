@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { BannerCategory } from "../../Enum";
+import { BannerCategory } from "../../Object/Enum";
 
 export type BannerDocument = Banner & Document;
 

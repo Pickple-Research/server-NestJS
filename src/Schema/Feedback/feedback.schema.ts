@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
 import { FeedbackComment } from "./feedbackComment.schema";
-import { FeedbackCategory } from "../../Enum";
+import { FeedbackCategory } from "../../Object/Enum";
 
 export type FeedbackDocument = Feedback & Document;
 

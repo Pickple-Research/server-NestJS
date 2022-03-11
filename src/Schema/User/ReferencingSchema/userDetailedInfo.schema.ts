@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { Gender } from "../../../Enum";
+import { Gender } from "../../../Object/Enum";
 
 export type UserDetailedInfoDocument = UserDetailedInfo & Document;
 
