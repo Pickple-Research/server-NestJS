@@ -11,7 +11,7 @@ export * from "./Content/contentComment.schema";
 export * from "./Feedback/feedback.schema";
 export * from "./Feedback/feedbackComment.schema";
 
-// TODO 이름 변경
+//TODO: 이름 변경
 // General : 커뮤니티 투표
 export * from "./General/general.schema";
 export * from "./General/generalComment.schema";

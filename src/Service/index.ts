@@ -1,3 +1,4 @@
+export * from "./Auth/auth.service";
 export * from "./Banner/banner.service";
 export * from "./Content/content.service";
 export * from "./Feedback/feedback.service";

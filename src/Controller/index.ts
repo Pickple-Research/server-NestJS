@@ -1,3 +1,4 @@
+export * from "./Auth/auth.controller";
 export * from "./Banner/banner.controller";
 export * from "./Content/content.controller";
 export * from "./Feedback/feedback.controller";

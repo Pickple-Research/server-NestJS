@@ -1,3 +1,4 @@
+export * from "./auth.module";
 export * from "./banner.module";
 export * from "./content.module";
 export * from "./feedback.module";

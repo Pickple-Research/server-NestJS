@@ -1,9 +1,9 @@
-import { Status403 } from "./Status";
+import { Status403Exception } from "./Status";
 
-export class DuplicateUserIdException {}
+export class UserEmailDuplicatedException {}
 
-export class UserNotFoundError extends Status403 {
+export class UserNotFoundException extends Status403Exception {
   constructor() {
-    super("Cannot found matched UserID");
+    super({ error: "Cannot found matched UserID" });
   }
 }

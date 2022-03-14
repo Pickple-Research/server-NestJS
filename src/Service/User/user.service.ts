@@ -1,5 +1,4 @@
 import { Injectable } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
 import { UserSignupDto } from "../../Dto";
 import { MongoUserService } from "../../Mongo/mongo.user.service";
 // libraries
@@ -7,10 +6,7 @@ import bcrypt from "bcrypt";
 
 @Injectable()
 export class UserService {
-  constructor(
-    private readonly mongoUserService: MongoUserService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor(private readonly mongoUserService: MongoUserService) {}
 
   // Get Requests
   async testUserRouter() {
@@ -23,15 +19,7 @@ export class UserService {
   async signup(userSignupDto: UserSignupDto) {
     return;
   }
-
-  // 로그인
-  async login(payload) {
-    return {
-      token: this.jwtService.sign(payload, { secret: process.env.JWT_SECRET }),
-    };
-  }
-
-  async issueJWT() {
-    return;
-  }
+  // Put Requests
+  // Patch Requests
+  // Delete Requests
 }

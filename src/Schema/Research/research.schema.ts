@@ -26,7 +26,7 @@ export class Research {
   @Prop({ required: true }) // 설문 url
   url: string;
 
-  @Prop({ required: true }) // 설문 대상 개요 // TODO (enum화?)
+  @Prop({ required: true }) // 설문 대상 개요 //TODO: (enum화?)
   target: string;
 
   @Prop() // 상품 개요
