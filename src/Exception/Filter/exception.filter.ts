@@ -15,11 +15,12 @@ import { CustomExceptionResonse } from "../Status";
  */
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {
-  catch(exception: HttpException, host: ArgumentsHost) {
-    //TODO: Logger 추가
-    const ctx = host.switchToHttp();
-    const request = ctx.getRequest<Request>();
-    const response = ctx.getResponse<Response>();
+  //? argumentsHost: handler에게 전달된 모든 arguments들을 가지고 있는 객체. (req, res, next 등)
+  //?     getArgs(), getArgByIndex(), getType() 등의 함수를 사용하여 요청에 담긴 정보들을 읽어낼 수 있음.
+  catch(exception: HttpException, argumentsHost: ArgumentsHost) {
+    const httpArgumentsHost = argumentsHost.switchToHttp();
+    const request = httpArgumentsHost.getRequest<Request>();
+    const response = httpArgumentsHost.getResponse<Response>();
     const status = exception.getStatus();
 
     //TODO: status 500 이상 에러 핸들링 추가

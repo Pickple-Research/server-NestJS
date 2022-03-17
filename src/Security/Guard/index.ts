@@ -1,2 +1,2 @@
-export * from "./jwt.guard";
-export * from "./local.guard";
+export * from "./emailAuth.guard";
+export * from "./jwtAuth.guard";

@@ -1,9 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { PassportStrategy } from "@nestjs/passport";
-import { ExtractJwt, Strategy } from "passport-jwt";
+import { Strategy as PassportJwtStrategy, ExtractJwt } from "passport-jwt";
 
+/**
+ * Bearer Header에 담긴 Jwt로부터 유저 정보를 추출하는 Strategy입니다.
+ * @author 현웅
+ */
 @Injectable()
-export class JWTStrategy extends PassportStrategy(Strategy) {
+export class JwtAuthStrategy extends PassportStrategy(
+  PassportJwtStrategy,
+  "jwt auth",
+) {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -14,6 +21,6 @@ export class JWTStrategy extends PassportStrategy(Strategy) {
 
   async validate() {
     console.log("validate function called in JWT Strategy");
-    return;
+    return true;
   }
 }

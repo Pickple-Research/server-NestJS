@@ -1,1 +1,1 @@
-export * from "./JWTParser.middleware";
+export * from "./blank.middleware";

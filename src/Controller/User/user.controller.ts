@@ -11,7 +11,6 @@ export class UserController {
   // 테스트 API
   @Get("")
   async testUserRouter() {
-    console.log("testUserRouter function called in user.controller");
     return await this.userService.testUserRouter();
   }
 

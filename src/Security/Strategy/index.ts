@@ -1,2 +1,2 @@
-export * from "./jwt.strategy";
-export * from "./local.strategy";
+export * from "./emailAuth.strategy";
+export * from "./jwtAuth.strategy";

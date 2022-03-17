@@ -10,7 +10,6 @@ export class UserService {
 
   // Get Requests
   async testUserRouter() {
-    console.log("testUserRouter function called in user.service");
     return "user.service";
   }
 

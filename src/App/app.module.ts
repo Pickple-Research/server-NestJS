@@ -9,7 +9,14 @@ import { MongooseModule } from "@nestjs/mongoose";
 // import { AppController } from "../Controller/app.controller";
 // import { AppService } from "../Service/app.service";
 // Middlewares
-import { JWTParserMiddleware } from "../Middleware";
+import { BlankMiddleware } from "../Middleware";
+// Global Modules
+import {
+  InterceptorModule,
+  GuardModule,
+  PipeModule,
+  FilterModule,
+} from "../Module/Global";
 // Main Modules
 import {
   AuthModule,
@@ -26,24 +33,32 @@ import {
 
 /**
  * NestJS에서 제공하는 기본 모듈과 서비스 제공을 위해 우리가 제작한 모든 모듈을 합치는 곳입니다.
- * 최종적으로 main.ts 함수에서 import하여 bootstrap합니다.
+ * 최종적으로 main.ts 함수에서 import한 후 서버를 실행합니다.
  * ***
  * 주요 기능:
  * - 환경 변수, DB 연결을 설정합니다.
- * - Middleware 적용 범위를 설정합니다.
+ * - 전역으로 적용되는 Interceptor, Guard, Filter를 설정합니다.
+ * - 전역으로 적용되는 Middleware의 적용 범위를 설정합니다.
  * ***
  * @author 현웅
  */
 @Module({
   imports: [
-    //? ConfigModule : .env 변수를 사용할 수 있도록 도와주는 모듈. (내부적으로 dotenv를 사용)
-    //? {isGlobal: true} : .env 변수를 전역에서 사용할 수 있도록 설정
+    //? ConfigModule: .env 변수를 사용할 수 있도록 도와주는 모듈. (내부적으로 dotenv를 사용)
+    //? {isGlobal: true}: .env 변수를 전역에서 사용할 수 있도록 설정
     ConfigModule.forRoot({ isGlobal: true }),
 
-    //? MongooseModule : forRoot에 지정된 URI의 MongoDB와 연결
+    //? MongooseModule.forRoot: 인자로 받은 MongoDB URI에 연결
     MongooseModule.forRoot(process.env.MONGODB_ENDPOINT),
 
-    //* 제작한 모듈들을 적용
+    //* 전역 적용 모듈
+    //* 참조 (NestJS Request Lifecycle): https://docs.nestjs.com/faq/request-lifecycle#request-lifecycle
+    InterceptorModule,
+    GuardModule,
+    PipeModule,
+    FilterModule,
+
+    //* Controller & Service 형태의 일반 모듈
     AuthModule,
     BannerModule,
     ContentModule,
@@ -57,11 +72,12 @@ import {
   ],
 })
 export class AppModule implements NestModule {
-  configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(JWTParserMiddleware)
-      .exclude()
-      //? 모든 라우터에서 JWTParserMiddleware를 거치고 처리되도록 설정
-      .forRoutes({ path: "*", method: RequestMethod.ALL });
-  }
+  configure() {}
+  // //* 미들웨어 설정을 하고 싶다면 아래 주석을 이용합니다.
+  // configure(consumer: MiddlewareConsumer) {
+  //   consumer
+  //     .apply(BlankMiddleware)
+  //     .exclude()
+  //     .forRoutes({ path: "*", method: RequestMethod.ALL });
+  // }
 }

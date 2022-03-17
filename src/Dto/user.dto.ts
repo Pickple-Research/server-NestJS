@@ -1,8 +1,12 @@
-export interface UserSignupDto {
-  userID: string;
-  userPassword: string;
-  name: string;
+import { IsString } from "class-validator";
+
+export class UserSignupDto {
+  @IsString()
   email: string;
-  gender: number;
-  yearBirth: number;
+
+  @IsString()
+  password: string;
+
+  @IsString()
+  name: string;
 }
