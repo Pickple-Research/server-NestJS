@@ -6,8 +6,8 @@ import {
 } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
-// import { AppController } from "../Controller/app.controller";
-// import { AppService } from "../Service/app.service";
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
 // Middlewares
 import { BlankMiddleware } from "../Middleware";
 // Global Modules
@@ -43,6 +43,8 @@ import {
  * @author 현웅
  */
 @Module({
+  controllers: [AppController],
+  providers: [AppService],
   imports: [
     //? ConfigModule: .env 변수를 사용할 수 있도록 도와주는 모듈. (내부적으로 dotenv를 사용)
     //? {isGlobal: true}: .env 변수를 전역에서 사용할 수 있도록 설정
