@@ -26,4 +26,4 @@ jobs:
             git pull origin main_deploy
             yarn install
             yarn build
-            pm2 restart
+            pm2 restart PickpleResearchServer
