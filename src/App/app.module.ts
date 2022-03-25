@@ -75,7 +75,7 @@ import {
 })
 export class AppModule implements NestModule {
   configure() {}
-  // //* 미들웨어 설정을 하고 싶다면 아래 주석을 이용합니다.
+  // //* 전역 미들웨어 설정을 하고 싶다면 아래 주석을 이용합니다.
   // configure(consumer: MiddlewareConsumer) {
   //   consumer
   //     .apply(BlankMiddleware)
