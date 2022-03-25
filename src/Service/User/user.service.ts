@@ -11,7 +11,7 @@ export class UserService {
    * @author 현웅
    */
   async testUserRouter() {
-    return "user.service";
+    return "user.service: CD settings completed successfully";
   }
 
   /**
