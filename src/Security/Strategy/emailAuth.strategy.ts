@@ -4,6 +4,7 @@ import { Strategy as PassportLocalStrategy } from "passport-local";
 
 /**
  * email과 password를 이용한 로그인에 사용되는 Strategy를 정의합니다.
+ * (실제로 사용하고 있지는 않습니다. 참고용임)
  *
  * passport-local 라이브러리에서 import하여 사용하는 Strategy는 기본적으로
  * request body에 username:string, password:string 속성이 존재하는 것을 전제로 하며,

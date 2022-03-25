@@ -4,6 +4,6 @@ export class UserEmailDuplicatedException {}
 
 export class UserNotFoundException extends Status403Exception {
   constructor() {
-    super({ error: "Cannot found matched UserID" });
+    super({ message: "Cannot found matched UserID" });
   }
 }
