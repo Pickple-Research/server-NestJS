@@ -22,4 +22,9 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            ./deploy.sh
+            /bin/sh
+            cd server-NestJS
+            git pull origin main_deploy
+            yarn install
+            yarn build
+            pm2 restart PickpleResearchServer
