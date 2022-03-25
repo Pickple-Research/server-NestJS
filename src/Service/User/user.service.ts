@@ -21,7 +21,14 @@ export class UserService {
   async signup(userSignupDto: UserSignupDto) {
     return;
   }
-  // Put Requests
+
+  /**
+   * 유저 특성 정보를 수정합니다.
+   * @author 현웅
+   */
+  async updateUserProperty() {
+    return;
+  }
   // Patch Requests
   // Delete Requests
 }
