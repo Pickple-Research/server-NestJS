@@ -1,7 +1,7 @@
 name: CD-deploy
 
 on:
-  pull_request:
+  push:
     branches: [main_deploy]
 
   workflow_dispatch:
@@ -15,7 +15,6 @@ jobs:
         uses: actions/checkout@v2
 
       - name: connect ssh
-        uses: ./
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
