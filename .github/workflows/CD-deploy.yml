@@ -22,7 +22,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            /bin/sh
+            export PATH=$PATH:/home/ubuntu/.nvm/versions/node/v16.13.1/bin/yarn
+            export PATH=$PATH:/home/ubuntu/.nvm/versions/node/v16.13.1/bin/pm2
             cd server-NestJS
             git pull origin main_deploy
             yarn install
