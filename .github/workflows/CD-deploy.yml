@@ -24,6 +24,6 @@ jobs:
           script: |
             cd server-NestJS
             git pull origin main_deploy
-            yarn install
-            yarn build
-            pm2 restart PickpleResearchServer
+            /home/ubuntu/.nvm/versions/node/v16.13.1/bin/yarn install
+            /home/ubuntu/.nvm/versions/node/v16.13.1/bin/yarn build
+            /home/ubuntu/.nvm/versions/node/v16.13.1/bin/pm2 restart PickpleResearchServer
