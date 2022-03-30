@@ -12,7 +12,7 @@ import {
   UserNotificationSchema,
   UserDetailedInfo,
   UserDetailedInfoSchema,
-} from "../Schema";
+} from "../OldSchema";
 
 /**
  * 회원가입, 정규유저 전환, 로그인 기능을 담당합니다.
@@ -28,14 +28,17 @@ import {
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: "60s" },
     }),
-    MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
-      { name: UserNotification.name, schema: UserNotificationSchema },
-      {
-        name: UserDetailedInfo.name,
-        schema: UserDetailedInfoSchema,
-      },
-    ]),
+    MongooseModule.forFeature(
+      [
+        { name: User.name, schema: UserSchema },
+        { name: UserNotification.name, schema: UserNotificationSchema },
+        {
+          name: UserDetailedInfo.name,
+          schema: UserDetailedInfoSchema,
+        },
+      ],
+      "main",
+    ),
   ],
 })
 export class AuthModule {}

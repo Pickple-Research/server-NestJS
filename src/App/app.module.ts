@@ -20,14 +20,10 @@ import {
 // Main Modules
 import {
   AuthModule,
-  BannerModule,
-  ContentModule,
   FeedbackModule,
   GeneralModule,
-  // MessageModule,
   NoticeModule,
   ResearchModule,
-  SurveytipModule,
   UserModule,
 } from "../Module";
 
@@ -51,7 +47,9 @@ import {
     ConfigModule.forRoot({ isGlobal: true }),
 
     //? MongooseModule.forRoot: 인자로 받은 MongoDB URI에 연결
-    MongooseModule.forRoot(process.env.MONGODB_ENDPOINT),
+    MongooseModule.forRoot(process.env.MONGODB_ENDPOINT, {
+      connectionName: "main",
+    }),
 
     //* 전역 적용 모듈
     //* 참조 (NestJS Request Lifecycle): https://docs.nestjs.com/faq/request-lifecycle#request-lifecycle
@@ -62,14 +60,10 @@ import {
 
     //* Controller & Service 형태의 일반 모듈
     AuthModule,
-    BannerModule,
-    ContentModule,
     FeedbackModule,
     GeneralModule,
-    //  MessageModule,
     NoticeModule,
     ResearchModule,
-    SurveytipModule,
     UserModule,
   ],
 })

@@ -12,7 +12,7 @@ import {
   UserNotificationDocument,
   UserDetailedInfo,
   UserDetailedInfoDocument,
-} from "../Schema";
+} from "../OldSchema";
 
 @Injectable()
 export class MongoUserService {

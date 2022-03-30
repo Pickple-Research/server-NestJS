@@ -1,6 +1,5 @@
 import { Body, Controller, Get, Post } from "@nestjs/common";
 import { UserService } from "../../Service";
-import { User } from "../../Schema";
 import { UserSignupDto } from "../../Dto";
 import { Public } from "../../Security/Metadata";
 

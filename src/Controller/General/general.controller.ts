@@ -8,7 +8,6 @@ import {
   Delete,
 } from "@nestjs/common";
 import { GeneralService } from "../../Service";
-import { General } from "../../Schema";
 
 @Controller("votes")
 export class GeneralController {

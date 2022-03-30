@@ -8,7 +8,6 @@ import {
   Delete,
 } from "@nestjs/common";
 import { NoticeService } from "../../Service";
-import { Notice } from "../../Schema";
 
 @Controller("notices")
 export class NoticeController {

@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
-import { EmailAuthStrategy, JwtAuthStrategy } from "src/Security/Strategy";
+import { EmailAuthStrategy, JwtAuthStrategy } from "../../Security/Strategy";
 import { EmailAuthGuard, JwtAuthGuard } from "../../Security/Guard";
 
 /**
