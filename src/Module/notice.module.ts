@@ -2,16 +2,17 @@ import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { NoticeController } from "../Controller";
 import { NoticeService } from "../Service";
-import { Notice, NoticeSchema } from "../OldSchema";
+import { MongoNoticeService } from "../Mongo";
+import { Notice, NoticeSchema } from "../Schema";
 
 @Module({
   imports: [
     MongooseModule.forFeature(
       [{ name: Notice.name, schema: NoticeSchema }],
-      "main",
+      "notice",
     ),
   ],
   controllers: [NoticeController],
-  providers: [NoticeService],
+  providers: [NoticeService, MongoNoticeService],
 })
 export class NoticeModule {}

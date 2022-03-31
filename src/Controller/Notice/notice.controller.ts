@@ -1,43 +1,36 @@
 import {
+  Controller,
   Headers,
   Body,
-  Controller,
   Get,
   Post,
+  Patch,
   Put,
   Delete,
 } from "@nestjs/common";
 import { NoticeService } from "../../Service";
+import { Public } from "../../Security/Metadata";
 
 @Controller("notices")
 export class NoticeController {
   constructor(private readonly noticeService: NoticeService) {}
 
   // Get Requests
-  // 전체 공지 반환
+  /**
+   * 테스트 라우터
+   * @author 현웅
+   */
+  @Public()
   @Get("")
-  async getAllNotice() {
-    return await this.noticeService.getAllNotice();
+  async testNoticeRouter() {
+    return await this.noticeService.testNoticeRouter();
   }
 
   // Post Requests
-  // 공지 생성
-  @Post("")
-  async createNotice() {
-    return await this.noticeService.createNotice();
-  }
+
+  // Patch Requests
 
   // Put Requests
-  // 공지 수정
-  @Put("")
-  async updateNotice(@Body() body) {
-    return await this.noticeService.updateNotice();
-  }
 
   // Delete Requests
-  // 공지 삭제
-  @Delete("")
-  async deleteNotice(@Headers() header) {
-    return await this.noticeService.deleteNotice();
-  }
 }

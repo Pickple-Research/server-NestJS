@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post } from "@nestjs/common";
+import {
+  Controller,
+  Headers,
+  Body,
+  Get,
+  Post,
+  Patch,
+  Put,
+  Delete,
+} from "@nestjs/common";
 import { UserService } from "../../Service";
 import { UserSignupDto } from "../../Dto";
 import { Public } from "../../Security/Metadata";
@@ -7,6 +16,7 @@ import { Public } from "../../Security/Metadata";
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
+  // Get Requests
   /**
    * 테스트 라우터
    * @author 현웅
@@ -17,6 +27,7 @@ export class UserController {
     return await this.userService.testUserRouter();
   }
 
+  // Post Requests
   /**
    * userSignupDto 형태의 인자를 받아 회원가입 합니다.
    * @author 현웅
@@ -27,7 +38,15 @@ export class UserController {
     return await this.userService.signup(userSignupDto);
   }
 
-  // Put Requests
+  @Public()
+  @Post("create")
+  async create() {
+    return await this.userService.create();
+  }
+
   // Patch Requests
+
+  // Put Requests
+
   // Delete Requests
 }

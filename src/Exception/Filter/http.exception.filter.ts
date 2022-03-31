@@ -9,8 +9,7 @@ import { CustomExceptionResonse } from "../Status";
 
 /**
  * HttpException이 발생했을 때의 처리 방식을 지정합니다.
- * 현재는 main.ts에서 import하여 모든 요청에 적용되도록 설정해두었지만,
- * 특정 Router / Controller에서만 사용하도록 지정할 수도 있습니다.
+ * @deprecated all.exception.filter.ts에서 모두 관리합니다.
  * @author 현웅
  */
 @Catch(HttpException)
@@ -24,15 +23,12 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const response = httpArgumentsHost.getResponse<Response>();
     const status = exception.getStatus();
 
+    //TODO: 어떤 유저가 요청했는지도 추가
     const user = request.user;
     const exceptionResponse = exception.getResponse() as CustomExceptionResonse;
     console.error(
       `FAILED(${status}): [${request.method}] ${request.url} ${exception.name}`,
     );
-
-    //TODO: status 500 이상 에러 핸들링 추가
-    if (status >= 500) {
-    }
 
     response.status(status).json({
       statusCode: status,

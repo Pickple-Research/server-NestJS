@@ -21,7 +21,7 @@ import {
 import {
   AuthModule,
   FeedbackModule,
-  GeneralModule,
+  VoteModule,
   NoticeModule,
   ResearchModule,
   UserModule,
@@ -50,6 +50,21 @@ import {
     MongooseModule.forRoot(process.env.MONGODB_ENDPOINT, {
       connectionName: "main",
     }),
+    MongooseModule.forRoot(process.env.MONGODB_USER_ENDPOINT, {
+      connectionName: "user",
+    }),
+    MongooseModule.forRoot(process.env.MONGODB_RESEARCH_ENDPOINT, {
+      connectionName: "research",
+    }),
+    MongooseModule.forRoot(process.env.MONGODB_VOTE_ENDPOINT, {
+      connectionName: "vote",
+    }),
+    MongooseModule.forRoot(process.env.MONGODB_NOTICE_ENDPOINT, {
+      connectionName: "notice",
+    }),
+    MongooseModule.forRoot(process.env.MONGODB_FEEDBACK_ENDPOINT, {
+      connectionName: "feedback",
+    }),
 
     //* 전역 적용 모듈
     //* 참조 (NestJS Request Lifecycle): https://docs.nestjs.com/faq/request-lifecycle#request-lifecycle
@@ -61,7 +76,7 @@ import {
     //* Controller & Service 형태의 일반 모듈
     AuthModule,
     FeedbackModule,
-    GeneralModule,
+    VoteModule,
     NoticeModule,
     ResearchModule,
     UserModule,
