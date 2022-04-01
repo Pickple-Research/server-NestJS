@@ -1,82 +1,38 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Schema as MongooseSchema } from "mongoose";
-import {
-  ParticipatedResearch,
-  ParticipatedResearchSchema,
-} from "./PartialEmbeddedSchema/user.participatedResearch.schema";
-import {
-  ParticipatedVote,
-  ParticipatedVoteSchema,
-} from "./PartialEmbeddedSchema/user.participatedVoteSchema";
+import { UserType, AccountType } from "../../Object/Enum";
 
 export type UserDocument = User & Document;
 
+/**
+ * 유저 계정 정보 스키마입니다.
+ * @author 현웅
+ */
 @Schema()
 export class User {
-  // #Independent Prop :
-  @Prop({ required: true, unique: true, trim: true }) // 이메일
+  @Prop() //! 유저 개인 정보 document의 암호화된 _id
+  userPrivacyId: string;
+
+  @Prop({ enum: UserType, required: true }) // 유저 타입: 유저, 고객, 파트너, 테스터, 관리자
+  userType: UserType;
+
+  @Prop({ enum: AccountType, required: true }) // 계정 회원가입 타입: 이메일, 카카오, 구글, 네이버
+  accountType: AccountType;
+
+  @Prop({ index: { unique: true, sparse: true }, trim: true }) // 이메일
   email: string;
 
-  @Prop({ required: true }) // 비밀번호
+  @Prop() // 비밀번호
   password: string;
 
-  @Prop({ unique: true, trim: true }) // 닉네임
+  @Prop({ index: { unique: true, sparse: true }, trim: true }) // 닉네임
   nickname: string;
-
-  @Prop() // 인증 토큰
-  jsonWebToken: string;
-
-  @Prop() // Firebase cloud messaging을 위한 기기 토큰 저장
-  fcmToken: string;
-
-  @Prop({ default: 1 }) // 레벨
-  level: number;
-
-  @Prop({ default: 0 }) // 점수
-  point: number;
-
-  @Prop() // 이메일 인증 여부
-  emailConfirmed: boolean;
-
-  @Prop() // 비번 변경을 위한 이메일 인증 여부 (??)
-  passwordChanged: boolean;
-
-  @Prop({ default: true }) // 알림 허용
-  allowNotification: boolean;
-
-  @Prop() // 회원가입 일시
-  signUpAt: Date;
-
-  @Prop() // 마지막 로그인 일시
-  lastLoginAt: Date;
-
-  @Prop() // 비번 변경 이메일 인증 시간 (1시간 지나면 다시 false로 바꾸기 위함)
-  lastPasswordConfirmedTime: Date;
-
-  // #Referencing Prop (참조하는 스키마의 id만 저장) :
-  @Prop() // 유저 별 알림에 대한 정보들을 갖고 있는 스키마 id
-  userNotificationId: string;
-
-  @Prop() // 유저 별 세부 정보를 담고 있는 스키마 id
-  userDetailedInfoId: string;
-
-  @Prop({ type: [String], default: [] }) // 차단한 유저 id
-  blockedUserIds: string[];
-
-  @Prop({ type: [String], default: [] }) // 내가 작성한 설문 id
-  myResearchIds: string[];
-
-  @Prop({ type: [String], default: [] }) // 내가 작성한 투표 id
-  myVoteIds: string[];
-
-  // #Partial Embedded Prop (참조하는 스키마 정보의 일부만 떼어내 저장) :
-  @Prop({ type: [ParticipatedResearchSchema], default: [] }) // 참여한 리서치 정보
-  participatedResearchs: ParticipatedResearch[];
-
-  @Prop({ type: [ParticipatedVoteSchema], default: [] }) // 참여한 투표 정보
-  participatedVotes: ParticipatedVote[];
-
-  // #Fully Embedded Prop (참조하는 스키마 정보를 모두 저장) :
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+// UserSchema.post(["save"], (error: MongoError, doc, next) => {
+//   console.log(error instanceof MongooseError);
+//   // console.error("schema middleware catched error");
+//   // console.error(`${error.name}: ${error.message}`);
+//   throw new HttpException("mongo middleware exception", 403);
+// });

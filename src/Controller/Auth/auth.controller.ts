@@ -1,6 +1,15 @@
-import { Controller, Get, Post, Body, ValidationPipe } from "@nestjs/common";
+import {
+  Controller,
+  Headers,
+  Body,
+  Get,
+  Post,
+  Patch,
+  Put,
+  Delete,
+} from "@nestjs/common";
 import { AuthService } from "../../Service";
-import { UserSignupDto } from "src/Dto";
+import { UserSignupDto } from "../../Dto";
 import { Public } from "../../Security/Metadata";
 
 @Controller("auth")

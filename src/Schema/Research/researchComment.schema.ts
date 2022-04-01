@@ -1,34 +1,16 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Schema as MongooseSchema } from "mongoose";
-import { Reply } from "..";
+import { Document } from "mongoose";
 
 export type ResearchCommentDocument = ResearchComment & Document;
 
+/**
+ * 리서치 댓글 스키마입니다. 리서치 기본 정보의 _id를 공유합니다.
+ * @author 현웅
+ */
 @Schema()
 export class ResearchComment {
-  @Prop()
-  writer: string;
-
-  @Prop()
+  @Prop({ required: true }) // 댓글 내용
   content: string;
-
-  @Prop()
-  date: Date;
-
-  @Prop({
-    type: [{ type: MongooseSchema.Types.ObjectId, ref: "Reply" }],
-    default: [],
-  })
-  reply: Reply[];
-
-  @Prop({ default: false })
-  hide: boolean;
-
-  // @Prop({default: [] })
-  // reports:;
-
-  // @Prop({default: [] })
-  // report_reasons: ;
 }
 
 export const ResearchCommentSchema =

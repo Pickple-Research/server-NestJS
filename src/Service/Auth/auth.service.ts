@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { UserNotFoundException } from "src/Exception";
-import { MongoUserService } from "src/Mongo";
-import { UserSignupDto } from "src/Dto";
+import { MongoUserService } from "../../Mongo";
+import { UserSignupDto } from "../../Dto";
+import { UserNotFoundException } from "../../Exception";
 
 @Injectable()
 export class AuthService {

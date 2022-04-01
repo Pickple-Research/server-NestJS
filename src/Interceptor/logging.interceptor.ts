@@ -31,7 +31,7 @@ export class LoggingInterceptor implements NestInterceptor {
       //* 요청 응답이 성공적인 경우
       tap(() => {
         console.log(
-          `SUCCESS: [${req.method}] ${req.url} - ${
+          `SUCCESS: [${req.method}] ${req.url} +${
             Date.now() - onStartHandleDate
           }ms`,
         );

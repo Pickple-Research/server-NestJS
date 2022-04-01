@@ -1,6 +1,10 @@
 import { Module } from "@nestjs/common";
 import { APP_FILTER } from "@nestjs/core";
-import { HttpExceptionFilter } from "../../Exception/Filter";
+import {
+  AllExceptionFilter,
+  HttpExceptionFilter,
+  MongoExceptionFilter,
+} from "../../Exception/Filter";
 
 /**
  * 전역으로 적용되는 Filter들을 모듈화한 클래스입니다.
@@ -10,8 +14,16 @@ import { HttpExceptionFilter } from "../../Exception/Filter";
   providers: [
     {
       provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
+      useClass: AllExceptionFilter,
     },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: HttpExceptionFilter,
+    // },
+    // {
+    //   provide: APP_FILTER,
+    //   useClass: MongoExceptionFilter,
+    // },
   ],
 })
 export class FilterModule {}
