@@ -4,12 +4,13 @@ import { FeedbackController } from "../Controller";
 import { FeedbackService } from "../Service";
 import { MongoFeedbackService } from "../Mongo";
 import { Feedback, FeedbackSchema } from "../Schema";
+import { MONGODB_FEEDBACK_CONNECTION } from "../Constant";
 
 @Module({
   imports: [
     MongooseModule.forFeature(
       [{ name: Feedback.name, schema: FeedbackSchema }],
-      "feedback",
+      MONGODB_FEEDBACK_CONNECTION,
     ),
   ],
   controllers: [FeedbackController],

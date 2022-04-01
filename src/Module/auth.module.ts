@@ -5,6 +5,7 @@ import { AuthController } from "../Controller";
 import { AuthService } from "../Service";
 import { MongoUserService } from "../Mongo";
 import { User, UserSchema, UserActivity, UserActivitySchema } from "../Schema";
+import { MONGODB_USER_CONNECTION } from "../Constant";
 
 /**
  * 회원가입, 정규유저 전환, 로그인 기능을 담당합니다.
@@ -23,7 +24,7 @@ import { User, UserSchema, UserActivity, UserActivitySchema } from "../Schema";
         { name: User.name, schema: UserSchema },
         { name: UserActivity.name, schema: UserActivitySchema },
       ],
-      "user",
+      MONGODB_USER_CONNECTION,
     ),
   ],
 })

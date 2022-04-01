@@ -26,6 +26,13 @@ import {
   ResearchModule,
   UserModule,
 } from "../Module";
+import {
+  MONGODB_USER_CONNECTION,
+  MONGODB_RESEARCH_CONNECTION,
+  MONGODB_VOTE_CONNECTION,
+  MONGODB_NOTICE_CONNECTION,
+  MONGODB_FEEDBACK_CONNECTION,
+} from "../Constant";
 
 /**
  * NestJS에서 제공하는 기본 모듈과 서비스 제공을 위해 우리가 제작한 모든 모듈을 합치는 곳입니다.
@@ -46,24 +53,22 @@ import {
     //? {isGlobal: true}: .env 변수를 전역에서 사용할 수 있도록 설정
     ConfigModule.forRoot({ isGlobal: true }),
 
-    //? MongooseModule.forRoot: 인자로 받은 MongoDB URI에 연결
-    MongooseModule.forRoot(process.env.MONGODB_ENDPOINT, {
-      connectionName: "main",
-    }),
-    MongooseModule.forRoot(process.env.MONGODB_USER_ENDPOINT, {
-      connectionName: "user",
-    }),
-    MongooseModule.forRoot(process.env.MONGODB_RESEARCH_ENDPOINT, {
-      connectionName: "research",
-    }),
-    MongooseModule.forRoot(process.env.MONGODB_VOTE_ENDPOINT, {
-      connectionName: "vote",
+    //? MongooseModule.forRoot: 인자로 받은 MongoDB URI에 연결합니다.
+    //? 여러 개의 DB에 연결하는 경우 이름을 명시합니다.
+    MongooseModule.forRoot(process.env.MONGODB_FEEDBACK_ENDPOINT, {
+      connectionName: MONGODB_FEEDBACK_CONNECTION,
     }),
     MongooseModule.forRoot(process.env.MONGODB_NOTICE_ENDPOINT, {
-      connectionName: "notice",
+      connectionName: MONGODB_NOTICE_CONNECTION,
     }),
-    MongooseModule.forRoot(process.env.MONGODB_FEEDBACK_ENDPOINT, {
-      connectionName: "feedback",
+    MongooseModule.forRoot(process.env.MONGODB_RESEARCH_ENDPOINT, {
+      connectionName: MONGODB_RESEARCH_CONNECTION,
+    }),
+    MongooseModule.forRoot(process.env.MONGODB_USER_ENDPOINT, {
+      connectionName: MONGODB_USER_CONNECTION,
+    }),
+    MongooseModule.forRoot(process.env.MONGODB_VOTE_ENDPOINT, {
+      connectionName: MONGODB_VOTE_CONNECTION,
     }),
 
     //* 전역 적용 모듈

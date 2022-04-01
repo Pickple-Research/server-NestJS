@@ -4,12 +4,13 @@ import { NoticeController } from "../Controller";
 import { NoticeService } from "../Service";
 import { MongoNoticeService } from "../Mongo";
 import { Notice, NoticeSchema } from "../Schema";
+import { MONGODB_NOTICE_CONNECTION } from "../Constant";
 
 @Module({
   imports: [
     MongooseModule.forFeature(
       [{ name: Notice.name, schema: NoticeSchema }],
-      "notice",
+      MONGODB_NOTICE_CONNECTION,
     ),
   ],
   controllers: [NoticeController],
