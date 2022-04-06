@@ -2,6 +2,7 @@ import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ResearchController } from "../Controller";
 import { ResearchService } from "../Service";
+import { AwsS3Service } from "../AWS";
 import { MongoResearchService } from "../Mongo";
 import { Research, ResearchSchema } from "../Schema";
 import { MONGODB_RESEARCH_CONNECTION } from "../Constant";
@@ -14,6 +15,6 @@ import { MONGODB_RESEARCH_CONNECTION } from "../Constant";
     ),
   ],
   controllers: [ResearchController],
-  providers: [ResearchService, MongoResearchService],
+  providers: [ResearchService, AwsS3Service, MongoResearchService],
 })
 export class ResearchModule {}

@@ -31,7 +31,7 @@ export class LoggingInterceptor implements NestInterceptor {
       //* 요청 응답이 성공적인 경우
       tap(() => {
         console.log(
-          `SUCCESS: [${req.method}] ${req.url} +${
+          `SUCCESS@${new Date().toISOString()}: [${req.method}] ${req.url} +${
             Date.now() - onStartHandleDate
           }ms`,
         );
@@ -42,7 +42,7 @@ export class LoggingInterceptor implements NestInterceptor {
        * middleware와 guard로 인해 발생하는 exception은 interceptor가 잡아낼 수 없습니다.
        * 따라서 성공한 요청에 대한 log는 interceptor에서 처리하되,
        * 실패한 요청에 대한 log는 (exception)filter에서 처리합니다.
-       * exception.filter.ts 파일을 참고하세요.
+       * all.exception.filter.ts 파일을 참고하세요.
        */
       //* 요청 처리 중 에러가 발생한 경우
       // catchError((error: HttpException) => {

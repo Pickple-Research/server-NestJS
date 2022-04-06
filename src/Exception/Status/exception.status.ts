@@ -8,6 +8,12 @@ export type CustomExceptionResonse = {
   message: string;
 };
 
+export class Status400Exception extends HttpException {
+  constructor(customExceptionResponse: CustomExceptionResonse) {
+    super(customExceptionResponse, HttpStatus.BAD_REQUEST);
+  }
+}
+
 export class Status403Exception extends HttpException {
   constructor(customExceptionResponse: CustomExceptionResonse) {
     super(customExceptionResponse, HttpStatus.FORBIDDEN);
