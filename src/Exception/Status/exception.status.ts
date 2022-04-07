@@ -20,6 +20,12 @@ export class Status403Exception extends HttpException {
   }
 }
 
+export class Status404Exception extends HttpException {
+  constructor(customExceptionResponse: CustomExceptionResonse) {
+    super(customExceptionResponse, HttpStatus.NOT_FOUND);
+  }
+}
+
 export class Status500Exception extends HttpException {
   constructor(customExceptionResponse: CustomExceptionResonse) {
     super(customExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);

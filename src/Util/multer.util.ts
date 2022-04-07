@@ -2,15 +2,10 @@ import { MulterOptions } from "@nestjs/platform-express/multer/interfaces/multer
 import { UnsupportedFileTypeException } from "../Exception";
 
 /**
- * 리서치 버킷에 업로드할 때 사용하는 multer 옵션
- */
-export const researchMulterOptions: MulterOptions = getMulterOptions();
-
-/**
  * 파일 업로드 시 제약 조건을 반환합니다.
  * @author 현웅
  */
-function getMulterOptions(): MulterOptions {
+export function getMulterOptions(): MulterOptions {
   return {
     //? fileFilter(): 올바른 파일 형식인지 검증하는 함수를 정의합니다.
     //? jpg, jpeg, png 형식의 파일이 아닌 경우 에러를 반환합니다.

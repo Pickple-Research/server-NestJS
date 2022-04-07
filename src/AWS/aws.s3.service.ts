@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { S3, config } from "aws-sdk";
+import { S3UploadingObject, S3Object } from "../Object/Type";
 
 @Injectable()
 export class AwsS3Service {
@@ -21,53 +22,37 @@ export class AwsS3Service {
   }
 
   /**
-   * S3 버킷에 주어진 파일(들)을 업로드합니다.
-   * (Controller에서 직접 호출하는 함수는 아닙니다)
-   * TODO: Key값은 research 혹은 vote의 _id값을 포함해 설정
-   * TODO: 에러 핸들링
-   * @param dataBuffer 업로드할 파일(들)
-   * @param filename
+   * S3 버킷에 주어진 파일 하나를 업로드합니다.
    * @author 현웅
    */
-  async uploadFile(dataBuffer: Buffer, filename: string) {
-    await this.s3
-      .upload({
-        Bucket: "pickple-research",
-        Body: dataBuffer,
-        ACL: "private",
-        Key: `research-${filename}`,
-        Metadata: { type: "thumbnail" },
-      })
-      .promise();
-    return;
+  async uploadObject(object: S3UploadingObject) {
+    return await this.s3.upload(object).promise();
   }
 
   /**
-   * research bucket에 파일을 업로드 합니다.
+   * S3 버킷에서 파일을 하나 가져옵니다.
    * @author 현웅
    */
-  async uploadResearchFile(files: {
-    thumbnail?: Express.Multer.File[];
-    images?: Express.Multer.File[];
-  }) {
-    const result = await Promise.all([
-      this.uploadFile(files.thumbnail[0]?.buffer, "thumb"),
-      files.images?.forEach((image, index) => {
-        this.uploadFile(image.buffer, `image${index}`);
-      }),
-    ]);
-    console.log(result.length);
-    return;
+  async getObject(objectInfo: S3Object) {
+    const object = await this.s3
+      .getObject({ Bucket: objectInfo.Bucket, Key: objectInfo.Key })
+      .promise();
+    return object;
   }
 
-  async getResearchImage() {
-    // const result = await this.s3
-    //   .getObject({ Bucket: "pickple-research", Key: "research-thumb" })
-    //   .promise();
-    const listResult = await this.s3
-      .listObjectsV2({ Bucket: "pickple-research", Prefix: "research-" })
-      .promise();
+  /**
+   * bucket에서 파일(들)을 가져옵니다.
+   * @author 현웅
+   */
+  async getFiles() {
+    const keys = ["thumb", "image0", "image1", "image2"];
+    //? Promise.all()을 사용하여 파일 하나를 가져오는 함수를 병렬적으로 호출합니다.
+    const objects = await Promise.all([
+      keys.forEach((Key) => {
+        this.getObject({ Bucket: "pickple-research", Key: Key });
+      }),
+    ]);
 
-    return;
+    return objects;
   }
 }

@@ -1,2 +1,2 @@
 export * from "./app.constant";
-export * from "./aws.constant";
+export * from "./aws.s3.constant";

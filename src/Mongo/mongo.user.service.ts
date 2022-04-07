@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { InjectConnection, InjectModel } from "@nestjs/mongoose";
-import { Model, Connection, ClientSession } from "mongoose";
+import { InjectModel, InjectConnection } from "@nestjs/mongoose";
+import { Model, Connection } from "mongoose";
 import { User, UserDocument } from "../Schema";
 import { UserSignupDto } from "../Dto";
 import { AccountType, UserType } from "../Object/Enum";
@@ -38,7 +38,8 @@ export class MongoUserService {
   async getUserById() {}
 
   /**
-   * 새로운 User Data를 만듭니다. UserProperty, UserActivity, UserPrivacy Document도 함께 만듭니다.
+   * (Transaction)
+   * 새로운 유저를 생성합니다. UserProperty, UserActivity, UserPrivacy Document도 함께 만듭니다.
    * @author 현웅
    */
   async createNewUser() {

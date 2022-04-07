@@ -74,7 +74,7 @@ import {
     //* 전역 적용 모듈
     //* 참조 (NestJS Request Lifecycle): https://docs.nestjs.com/faq/request-lifecycle#request-lifecycle
     InterceptorModule,
-    GuardModule,
+    // GuardModule,
     PipeModule,
     FilterModule,
 
