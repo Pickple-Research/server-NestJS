@@ -8,7 +8,14 @@ import {
   MongoUserDeleteService,
   MongoUserFindService,
 } from "../Mongo";
-import { User, UserSchema, UserActivity, UserActivitySchema } from "../Schema";
+import {
+  User,
+  UserSchema,
+  UserActivity,
+  UserActivitySchema,
+  UnauthorizedUser,
+  UnauthorizedUserSchema,
+} from "../Schema";
 import { MONGODB_USER_CONNECTION } from "../Constant";
 
 /**
@@ -32,6 +39,7 @@ import { MONGODB_USER_CONNECTION } from "../Constant";
       [
         { name: User.name, schema: UserSchema },
         { name: UserActivity.name, schema: UserActivitySchema },
+        { name: UnauthorizedUser.name, schema: UnauthorizedUserSchema },
       ],
       MONGODB_USER_CONNECTION,
     ),

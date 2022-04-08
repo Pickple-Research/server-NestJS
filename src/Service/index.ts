@@ -20,6 +20,7 @@ export * from "./Research/research.find.service";
 
 // User
 export * from "./User/user.create.service";
+export * from "./User/user.delete.service";
 export * from "./User/user.find.service";
 
 // Vote

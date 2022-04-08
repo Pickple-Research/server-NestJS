@@ -17,6 +17,9 @@ export class UnauthorizedUser {
 
   @Prop() // 인증 코드
   authorizationCode: string;
+
+  @Prop() // 회원가입 일자 (일주일 지나면 데이터 삭제)
+  createdAt: string;
 }
 
 export const UnauthorizedUserSchema =

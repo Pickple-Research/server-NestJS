@@ -1,13 +1,24 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { UserGetController, UserPostController } from "../Controller";
-import { UserFindService, UserCreateService } from "../Service";
+import {
+  UserCreateService,
+  UserDeleteService,
+  UserFindService,
+} from "../Service";
 import {
   MongoUserCreateService,
   MongoUserDeleteService,
   MongoUserFindService,
 } from "../Mongo";
-import { User, UserSchema, UserActivity, UserActivitySchema } from "../Schema";
+import {
+  User,
+  UserSchema,
+  UserActivity,
+  UserActivitySchema,
+  UnauthorizedUser,
+  UnauthorizedUserSchema,
+} from "../Schema";
 import { MONGODB_USER_CONNECTION } from "../Constant";
 
 /**
@@ -23,6 +34,8 @@ import { MONGODB_USER_CONNECTION } from "../Constant";
   providers: [
     UserCreateService,
     UserFindService,
+    UserDeleteService,
+
     MongoUserCreateService,
     MongoUserDeleteService,
     MongoUserFindService,
@@ -34,6 +47,7 @@ import { MONGODB_USER_CONNECTION } from "../Constant";
       [
         { name: User.name, schema: UserSchema },
         { name: UserActivity.name, schema: UserActivitySchema },
+        { name: UnauthorizedUser.name, schema: UnauthorizedUserSchema },
       ],
       MONGODB_USER_CONNECTION,
     ),

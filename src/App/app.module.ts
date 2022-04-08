@@ -11,6 +11,8 @@ import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 // Middlewares
 import { BlankMiddleware } from "../Middleware";
+// CronJobs
+import { CronModule } from "../Cron";
 // Global Modules
 import {
   InterceptorModule,
@@ -50,12 +52,13 @@ import {
   controllers: [AppController],
   providers: [AppService],
   imports: [
+    //? ScheduleModule: CronJob/Timeouts/Intervals를 통한 TaskScheduling을 할 수 있도록 도와주는 모듈.
+    ScheduleModule.forRoot(),
+    CronModule,
+
     //? ConfigModule: .env 변수를 사용할 수 있도록 도와주는 모듈. (내부적으로 dotenv를 사용)
     //? {isGlobal: true}: .env 변수를 전역에서 사용할 수 있도록 설정
     ConfigModule.forRoot({ isGlobal: true }),
-
-    //? ScheduleModule: CronJob/Timeouts/Intervals를 통한 TaskScheduling을 할 수 있도록 도와주는 모듈.
-    ScheduleModule.forRoot(),
 
     //? MongooseModule: Mongoose를 사용할 수 있도록 도와주는 모듈.
     //? forRoot의 인자로 받은 MongoDB URI에 연결합니다.
@@ -99,6 +102,7 @@ export class AppModule implements NestModule {
   //   consumer
   //     .apply(BlankMiddleware)
   //     .exclude()
+  //     //? path: 경로 지정  method: HTTP method 지정
   //     .forRoutes({ path: "*", method: RequestMethod.ALL });
   // }
 }
