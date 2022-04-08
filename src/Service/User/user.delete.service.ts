@@ -1,9 +1,9 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { MongoUserDeleteService } from "../../Mongo";
 
 @Injectable()
 export class UserDeleteService {
-  constructor(
-    private readonly mongoUserDeleteService: MongoUserDeleteService,
-  ) {}
+  constructor() {}
+
+  @Inject() private readonly mongoUserDeleteService: MongoUserDeleteService;
 }

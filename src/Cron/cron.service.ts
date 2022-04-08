@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { Cron } from "@nestjs/schedule";
 import { MongoUserFindService, MongoUserDeleteService } from "../Mongo";
 
@@ -8,10 +8,15 @@ import { MongoUserFindService, MongoUserDeleteService } from "../Mongo";
  */
 @Injectable()
 export class CronService {
-  constructor(
-    private readonly mongoUserFindService: MongoUserFindService,
-    private readonly mongoUserDeleteService: MongoUserDeleteService,
-  ) {}
+  // constructor(
+  //   private readonly mongoUserFindService: MongoUserFindService,
+  //   private readonly mongoUserDeleteService: MongoUserDeleteService,
+  // ) {}
+
+  @Inject(MongoUserFindService)
+  private readonly mongoUserFindService: MongoUserFindService;
+  @Inject(MongoUserDeleteService)
+  private readonly mongoUserDeleteService: MongoUserDeleteService;
 
   //
   // CronJob 시간 읽는 법:
@@ -45,6 +50,7 @@ export class CronService {
     // weekPassedUnauthorizedUsers.forEach(user=>{
     //   this.mongoUserDeleteService.deleteUnauthorizedUser(user.email);
     // })
+    await this.mongoUserDeleteService.deleteUnauthorizedUser("");
     return;
   }
 }

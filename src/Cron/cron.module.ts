@@ -1,13 +1,5 @@
 import { Module } from "@nestjs/common";
-import { MongooseModule } from "@nestjs/mongoose";
-import { MongoUserFindService, MongoUserDeleteService } from "src/Mongo";
-import {
-  User,
-  UserSchema,
-  UnauthorizedUser,
-  UnauthorizedUserSchema,
-} from "../Schema";
-import { MONGODB_USER_CONNECTION } from "../Constant";
+import { MongoUserModule } from "../Mongo";
 import { CronService } from "./cron.service";
 
 /**
@@ -16,15 +8,7 @@ import { CronService } from "./cron.service";
  * @author 현웅
  */
 @Module({
-  providers: [CronService, MongoUserFindService, MongoUserDeleteService],
-  imports: [
-    MongooseModule.forFeature(
-      [
-        { name: User.name, schema: UserSchema },
-        { name: UnauthorizedUser.name, schema: UnauthorizedUserSchema },
-      ],
-      MONGODB_USER_CONNECTION,
-    ),
-  ],
+  providers: [CronService],
+  imports: [MongoUserModule],
 })
 export class CronModule {}

@@ -1,9 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { MongoUserFindService } from "../../Mongo";
 
 @Injectable()
 export class UserFindService {
-  constructor(private readonly mongoUserFindService: MongoUserFindService) {}
+  constructor() {}
+
+  @Inject() private readonly mongoUserFindService: MongoUserFindService;
 
   /**
    * @Get
@@ -11,6 +13,6 @@ export class UserFindService {
    * @author 현웅
    */
   async testUserRouter() {
-    return await this.mongoUserFindService.getUserById("");
+    return "testUserRouter()@ user.find.service";
   }
 }

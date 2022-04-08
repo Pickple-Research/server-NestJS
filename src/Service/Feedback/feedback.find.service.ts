@@ -1,11 +1,11 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { MongoFeedbackFindService } from "../../Mongo";
 
 @Injectable()
 export class FeedbackFindService {
-  constructor(
-    private readonly mongoFeedbackFindService: MongoFeedbackFindService,
-  ) {}
+  constructor() {}
+
+  @Inject() private readonly mongoFeedbackFindService: MongoFeedbackFindService;
 
   /**
    * @Get

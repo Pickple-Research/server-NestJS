@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import { MongoUserFindService } from "../../Mongo";
 import { UserSignupDto } from "../../Dto";
@@ -6,10 +6,10 @@ import { UserNotFoundException } from "../../Exception";
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly mongoUserFindService: MongoUserFindService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor() {}
+
+  @Inject() private readonly mongoUserFindService: MongoUserFindService;
+  @Inject() private readonly jwtService: JwtService;
 
   /**
    * @Get
@@ -43,6 +43,10 @@ export class AuthService {
     };
   }
 
+  async issueJWT() {
+    return;
+  }
+
   /**
    * @Post
    * userSignupDto 형태의 인자를 받아 회원가입합니다.
@@ -50,9 +54,5 @@ export class AuthService {
    */
   async signup(userSignupDto: UserSignupDto) {
     return "auth.service: signup()";
-  }
-
-  async issueJWT() {
-    return;
   }
 }

@@ -1,12 +1,12 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { MongoUserCreateService } from "../../Mongo";
 import { UserSignupDto } from "../../Dto";
 
 @Injectable()
 export class UserCreateService {
-  constructor(
-    private readonly mongoUserCreateService: MongoUserCreateService,
-  ) {}
+  constructor() {}
+
+  @Inject() private readonly mongoUserCreateService: MongoUserCreateService;
 
   /**
    * @Post
