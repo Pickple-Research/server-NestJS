@@ -1,20 +1,26 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { ResearchController } from "../Controller";
-import { ResearchService } from "../Service";
+import { ResearchGetController, ResearchPostController } from "../Controller";
+import { ResearchFindService, ResearchCreateService } from "../Service";
 import { AwsS3Service } from "../AWS";
-import { MongoResearchService } from "../Mongo";
+import { MongoResearchCreateService, MongoResearchFindService } from "../Mongo";
 import { Research, ResearchSchema } from "../Schema";
 import { MONGODB_RESEARCH_CONNECTION } from "../Constant";
 
 @Module({
+  controllers: [ResearchGetController, ResearchPostController],
+  providers: [
+    ResearchCreateService,
+    ResearchFindService,
+    MongoResearchCreateService,
+    MongoResearchFindService,
+    AwsS3Service,
+  ],
   imports: [
     MongooseModule.forFeature(
       [{ name: Research.name, schema: ResearchSchema }],
       MONGODB_RESEARCH_CONNECTION,
     ),
   ],
-  controllers: [ResearchController],
-  providers: [ResearchService, AwsS3Service, MongoResearchService],
 })
 export class ResearchModule {}

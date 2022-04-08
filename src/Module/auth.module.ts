@@ -3,7 +3,11 @@ import { JwtModule } from "@nestjs/jwt";
 import { MongooseModule } from "@nestjs/mongoose";
 import { AuthController } from "../Controller";
 import { AuthService } from "../Service";
-import { MongoUserService } from "../Mongo";
+import {
+  MongoUserCreateService,
+  MongoUserDeleteService,
+  MongoUserFindService,
+} from "../Mongo";
 import { User, UserSchema, UserActivity, UserActivitySchema } from "../Schema";
 import { MONGODB_USER_CONNECTION } from "../Constant";
 
@@ -13,7 +17,12 @@ import { MONGODB_USER_CONNECTION } from "../Constant";
  */
 @Module({
   controllers: [AuthController],
-  providers: [AuthService, MongoUserService],
+  providers: [
+    AuthService,
+    MongoUserCreateService,
+    MongoUserDeleteService,
+    MongoUserFindService,
+  ],
   imports: [
     //? authService에서 jwtService를 사용하고 있으므로 imports에 포함시킵니다
     JwtModule.register({
