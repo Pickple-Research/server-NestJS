@@ -16,7 +16,7 @@ RUN ln -s /etc/nginx/sites-available/nginx-server /etc/nginx/sites-enabled/nginx
 # 참고: https://engineerworkshop.com/blog/how-to-install-a-specific-version-of-node-in-ubuntu-linux/
 # npm 설치
 RUN apt-get update && apt-get install -y curl
-RUN curl -fsSL https://deb.nodesource.com/setup_16.13.1 | sudo -E bash -
+RUN curl -fsSL https://deb.nodesource.com/setup_16.13.1 | bash -
 RUN apt-get install -y nodejs
 
 # yarn 설치 && yarn 버전 세팅
