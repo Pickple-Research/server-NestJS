@@ -1,19 +1,11 @@
 import { Module } from "@nestjs/common";
-import { MongooseModule } from "@nestjs/mongoose";
-import { VoteController } from "../Controller";
-import { VoteService } from "../Service";
-import { MongoVoteService } from "../Mongo";
-import { Vote, VoteSchema } from "../Schema";
-import { MONGODB_VOTE_CONNECTION } from "../Constant";
+import { VoteGetController } from "../Controller";
+import { VoteFindService } from "../Service";
+import { MongoVoteModule } from "../Mongo";
 
 @Module({
-  imports: [
-    MongooseModule.forFeature(
-      [{ name: Vote.name, schema: VoteSchema }],
-      MONGODB_VOTE_CONNECTION,
-    ),
-  ],
-  controllers: [VoteController],
-  providers: [VoteService, MongoVoteService],
+  controllers: [VoteGetController],
+  providers: [VoteFindService],
+  imports: [MongoVoteModule],
 })
 export class VoteModule {}

@@ -23,7 +23,13 @@ import { ClientSession } from "mongoose";
  * const someUser = await this.User.findOne({...options}).session(session)
  * await someUser.save()
  *
- * await this.User.create({...options}, {session})
+ * await this.User.create(
+ *  [
+ *    {...user1Options},
+ *    {...user2Options}
+ *  ],
+ *  {session}
+ * )
  * ...
  * @author 현웅
  */

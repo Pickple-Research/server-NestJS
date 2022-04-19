@@ -1,22 +1,28 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Inject } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { MongoUserService } from "../../Mongo";
+import { MongoUserFindService } from "../../Mongo";
 import { UserSignupDto } from "../../Dto";
 import { UserNotFoundException } from "../../Exception";
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly mongoUserService: MongoUserService,
-    private readonly jwtService: JwtService,
-  ) {}
+  constructor() {}
 
+  @Inject() private readonly mongoUserFindService: MongoUserFindService;
+  @Inject() private readonly jwtService: JwtService;
+
+  /**
+   * @Get
+   * 테스트 라우터
+   * @author 현웅
+   */
   async testAuthRouter() {
     // throw new UserNotFoundException();
-    return this.mongoUserService.getUserByEmail("dennis2311@yonsei.ac.kr");
+    return this.mongoUserFindService.getUserByEmail("dennis2311@yonsei.ac.kr");
   }
 
   /**
+   * @Post
    * userSignupDto 형태의 인자를 받아 로그인합니다.
    * ***
    * 프로세스는 다음과 같습니다:
@@ -39,5 +45,14 @@ export class AuthService {
 
   async issueJWT() {
     return;
+  }
+
+  /**
+   * @Post
+   * userSignupDto 형태의 인자를 받아 회원가입합니다.
+   * @author 현웅
+   */
+  async signup(userSignupDto: UserSignupDto) {
+    return "auth.service: signup()";
   }
 }

@@ -1,6 +1,8 @@
 import { NestFactory } from "@nestjs/core";
+import { ConfigService } from "@nestjs/config";
 import { AppModule } from "./App";
 import { CORS_ORIGINS } from "./Constant";
+import { config } from "aws-sdk";
 
 /**
  * 서버를 시작하는 곳입니다.
@@ -8,7 +10,8 @@ import { CORS_ORIGINS } from "./Constant";
  * ***
  * 주요 기능:
  * - CORS 설정
- * - 모든 요청 주소에 globalPrefix를 추가합니다. ('/api')
+ * - 모든 요청 주소에 globalPrefix 추가 ('/api')
+ * //- AWS IAM 인증
  * ***
  * @author 현웅
  */
@@ -24,6 +27,18 @@ async function bootstrap() {
   });
   //? 모든 요청 주소 앞단에 "/api"를 추가합니다.
   app.setGlobalPrefix("/api");
+
+  /** @deprecated aws.s3.service.ts 클래스가 만들어질 때 실행합니다.  */
+  //? AWS S3 서비스를 사용하기 위하여 IAM 인증을 진행합니다.
+  //? 해당 유저는 Pickple-S3입니다. 주어진 권한은 AWS IAM 에서 확인할 수 있습니다.
+  // const configService = app.get(ConfigService);
+  // config.update({
+  //   credentials: {
+  //     accessKeyId: configService.get("AWS_ACCESS_KEY_ID"),
+  //     secretAccessKey: configService.get("AWS_SECRET_ACCESS_KEY"),
+  //   },
+  //   region: "ap-northeast-2",
+  // });
 
   await app.listen(process.env.PORT || 5000);
 }

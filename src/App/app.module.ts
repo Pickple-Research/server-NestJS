@@ -6,10 +6,13 @@ import {
 } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
+import { ScheduleModule } from "@nestjs/schedule";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 // Middlewares
 import { BlankMiddleware } from "../Middleware";
+// CronJobs
+import { CronModule } from "../Cron";
 // Global Modules
 import {
   InterceptorModule,
@@ -49,12 +52,17 @@ import {
   controllers: [AppController],
   providers: [AppService],
   imports: [
+    //? ScheduleModule: CronJob/Timeouts/Intervals를 통한 TaskScheduling을 할 수 있도록 도와주는 모듈.
+    ScheduleModule.forRoot(),
+    CronModule,
+
     //? ConfigModule: .env 변수를 사용할 수 있도록 도와주는 모듈. (내부적으로 dotenv를 사용)
     //? {isGlobal: true}: .env 변수를 전역에서 사용할 수 있도록 설정
     ConfigModule.forRoot({ isGlobal: true }),
 
-    //? MongooseModule.forRoot: 인자로 받은 MongoDB URI에 연결합니다.
-    //? 여러 개의 DB에 연결하는 경우 이름을 명시합니다.
+    //? MongooseModule: Mongoose를 사용할 수 있도록 도와주는 모듈.
+    //? forRoot의 인자로 받은 MongoDB URI에 연결합니다.
+    //? 여러 개의 DB에 연결하는 경우 connectionName의 값으로 이름을 명시합니다.
     MongooseModule.forRoot(process.env.MONGODB_FEEDBACK_ENDPOINT, {
       connectionName: MONGODB_FEEDBACK_CONNECTION,
     }),
@@ -74,7 +82,7 @@ import {
     //* 전역 적용 모듈
     //* 참조 (NestJS Request Lifecycle): https://docs.nestjs.com/faq/request-lifecycle#request-lifecycle
     InterceptorModule,
-    GuardModule,
+    // GuardModule,
     PipeModule,
     FilterModule,
 
@@ -89,11 +97,12 @@ import {
 })
 export class AppModule implements NestModule {
   configure() {}
-  // //* 전역 미들웨어 설정을 하고 싶다면 아래 주석을 이용합니다.
+  //* 전역 미들웨어 설정을 하고 싶다면 아래 주석을 이용합니다.
   // configure(consumer: MiddlewareConsumer) {
   //   consumer
   //     .apply(BlankMiddleware)
   //     .exclude()
+  //     //? path: 경로 지정  method: HTTP method 지정
   //     .forRoutes({ path: "*", method: RequestMethod.ALL });
   // }
 }
