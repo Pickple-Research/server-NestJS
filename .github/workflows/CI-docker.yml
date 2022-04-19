@@ -14,22 +14,33 @@ jobs:
     # job이 수행할 실제 동작들을 설정합니다. 순차적으로 실행됩니다.
     steps:
       # 레포지토리 환경을 runner로 복사합니다.
-      - name: checkout
+      - name: Checkout
         uses: actions/checkout@v2
+        
+      - name: Set docker metadata
+        id: docker_metadata
+        uses: crazy-max/ghaction-docker-meta@v1
+        with:
+          images: pickpleresearch/server-nestjs
+          tag-semver: |
+            {{version}}
+            {{major}}.{{minor}}
 
-      - name: set up docker buildx
+      - name: Set up docker buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: dockerhub login
+      - name: Dockerhub login
         uses: docker/login-action@v1
         with:
           username: ${{secrets.DOCKERHUB_USERNAME}}
           password: ${{secrets.DOCKERHUB_TOKEN}}
 
-      - name: docker image build and push
+      - name: Build docker image and push
         uses: docker/build-push-action@v2
         with:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64
           push: true
+          tags: ${{steps.docker_metadata.outputs.tags}}
+          labels: ${{steps.docker_metadata.outputs.labels}}
