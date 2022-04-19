@@ -15,10 +15,11 @@ RUN ln -s /etc/nginx/sites-available/nginx-server /etc/nginx/sites-enabled/nginx
 
 # 참고: https://stackoverflow.com/questions/25899912/how-to-install-nvm-in-docker/60137919#60137919
 # nvm 설치 && nvm을 이용하여 node 설치 (nvm 설치시 추가 세팅 필요)
-SHELL ["/bin/bash", "--login", "-i", "-c"]
+# SHELL ["/bin/bash", "--login", "-i", "-c"]
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-RUN source /root/.bashrc && nvm install 16.13.1
-SHELL ["/bin/bash", "--login", "-c"]
+# RUN source /root/.bashrc && nvm install 16.13.1
+# SHELL ["/bin/bash", "--login", "-c"]
+RUN /root/.nvm/nvm.sh && nvm install 16.13.1
 
 # yarn 설치 && yarn 버전 세팅
 RUN npm install -g yarn -y && yarn set version 1.22.18
