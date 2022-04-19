@@ -18,6 +18,7 @@ RUN ln -s /etc/nginx/sites-available/nginx-server /etc/nginx/sites-enabled/nginx
 RUN apt-get update && apt-get install -y curl
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 RUN apt-get install -y nodejs
+RUN node --version
 
 # yarn 설치 && yarn 버전 세팅
 RUN npm install -g yarn -y && yarn set version 1.22.18
@@ -27,6 +28,8 @@ RUN npm install -g pm2 -y && mkdir /server
 
 # (github action) github 레포지토리의 모든 내용을 server 폴더로 복사
 COPY . /server
+
+WORKDIR /server
 
 RUN yarn build
 
