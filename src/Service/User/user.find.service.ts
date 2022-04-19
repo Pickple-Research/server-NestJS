@@ -13,6 +13,6 @@ export class UserFindService {
    * @author 현웅
    */
   async testUserRouter() {
-    return "testUserRouter()@ user.find.service";
+    return "testUserRouter with tag";
   }
 }
