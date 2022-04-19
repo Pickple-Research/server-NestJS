@@ -23,7 +23,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd server-NestJS
-            git pull origin main_deploy
+            git pull origin main
             yarn install
             yarn build
             pm2 restart PickpleResearchServer
