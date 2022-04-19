@@ -13,6 +13,6 @@ export class UserFindService {
    * @author 현웅
    */
   async testUserRouter() {
-    return "testUserRouter with tag";
+    return "make tag with github";
   }
 }
