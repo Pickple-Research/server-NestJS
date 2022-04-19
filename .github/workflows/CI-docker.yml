@@ -31,5 +31,5 @@ jobs:
         with:
           context: .
           file: ./Dockerfile
-          platforms: ubuntu-20.04
+          platforms: linux/amd64
           push: true
