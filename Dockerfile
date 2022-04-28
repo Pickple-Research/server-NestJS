@@ -5,14 +5,14 @@ FROM ubuntu:20.04
 ENV TZ=Asia/Seoul
 
 # apt-get 업그레이드 && nginx 설치
-RUN apt-get update && apt-get install nginx -y
+#RUN apt-get update && apt-get install nginx -y
 
 # nginx 기본 proxy 설정 파일 제거
-RUN rm /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
+#RUN rm /etc/nginx/sites-enabled/default /etc/nginx/sites-available/default
 
 # (github 레포지토리의) nginx-server 파일을 도커에 복사 후 심볼릭 링크 생성
-COPY nginx-server /etc/nginx/sites-available/
-RUN ln -s /etc/nginx/sites-available/nginx-server /etc/nginx/sites-enabled/nginx-server
+#COPY nginx-server /etc/nginx/sites-available/
+#RUN ln -s /etc/nginx/sites-available/nginx-server /etc/nginx/sites-enabled/nginx-server
 
 # 참고: https://engineerworkshop.com/blog/how-to-install-a-specific-version-of-node-in-ubuntu-linux/
 # npm(v16) 설치
