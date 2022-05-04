@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-
-export type FeedbackDocument = Feedback & Document;
+import { Document } from "mongoose";
 
 @Schema()
 export class Feedback {
@@ -9,3 +8,5 @@ export class Feedback {
 }
 
 export const FeedbackSchema = SchemaFactory.createForClass(Feedback);
+
+export type FeedbackDocument = Feedback & Document;

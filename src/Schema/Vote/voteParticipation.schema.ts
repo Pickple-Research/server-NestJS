@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 
-export type VoteParticipationDocument = VoteParticipation & Document;
-
 /**
  * 투표 참여 정보 스키마입니다. 투표 기본 정보의 _id를 공유합니다.
  * @author 현웅
@@ -15,3 +13,5 @@ export class VoteParticipation {
 
 export const VoteParticipationSchema =
   SchemaFactory.createForClass(VoteParticipation);
+
+export type VoteParticipationDocument = VoteParticipation & Document;

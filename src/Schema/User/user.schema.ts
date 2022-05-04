@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 import { UserType, AccountType } from "../../Object/Enum";
-
-export type UserDocument = User & Document;
 
 /**
  * 유저 계정 정보 스키마입니다.
@@ -9,10 +8,7 @@ export type UserDocument = User & Document;
  */
 @Schema()
 export class User {
-  @Prop() //! 유저 개인 정보 document의 암호화된 _id
-  userPrivacyId: string;
-
-  @Prop({ enum: UserType, required: true }) // 유저 타입: 유저, 고객, 파트너, 테스터, 관리자
+  @Prop({ enum: UserType, required: true }) // 유저 타입: 일반 유저, 테스터, 관리자
   userType: UserType;
 
   @Prop({ enum: AccountType, required: true }) // 계정 회원가입 타입: 이메일, 카카오, 구글, 네이버
@@ -26,13 +22,14 @@ export class User {
 
   @Prop({ index: { unique: true, sparse: true }, trim: true }) // 닉네임
   nickname: string;
+
+  @Prop({ default: 1 }) // 등급
+  grade: number;
+
+  @Prop({}) // 회원가입 일자
+  createdAt: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
 
-// UserSchema.post(["save"], (error: MongoError, doc, next) => {
-//   console.log(error instanceof MongooseError);
-//   // console.error("schema middleware catched error");
-//   // console.error(`${error.name}: ${error.message}`);
-//   throw new HttpException("mongo middleware exception", 403);
-// });
+export type UserDocument = User & Document;

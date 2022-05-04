@@ -1,3 +1,7 @@
+/**
+ * 리서치 예상 소요 시간
+ * @author 현웅
+ */
 export enum ResearchEstimatedTime {
   UNDER_ONE_MIN = "UNDER_ONE_MIN",
   ONE_TO_TWO_MIN = "ONE_TO_TWO_MIN",

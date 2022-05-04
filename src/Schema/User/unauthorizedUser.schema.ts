@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-
-export type UnauthorizedUserDocument = UnauthorizedUser & Document;
+import { Document } from "mongoose";
 
 /**
  * 이메일 인증이 완료되지 않은 유저 정보 스키마입니다.
@@ -18,9 +17,11 @@ export class UnauthorizedUser {
   @Prop() // 인증 코드
   authorizationCode: string;
 
-  @Prop() // 회원가입 일자 (일주일 지나면 데이터 삭제)
+  @Prop() // 회원가입 일자 (일주일 지나면 데이터 삭제: cronjob을 동적으로 생성하여 제거)
   createdAt: string;
 }
 
 export const UnauthorizedUserSchema =
   SchemaFactory.createForClass(UnauthorizedUser);
+
+export type UnauthorizedUserDocument = UnauthorizedUser & Document;
