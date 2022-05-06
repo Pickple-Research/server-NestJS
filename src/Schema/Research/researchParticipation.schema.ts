@@ -1,7 +1,13 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-
-export type ResearchParticipationDocument = ResearchParticipation & Document;
+import {
+  ResearchParticipantInfo,
+  ResearchParticipantInfoSchema,
+  ResearchViewedUserInfo,
+  ResearchViewedUserInfoSchema,
+  ResearchScrappedUserInfo,
+  ResearchScrappedUserInfoSchema,
+} from "./Embedded";
 
 /**
  * 리서치 참여 정보 스키마입니다. 리서치 기본 정보의 _id를 공유합니다.
@@ -9,10 +15,18 @@ export type ResearchParticipationDocument = ResearchParticipation & Document;
  */
 @Schema()
 export class ResearchParticipation {
-  @Prop({ type: [String], default: [] }) // 참여한 유저 특성 정보 id
-  participatedUserPropertyIds: string[];
+  @Prop({ type: [ResearchParticipantInfoSchema], default: [] }) // 참여한 유저
+  participantInfos: ResearchParticipantInfo[];
+
+  @Prop({ type: [ResearchViewedUserInfoSchema], default: [] }) // 조회한 유저
+  viewedUserInfos: ResearchViewedUserInfo[];
+
+  @Prop({ type: [ResearchScrappedUserInfoSchema], default: [] }) // 스크랩한 유저
+  scrappedUserInfos: ResearchScrappedUserInfo[];
 }
 
 export const ResearchParticipationSchema = SchemaFactory.createForClass(
   ResearchParticipation,
 );
+
+export type ResearchParticipationDocument = ResearchParticipation & Document;

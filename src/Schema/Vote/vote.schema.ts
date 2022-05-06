@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 
-export type VoteDocument = Vote & Document;
-
 /**
  * 투표 기본 정보 스키마입니다.
  * @author 현웅
@@ -20,3 +18,5 @@ export class Vote {
 }
 
 export const VoteSchema = SchemaFactory.createForClass(Vote);
+
+export type VoteDocument = Vote & Document;

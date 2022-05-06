@@ -1,6 +1,6 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { MongoResearchFindService } from "../../Mongo";
-import { ResearchNotFoundException } from "../../Exception";
+import { MongoResearchFindService } from "src/Mongo";
+import { ResearchNotFoundException } from "src/Exception";
 
 @Injectable()
 export class ResearchFindService {

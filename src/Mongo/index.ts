@@ -17,12 +17,14 @@ export * from "./Notice/mongo.notice.module";
 // Research
 export * from "./Research/mongo.research.create.service";
 export * from "./Research/mongo.research.find.service";
+export * from "./Research/mongo.research.update.service";
 export * from "./Research/mongo.research.module";
 
 // User
 export * from "./User/mongo.user.create.service";
 export * from "./User/mongo.user.delete.service";
 export * from "./User/mongo.user.find.service";
+export * from "./User/mongo.user.update.service";
 export * from "./User/mongo.user.module";
 
 // Vote

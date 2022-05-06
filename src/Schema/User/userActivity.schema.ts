@@ -1,21 +1,37 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document } from "mongoose";
 import {
   ParticipatedResearchInfo,
   ParticipatedResearchInfoSchema,
+  ParticipatedVoteInfo,
+  ParticipatedVoteInfoSchema,
+  ScrappedResearchInfo,
+  ScrappedResearchInfoSchema,
 } from "./Embedded";
 
-export type UserActivityDocument = UserActivity & Document;
-
 /**
- * 유저 활동 정보 스키마입니다.
- * 참여하거나 좋아요 표시한 리서치/투표에 대한 간략한 정보를 담습니다.
+ * 유저 활동(리서치나 투표 참여/조회/스크랩) 정보 스키마입니다.
  * @author 현웅
  */
 @Schema()
 export class UserActivity {
+  @Prop({ type: [String], default: [] }) // 조회한 리서치 _id
+  viewedResearchIds: string[];
+
+  @Prop({ type: [String], default: [] }) // 조회한 투표 _id
+  viewedVoteIds: string[];
+
+  @Prop({ type: [ScrappedResearchInfoSchema], default: [] }) // 스크랩한 리서치들 정보
+  scrappedResearchInfos: ScrappedResearchInfo[];
+
   //TODO: 이 스키마도 나중에 가면 너무 커질 우려가 있음. 15개 이후에는 id reference만 하는 건 아떤지?
-  @Prop({ type: [ParticipatedResearchInfoSchema], default: [] }) // 참여한 리서치 정보
+  @Prop({ type: [ParticipatedResearchInfoSchema], default: [] }) // 참여한 리서치들 정보
   participatedResearchInfos: ParticipatedResearchInfo[];
+
+  @Prop({ type: [ParticipatedVoteInfoSchema], default: [] }) // 참여한 투표들 정보
+  participatedVoteInfos: ParticipatedVoteInfo[];
 }
 
 export const UserActivitySchema = SchemaFactory.createForClass(UserActivity);
+
+export type UserActivityDocument = UserActivity & Document;

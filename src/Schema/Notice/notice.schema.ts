@@ -1,8 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 
-export type NoticeDocument = Notice & Document;
-
 @Schema()
 export class Notice {
   @Prop({ required: true }) // 공지 제목
@@ -22,3 +20,5 @@ export class Notice {
 }
 
 export const NoticeSchema = SchemaFactory.createForClass(Notice);
+
+export type NoticeDocument = Notice & Document;

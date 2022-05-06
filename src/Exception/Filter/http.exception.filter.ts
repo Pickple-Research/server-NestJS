@@ -8,8 +8,9 @@ import { Request, Response } from "express";
 import { CustomExceptionResonse } from "../Status";
 
 /**
- * HttpException이 발생했을 때의 처리 방식을 지정합니다.
- * @deprecated all.exception.filter.ts에서 모두 관리합니다.
+ * @deprecated all.exception.filter.ts에서 모든 에러를 관리합니다.
+ *
+ * @description HttpException이 발생했을 때의 처리 방식을 지정합니다.
  * @author 현웅
  */
 @Catch(HttpException)

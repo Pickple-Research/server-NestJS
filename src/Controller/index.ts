@@ -15,9 +15,11 @@ export * from "./Notice/notice.get.controller";
 
 //Research
 export * from "./Research/research.get.controller";
+export * from "./Research/research.patch.controller";
 export * from "./Research/research.post.controller";
 
 //User
+export * from "./User/user.delete.controller";
 export * from "./User/user.get.controller";
 export * from "./User/user.post.controller";
 

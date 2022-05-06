@@ -17,11 +17,13 @@ export * from "./Notice/notice.find.service";
 // Research
 export * from "./Research/research.create.service";
 export * from "./Research/research.find.service";
+export * from "./Research/research.update.service";
 
 // User
 export * from "./User/user.create.service";
 export * from "./User/user.delete.service";
 export * from "./User/user.find.service";
+export * from "./User/user.update.service";
 
 // Vote
 export * from "./Vote/vote.find.service";
