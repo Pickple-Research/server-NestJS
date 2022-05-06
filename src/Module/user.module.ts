@@ -1,9 +1,13 @@
 import { Module } from "@nestjs/common";
-import { UserGetController, UserPostController } from "../Controller";
+import {
+  UserGetController,
+  UserPostController,
+  UserDeleteController,
+} from "../Controller";
 import {
   UserCreateService,
-  UserDeleteService,
   UserFindService,
+  UserDeleteService,
 } from "../Service";
 import { MongoUserModule } from "../Mongo";
 
@@ -12,7 +16,7 @@ import { MongoUserModule } from "../Mongo";
  * @author 현웅
  */
 @Module({
-  controllers: [UserGetController, UserPostController],
+  controllers: [UserGetController, UserPostController, UserDeleteController],
   providers: [UserCreateService, UserFindService, UserDeleteService],
   imports: [MongoUserModule],
 })

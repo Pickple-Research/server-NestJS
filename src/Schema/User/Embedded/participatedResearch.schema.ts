@@ -8,7 +8,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 @Schema({ _id: false })
 export class ParticipatedResearchInfo {
   @Prop() // 참여한 리서치의 _id
-  _id: string;
+  researchId: string;
 
   @Prop() // 참여한 리서치 제목
   title: string;

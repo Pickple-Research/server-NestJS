@@ -1,16 +1,11 @@
-import {
-  ExceptionFilter,
-  Catch,
-  ArgumentsHost,
-  HttpException,
-  HttpStatus,
-} from "@nestjs/common";
+import { ExceptionFilter, Catch, ArgumentsHost } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
 import { MongoError } from "mongodb";
 
 /**
- * MongoError가 발생했을 때의 처리 방식을 지정합니다.
- * @deprecated all.exception.filter.ts에서 모두 관리합니다.
+ * @deprecated all.exception.filter.ts에서 모든 에러를 관리합니다.
+ *
+ * @description MongoError가 발생했을 때의 처리 방식을 지정합니다.
  * @author 현웅
  */
 @Catch(MongoError)

@@ -7,8 +7,8 @@ import { Document } from "mongoose";
  */
 @Schema()
 export class VoteParticipation {
-  @Prop({ type: [String], default: [] }) // 참여한 유저 특성 정보 id
-  participatedUserPropertyIds: string[];
+  @Prop({ type: [String], default: [] }) // 참여한 유저 _id
+  participantIds: string[];
 }
 
 export const VoteParticipationSchema =

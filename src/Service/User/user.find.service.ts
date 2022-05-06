@@ -1,5 +1,5 @@
 import { Injectable, Inject } from "@nestjs/common";
-import { MongoUserFindService } from "../../Mongo";
+import { MongoUserFindService } from "src/Mongo";
 
 @Injectable()
 export class UserFindService {

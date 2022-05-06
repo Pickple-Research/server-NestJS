@@ -1,15 +1,37 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { User, UserDocument } from "../../Schema";
-import { AccountType, UserType } from "../../Object/Enum";
-import { UserNotFoundException } from "../../Exception";
+import {
+  User,
+  UserDocument,
+  UserActivity,
+  UserActivityDocument,
+} from "src/Schema";
+import { AccountType, UserType } from "src/Object/Enum";
 
 @Injectable()
 export class MongoUserFindService {
   constructor(
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
+    @InjectModel(UserActivity.name)
+    private readonly UserActivity: Model<UserActivityDocument>,
   ) {}
+
+  /**
+   * 인자로 받은 _id를 사용하는 유저를 찾고 반환합니다.
+   * 존재하지 않는다면 null을 반환합니다.
+   * @author 현웅
+   */
+  async getUserById(_id: string) {
+    const user = await this.User.findOne({
+      _id,
+    })
+      // .select({})
+      .lean();
+
+    if (user) return user;
+    return null;
+  }
 
   /**
    * 인자로 받은 이메일을 사용하는 유저를 찾고 반환합니다.
@@ -24,13 +46,81 @@ export class MongoUserFindService {
     })
       // .select({})
       .lean();
+
     if (user) return user;
     return null;
   }
 
   /**
-   * 소셜로그인 유저를 찾고 반환합니다.
+   * 유저가 리서치를 조회한 적이 있는지 확인합니다.
+   * 유저 정보가 없거나, 리서치를 조회한 적이 있는 경우 true를
+   * 리서치를 조회하지 않은 경우 false를 반환합니다.
    * @author 현웅
    */
-  async getUserById(id: string) {}
+  async didUserViewedResearch(userId: string, researchId: string) {
+    const userActivity = await this.UserActivity.findOne({
+      _id: userId,
+    })
+      .select({ viewedResearchIds: 1 })
+      .lean();
+
+    //* 조회한 리서치 _id 목록에 researchId가 포함되어 있는 경우
+    if (!userActivity || userActivity.viewedResearchIds.includes(researchId)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * 유저가 리서치를 스크랩 했는지 확인합니다.
+   * 유저 정보가 없거나, 리서치를 스크랩한 경우 true를
+   * 리서치를 스크랩하지 않은 경우 false를 반환합니다.
+   * @author 현웅
+   */
+  async didUserScrappedResearch(userId: string, researchId: string) {
+    const userActivity = await this.UserActivity.findOne({
+      _id: userId,
+    })
+      .select({ scrappedResearchInfos: 1 })
+      .lean();
+
+    //* 스크랩한 리서치 목록에 researchId가 포함되어 있는 경우
+    if (
+      !userActivity ||
+      userActivity.scrappedResearchInfos.some(
+        (researchInfo) => researchInfo.researchId === researchId,
+      )
+    ) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * 유저가 리서치에 참여한 적이 있는지 확인합니다.
+   * 유저 정보가 없거나, 리서치에 참여한 적이 있는 경우 true를
+   * 리서치를 참여하지 않은 경우 false를 반환합니다.
+   * @author 현웅
+   */
+  async didUserParticipatedResearch(userId: string, researchId: string) {
+    const userActivity = await this.UserActivity.findOne({
+      _id: userId,
+    })
+      .select({ participatedResearchInfos: 1 })
+      .lean();
+
+    //* 참여한 리서치 목록에 researchId가 포함되어 있는 경우
+    if (
+      !userActivity ||
+      userActivity.participatedResearchInfos.some(
+        (researchInfo) => researchInfo.researchId === researchId,
+      )
+    ) {
+      return true;
+    }
+
+    return false;
+  }
 }

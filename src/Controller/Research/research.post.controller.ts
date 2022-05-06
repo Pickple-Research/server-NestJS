@@ -6,9 +6,9 @@ import {
   Post,
 } from "@nestjs/common";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
-import { ResearchCreateService } from "../../Service";
-import { ResearchCreateBodyDto } from "../../Dto";
-import { getMulterOptions } from "../../Util";
+import { ResearchCreateService } from "src/Service";
+import { ResearchCreateBodyDto } from "src/Dto";
+import { getMulterOptions } from "src/Util";
 
 @Controller("researches")
 export class ResearchPostController {

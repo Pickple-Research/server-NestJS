@@ -23,18 +23,21 @@ export class Research {
   @Prop({ required: true }) // 설문지 폼 url
   formUrl: string;
 
-  @Prop({ required: true, enum: ResearchEstimatedTime }) // 예상 소요시간
+  // @Prop({ required: true, enum: ResearchEstimatedTime }) // 예상 소요시간
+  @Prop({ enum: ResearchEstimatedTime }) // 예상 소요시간
   estimatedTime: ResearchEstimatedTime;
 
   //TODO: enum화
-  @Prop({ required: true }) // 리서치 진행자 타입 (일반 유저 or 파트너)
+  // @Prop({ required: true }) // 리서치 진행자 타입 (일반 유저 or 파트너)
+  @Prop() // 리서치 진행자 타입 (일반 유저 or 파트너)
   researcherType: string;
 
   @Prop({ required: true }) // 리서치 진행자 Id
   researcherId: string;
 
   //TODO: enum화
-  @Prop({ required: true }) // 최소 참여조건
+  // @Prop({ required: true }) // 최소 참여조건
+  @Prop() // 최소 참여조건
   eligibility: string;
 
   @Prop({ type: [String], enum: Category }) // 리서치 카테고리

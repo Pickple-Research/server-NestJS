@@ -8,7 +8,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 @Schema({ _id: false })
 export class ParticipatedVoteInfo {
   @Prop() // 참여한 투표의 _id
-  _id: string;
+  voteId: string;
 
   @Prop() // 참여한 투표 제목
   title: string;

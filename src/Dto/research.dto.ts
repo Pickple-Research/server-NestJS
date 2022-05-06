@@ -10,6 +10,18 @@ export class ResearchCreateBodyDto {
 
   @IsString()
   content: string;
+
+  @IsString()
+  deadline: string;
+
+  @IsString()
+  target: string;
+
+  @IsString()
+  formUrl: string;
+
+  @IsString()
+  researcherId: string;
 }
 
 /**

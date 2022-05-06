@@ -9,7 +9,14 @@ import {
   tryTransaction,
   getS3UploadingObject,
 } from "../../Util";
-import { Research, ResearchDocument } from "../../Schema";
+import {
+  Research,
+  ResearchDocument,
+  ResearchComment,
+  ResearchCommentDocument,
+  ResearchParticipation,
+  ResearchParticipationDocument,
+} from "../../Schema";
 import { MONGODB_RESEARCH_CONNECTION, BUCKET_NAME } from "../../Constant";
 
 @Injectable()
@@ -17,7 +24,13 @@ export class MongoResearchCreateService {
   constructor(
     @InjectModel(Research.name)
     private readonly Research: Model<ResearchDocument>,
+    @InjectModel(ResearchComment.name)
+    private readonly ResearchComment: Model<ResearchCommentDocument>,
+    @InjectModel(ResearchParticipation.name)
+    private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
+
     private readonly awsS3Service: AwsS3Service,
+
     @InjectConnection(MONGODB_RESEARCH_CONNECTION)
     private readonly connection: Connection,
   ) {}
@@ -34,7 +47,7 @@ export class MongoResearchCreateService {
     //* Transaction을 이용해 진행합니다.
     return await tryTransaction(session, async () => {
       //* 먼저 리서치를 만들어둡니다. 이 행위는 session에 종속됩니다.
-      await this.Research.create(
+      const newResearch = await this.Research.create(
         [
           {
             ...researchCreateDto,
@@ -69,6 +82,13 @@ export class MongoResearchCreateService {
           }),
         );
       }
+
+      //TODO: #QUERY-EFFICIENCY #CREATE/DELETE-MANY (해당 해쉬태그로 모두 찾아서 바꿀 것)
+      const newResearchId = newResearch[0]._id;
+      await this.ResearchComment.create([{ _id: newResearchId }], { session });
+      await this.ResearchParticipation.create([{ _id: newResearchId }], {
+        session,
+      });
 
       return;
     });

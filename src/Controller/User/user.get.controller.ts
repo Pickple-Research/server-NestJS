@@ -1,6 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
-import { UserFindService } from "../../Service";
-import { Public } from "../../Security/Metadata";
+import { UserFindService } from "src/Service";
+import { Public } from "src/Security/Metadata";
 
 @Controller("users")
 export class UserGetController {
