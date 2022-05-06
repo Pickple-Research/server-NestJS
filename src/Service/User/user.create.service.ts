@@ -1,7 +1,9 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { MongoUserFindService, MongoUserCreateService } from "src/Mongo";
-import { UserSignupDto } from "src/Dto";
-import { EmailDuplicateException } from "src/Exception";
+import {
+  EmailDuplicateException,
+  WrongAuthorizationCodeException,
+} from "src/Exception";
 import { UnauthorizedUser } from "src/Schema";
 
 /**
@@ -35,11 +37,18 @@ export class UserCreateService {
 
   /**
    * @Post
-   * 미인증 유저를 정규유저로 전환합니다.
+   * 이메일 미인증 유저를 정규유저로 전환합니다.
    * @author 현웅
    */
-  async createEmailUser() {
-    //TODO: 추후 이 곳에서 userSignupDto의 내용에 UserType을 추가해줘야 합니다.
-    return await this.mongoUserCreateService.createEmailUser();
+  async createEmailUser(email: string, code: string) {
+    //* 입력한 인증 번호가 다르거나
+    //* 해당 이메일을 사용하는 유저가 존재하지 않으면 에러를 일으킵니다.
+    if (
+      !(await this.mongoUserFindService.checkUnauthorizedUserCode(email, code))
+    ) {
+      throw new WrongAuthorizationCodeException();
+    }
+
+    return await this.mongoUserCreateService.createEmailUser(email);
   }
 }

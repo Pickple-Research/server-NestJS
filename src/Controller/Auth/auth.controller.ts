@@ -1,6 +1,5 @@
 import { Controller, Body, Get, Post } from "@nestjs/common";
 import { AuthService } from "../../Service";
-import { UserSignupDto } from "../../Dto";
 import { Public } from "../../Security/Metadata";
 
 @Controller("auth")
@@ -18,13 +17,13 @@ export class AuthController {
   }
 
   /**
-   * userSignupDto 형태의 인자를 받아 로그인합니다.
+   * 인자를 받아 로그인합니다.
    * @author 현웅
    */
   @Public()
   @Post("login")
-  async login(@Body() userSignupDto: UserSignupDto) {
-    return this.authService.login(userSignupDto);
+  async login() {
+    return this.authService.login();
   }
 
   /**
@@ -33,7 +32,7 @@ export class AuthController {
    */
   @Public()
   @Post("signup")
-  async signup(@Body() userSignupDto: UserSignupDto) {
-    return this.authService.signup(userSignupDto);
+  async signup() {
+    return this.authService.signup();
   }
 }

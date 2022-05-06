@@ -1,5 +1,5 @@
 import { Controller, Body, Post } from "@nestjs/common";
-import { EmailUserSignupDto } from "src/Dto";
+import { EmailUserSignupDto, EmailUserAuthorizationBodyDto } from "src/Dto";
 import { UserCreateService } from "src/Service";
 import { getCurrentISOTime } from "src/Util";
 
@@ -29,12 +29,11 @@ export class UserPostController {
   }
 
   /**
-   * 이메일을 사용해 회원가입하는 유저를 생성합니다.
-   * (미인증 유저를 정규유저로 전환)
+   * 이메일 미인증 유저를 정규유저로 전환합니다.
    * @author 현웅
    */
-  @Post("")
-  async createEmailUser() {
-    return await this.userCreateService.createEmailUser();
+  @Post("/email")
+  async createEmailUser(@Body() body: EmailUserAuthorizationBodyDto) {
+    return await this.userCreateService.createEmailUser(body.email, body.code);
   }
 }

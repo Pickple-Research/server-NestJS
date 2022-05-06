@@ -1,4 +1,8 @@
-import { Status400Exception, Status403Exception } from "./Status";
+import {
+  Status400Exception,
+  Status401Exception,
+  Status403Exception,
+} from "./Status";
 
 export class UserEmailDuplicatedException {}
 
@@ -24,6 +28,32 @@ export class EmailDuplicateException extends Status400Exception {
   constructor(newMessage?: string) {
     super({
       customMessage: newMessage ? newMessage : `이미 사용 중인 이메일입니다`,
+    });
+  }
+}
+
+/**
+ * 이메일 미인증 유저의 인증번호가 일치하지 않는 경우 사용합니다.
+ * 기본 messgae: `인증번호가 일치하지 않습니다`
+ * @author 현웅
+ */
+export class WrongAuthorizationCodeException extends Status401Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage ? newMessage : `인증번호가 일치하지 않습니다`,
+    });
+  }
+}
+
+/**
+ * 비밀번호가 일치하지 않는 경우 사용합니다.
+ * 기본 messgae: `비밀번호가 일치하지 않습니다`
+ * @author 현웅
+ */
+export class WrongPasswordException extends Status401Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage ? newMessage : `비밀번호가 일치하지 않습니다`,
     });
   }
 }

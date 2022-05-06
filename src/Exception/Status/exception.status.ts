@@ -14,6 +14,12 @@ export class Status400Exception extends HttpException {
   }
 }
 
+export class Status401Exception extends HttpException {
+  constructor(customMessage: CustomExceptionResonse) {
+    super(customMessage, HttpStatus.BAD_REQUEST);
+  }
+}
+
 export class Status403Exception extends HttpException {
   constructor(customMessage: CustomExceptionResonse) {
     super(customMessage, HttpStatus.FORBIDDEN);

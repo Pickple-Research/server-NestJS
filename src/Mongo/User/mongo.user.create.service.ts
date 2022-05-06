@@ -15,7 +15,6 @@ import {
   UserProperty,
   UserPropertyDocument,
 } from "src/Schema";
-import { UserSignupDto } from "src/Dto";
 import { AccountType, UserType } from "src/Object/Enum";
 import { tryTransaction, getCurrentISOTime } from "src/Util";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
@@ -56,21 +55,34 @@ export class MongoUserCreateService {
 
   /**
    * @Transaction
-   * 새로운 유저를 생성합니다. UserProperty, UserActivity, UserPrivacy Document도 함께 만듭니다.
+   * 새로운 유저를 생성합니다. UserProperty, UserActivity, UserPrivacy Document도 함께 만들고,
+   * 해당 email을 사용하는 미인증 유저 데이터를 삭제합니다.
    * @author 현웅
    */
-  async createEmailUser() {
+  async createEmailUser(email: string) {
     const session = await this.connection.startSession();
 
     return await tryTransaction(session, async () => {
-      //* 새로운 User 데이터 생성
+      //* 회원가입을 시도하던 기존의 미인증 유저 데이터를 가져오고 삭제
+      const userData = await this.UnauthorizedUser.findOneAndDelete(
+        {
+          email,
+        },
+        { session },
+      ).lean();
+
+      //* 해당 유저가 존재하지 않는 경우
+      //TODO: 에러 발생시켜야 합니다 (논리 구조상 없을 것이지만)
+      if (!userData) return;
+
+      //* 기존 데이터를 사용하여 새로운 User 데이터 생성
       const newUser = await this.User.create(
         [
           {
             userType: UserType.USER,
-            email: "aa@aa.aa",
-            nickname: "에이에이",
             accountType: AccountType.EMAIL,
+            email: userData.email,
+            password: userData.password,
             createdAt: getCurrentISOTime(),
           },
         ],

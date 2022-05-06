@@ -35,6 +35,18 @@ export class MongoUserFindService {
   }
 
   /**
+   * 인자로 받은 이메일을 사용하는 미인증 유저의 인증번호와
+   * 인자로 받은 인증번호가 일치하는지 확인합니다.
+   * @author 현웅
+   */
+  async checkUnauthorizedUserCode(email: string, code: string) {
+    const unauthorizedUser = await this.UnauthorizedUser.findOne({ email })
+      .select({ authorizationCode: 1 })
+      .lean();
+    return unauthorizedUser.authorizationCode === code;
+  }
+
+  /**
    * 인자로 받은 _id를 사용하는 유저를 찾고 반환합니다.
    * 존재하지 않는다면 null을 반환합니다.
    * @author 현웅
@@ -43,7 +55,7 @@ export class MongoUserFindService {
     const user = await this.User.findOne({
       _id,
     })
-      // .select({})
+      .select({ _id: 1 })
       .lean();
 
     if (user) return user;
@@ -61,7 +73,7 @@ export class MongoUserFindService {
     const user = await this.User.findOne({
       email,
     })
-      // .select({})
+      .select({ _id: 1 })
       .lean();
 
     if (user) return user;
