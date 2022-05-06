@@ -14,11 +14,11 @@ import {
   UserPrivacyDocument,
   UserProperty,
   UserPropertyDocument,
-} from "../../Schema";
+} from "src/Schema";
 import { UserSignupDto } from "src/Dto";
-import { AccountType, UserType } from "../../Object/Enum";
-import { tryTransaction, getCurrentISOTime } from "../../Util";
-import { MONGODB_USER_CONNECTION } from "../../Constant";
+import { AccountType, UserType } from "src/Object/Enum";
+import { tryTransaction, getCurrentISOTime } from "src/Util";
+import { MONGODB_USER_CONNECTION } from "src/Constant";
 
 /**
  * 유저 데이터를 생성하는 mongo 서비스 모음입니다.
@@ -46,12 +46,12 @@ export class MongoUserCreateService {
   ) {}
 
   /**
-   * 이메일을 이용하여 회원가입하는 경우
-   * 인증되기 전까지는 Unauthorized User 데이터를 만들어 관리합니다.
+   * 이메일을 이용하여 회원가입을 시도하는 미인증 유저를 생성합니다.
    * @author 현웅
    */
-  async createUnauthorizedUser() {
-    return "mongo.user.create.service# createUnauthorizedUser()";
+  async createUnauthorizedUser(userInfo: UnauthorizedUser) {
+    await this.UnauthorizedUser.create([userInfo]);
+    return;
   }
 
   /**

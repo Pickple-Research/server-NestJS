@@ -2,6 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import {
+  UnauthorizedUser,
+  UnauthorizedUserDocument,
   User,
   UserDocument,
   UserActivity,
@@ -12,10 +14,25 @@ import { AccountType, UserType } from "src/Object/Enum";
 @Injectable()
 export class MongoUserFindService {
   constructor(
+    @InjectModel(UnauthorizedUser.name)
+    private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
     @InjectModel(UserActivity.name)
     private readonly UserActivity: Model<UserActivityDocument>,
   ) {}
+
+  /**
+   * 인자로 받은 이메일을 사용하여 회원가입을 시도 중인 유저가 있는지 확인합니다.
+   * @author 현웅
+   */
+  async getUnauthorizedUser(email: string) {
+    const user = await this.UnauthorizedUser.findOne({ email })
+      .select({ email: 1 })
+      .lean();
+
+    if (user) return true;
+    return false;
+  }
 
   /**
    * 인자로 받은 _id를 사용하는 유저를 찾고 반환합니다.

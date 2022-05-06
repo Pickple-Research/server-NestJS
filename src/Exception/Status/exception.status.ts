@@ -5,29 +5,29 @@ import { HttpStatus, HttpException } from "@nestjs/common";
  * @author 현웅
  */
 export type CustomExceptionResonse = {
-  message: string;
+  customMessage: string;
 };
 
 export class Status400Exception extends HttpException {
-  constructor(customExceptionResponse: CustomExceptionResonse) {
-    super(customExceptionResponse, HttpStatus.BAD_REQUEST);
+  constructor(customMessage: CustomExceptionResonse) {
+    super(customMessage, HttpStatus.BAD_REQUEST);
   }
 }
 
 export class Status403Exception extends HttpException {
-  constructor(customExceptionResponse: CustomExceptionResonse) {
-    super(customExceptionResponse, HttpStatus.FORBIDDEN);
+  constructor(customMessage: CustomExceptionResonse) {
+    super(customMessage, HttpStatus.FORBIDDEN);
   }
 }
 
 export class Status404Exception extends HttpException {
-  constructor(customExceptionResponse: CustomExceptionResonse) {
-    super(customExceptionResponse, HttpStatus.NOT_FOUND);
+  constructor(customMessage: CustomExceptionResonse) {
+    super(customMessage, HttpStatus.NOT_FOUND);
   }
 }
 
 export class Status500Exception extends HttpException {
-  constructor(customExceptionResponse: CustomExceptionResonse) {
-    super(customExceptionResponse, HttpStatus.INTERNAL_SERVER_ERROR);
+  constructor(customMessage: CustomExceptionResonse) {
+    super(customMessage, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 }
