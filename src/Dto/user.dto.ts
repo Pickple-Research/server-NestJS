@@ -2,29 +2,25 @@ import { IsEnum, IsString } from "class-validator";
 import { UserType, AccountType } from "../Object/Enum";
 
 /**
- * 회원가입 요청시 Body에 포함되어야 하는 정보들입니다.
+ * 이메일을 사용한 회원가입 요청시 Body에 포함되어야 하는 정보들입니다.
  * @author 현웅
  */
-export class UserSignupBodyDto {
+export class EmailUserSignupDto {
   @IsString()
-  email?: string;
+  email: string;
 
   @IsString()
-  password?: string;
-
-  @IsString()
-  nickname?: string;
+  password: string;
 }
 
 /**
- * 실제 회원가입시 필요한 정보들입니다.
- * UserSignupBodyDto에 더하여 유저 타입과 계정 타입을 명시합니다.
+ * 이메일 미인증 유저 인증 요청시 Body에 포함되어야 하는 정보들입니다.
  * @author 현웅
  */
-export class UserSignupDto extends UserSignupBodyDto {
-  @IsEnum(UserType)
-  userType: UserType;
+export class EmailUserAuthorizationBodyDto {
+  @IsString()
+  email: string;
 
-  @IsEnum(AccountType)
-  accountType: AccountType;
+  @IsString()
+  code: string;
 }

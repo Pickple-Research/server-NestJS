@@ -1,8 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { MongoUserFindService } from "../../Mongo";
-import { UserSignupDto } from "../../Dto";
-import { UserNotFoundException } from "../../Exception";
+import { MongoUserFindService } from "src/Mongo";
+import { UserNotFoundException } from "src/Exception";
 
 @Injectable()
 export class AuthService {
@@ -33,13 +32,16 @@ export class AuthService {
    * 3. jwt 토큰은 header에 담고, 유저 정보는 body에 담아 반환합니다.
    * @author 현웅
    */
-  async login(userSignupDto: UserSignupDto) {
+  async login() {
     return {
-      token: this.jwtService.sign(userSignupDto, {
-        secret: process.env.JWT_SECRET,
-        //TODO: Jwt 만료시간 설정하고 만료된 경우 Access Token으로 갱신 요청 (jwtAuth.strategy.ts 참조)
-        // expiresIn: "14d",
-      }),
+      token: this.jwtService.sign(
+        { _id: "blahblah", USER_TYPE: "USER" },
+        {
+          secret: process.env.JWT_SECRET,
+          //TODO: Jwt 만료시간 설정하고 만료된 경우 Access Token으로 갱신 요청 (jwtAuth.strategy.ts 참조)
+          // expiresIn: "14d",
+        },
+      ),
     };
   }
 
@@ -52,7 +54,8 @@ export class AuthService {
    * userSignupDto 형태의 인자를 받아 회원가입합니다.
    * @author 현웅
    */
-  async signup(userSignupDto: UserSignupDto) {
+  // async signup(userSignupDto: UserSignupDto) {
+  async signup() {
     return "auth.service: signup()";
   }
 }

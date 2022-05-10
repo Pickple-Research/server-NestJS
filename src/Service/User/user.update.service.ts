@@ -13,13 +13,8 @@ export class UserUpdateService {
    * 조회한 리서치 _id를 UserActivity에 추가합니다.
    * @author 현웅
    */
-  async viewResearch(
-    session: ClientSession,
-    userId: string,
-    researchId: string,
-  ) {
+  async viewResearch(userId: string, researchId: string) {
     return await this.mongoUserUpdateService.updateViewedResearch(
-      session,
       userId,
       researchId,
     );
@@ -29,13 +24,8 @@ export class UserUpdateService {
    * 리서치를 새로 스크랩합니다.
    * @author 현웅
    */
-  async scrapResearch(
-    session: ClientSession,
-    userId: string,
-    researchInfo: ScrappedResearchInfo,
-  ) {
+  async scrapResearch(userId: string, researchInfo: ScrappedResearchInfo) {
     return await this.mongoUserUpdateService.scrapResearch(
-      session,
       userId,
       researchInfo,
     );
@@ -45,13 +35,8 @@ export class UserUpdateService {
    * 스크랩한 리서치를 제거합니다.
    * @author 현웅
    */
-  async unscrapResearch(
-    session: ClientSession,
-    userId: string,
-    researchInfo: ScrappedResearchInfo,
-  ) {
+  async unscrapResearch(userId: string, researchInfo: ScrappedResearchInfo) {
     return await this.mongoUserUpdateService.unscrapResearch(
-      session,
       userId,
       researchInfo,
     );

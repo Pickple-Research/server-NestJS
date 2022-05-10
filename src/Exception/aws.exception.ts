@@ -6,6 +6,6 @@ import { Status400Exception } from "./Status";
  */
 export class UnsupportedFileTypeException extends Status400Exception {
   constructor() {
-    super({ message: "지원하지 않는 파일 형식입니다" });
+    super({ customMessage: "지원하지 않는 파일 형식입니다" });
   }
 }
