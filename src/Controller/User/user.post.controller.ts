@@ -16,7 +16,7 @@ export class UserPostController {
    * TODO: 생성되고 1주일 뒤 삭제되도록 동적 cronjob을 정의해야 합니다.
    * @author 현웅
    */
-  @Post("/unauthorized")
+  @Post("unauthorized")
   async createUnauthorizedUser(@Body() emailUserSignupDto: EmailUserSignupDto) {
     return await this.userCreateService.createUnauthorizedUser({
       ...emailUserSignupDto,
@@ -32,7 +32,7 @@ export class UserPostController {
    * 이메일 미인증 유저를 정규유저로 전환합니다.
    * @author 현웅
    */
-  @Post("/email")
+  @Post("email")
   async createEmailUser(@Body() body: EmailUserAuthorizationBodyDto) {
     return await this.userCreateService.createEmailUser(body.email, body.code);
   }

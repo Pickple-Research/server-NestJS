@@ -10,7 +10,7 @@ import { Strategy as PassportJwtStrategy, ExtractJwt } from "passport-jwt";
 @Injectable()
 export class JwtAuthStrategy extends PassportStrategy(
   PassportJwtStrategy,
-  "jwt auth",
+  "jwt auth", // 이곳에서 정의한 Strategy를 Guard에 사용할 때 사용할 이름을 'jwt auth'로 설정합니다
 ) {
   constructor() {
     super({
@@ -22,7 +22,10 @@ export class JwtAuthStrategy extends PassportStrategy(
   }
 
   async validate() {
-    console.log("validate function called in JWT Strategy");
-    return true;
+    const user = {
+      email: "data from JwtAuthStrategy",
+      password: "(encrypted)",
+    };
+    return user;
   }
 }

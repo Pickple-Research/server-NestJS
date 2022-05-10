@@ -22,16 +22,11 @@ export class MongoUserUpdateService {
    * 조회한 리서치 _id를 UserActivity에 추가합니다.
    * @author 현웅
    */
-  async updateViewedResearch(
-    session: ClientSession,
-    userId: string,
-    researchId: string,
-  ) {
+  async updateViewedResearch(userId: string, researchId: string) {
     await this.UserActivity.findOneAndUpdate(
       { _id: userId },
       //? $addToSet: 추가하려는 원소가 이미 존재하면 push하지 않습니다.
       { $addToSet: { viewedResearchIds: researchId } },
-      { session },
     );
     return;
   }
@@ -40,16 +35,10 @@ export class MongoUserUpdateService {
    * 리서치를 새로 스크랩합니다.
    * @author 현웅
    */
-  async scrapResearch(
-    session: ClientSession,
-    userId: string,
-    researchInfo: ScrappedResearchInfo,
-  ) {
-    await this.UserActivity.findByIdAndUpdate(
-      userId,
-      { $push: { scrappedResearchInfos: researchInfo } },
-      { session },
-    );
+  async scrapResearch(userId: string, researchInfo: ScrappedResearchInfo) {
+    await this.UserActivity.findByIdAndUpdate(userId, {
+      $push: { scrappedResearchInfos: researchInfo },
+    });
     return;
   }
 
@@ -57,16 +46,10 @@ export class MongoUserUpdateService {
    * 스크랩한 리서치를 제거합니다.
    * @author 현웅
    */
-  async unscrapResearch(
-    session: ClientSession,
-    userId: string,
-    researchInfo: ScrappedResearchInfo,
-  ) {
-    await this.UserActivity.findByIdAndUpdate(
-      userId,
-      { $pull: { scrappedResearchInfos: researchInfo } },
-      { session },
-    );
+  async unscrapResearch(userId: string, researchInfo: ScrappedResearchInfo) {
+    await this.UserActivity.findByIdAndUpdate(userId, {
+      $pull: { scrappedResearchInfos: researchInfo },
+    });
     return;
   }
 

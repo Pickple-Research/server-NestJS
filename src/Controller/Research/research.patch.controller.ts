@@ -6,6 +6,7 @@ import { MongoUserFindService } from "src/Mongo";
 import { ScrappedResearchInfo } from "src/Schema";
 import { getCurrentISOTime, tryTransaction } from "src/Util";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
+import { AlreadyParticipatedResearchException } from "src/Exception";
 
 /**
  * 리서치 데이터에 대한 Patch 메소드 요청을 관리합니다.
@@ -27,37 +28,22 @@ export class ResearchPatchController {
    * 리서치 조회 시 호출.
    * @author 현웅
    */
-  //TODO: #QUERY-EFFICIENCY
   @Patch("view")
   async updateResearchView(
     @Body() body: { userId: string; researchId: string },
   ) {
-    // 유저측에서 리서치를 조회한 이력이 있는 경우, 아무런 작업도 하지 않습니다.
-    if (
-      await this.mongoUserFindService.didUserViewedResearch(
-        body.userId,
-        body.researchId,
-      )
-    ) {
-      return;
-    }
+    const updateUser = await this.userUpdateService.viewResearch(
+      body.userId,
+      body.researchId,
+    );
 
-    const userSession = await this.userConnection.startSession();
+    const updateResearch = await this.researchUpdateService.updateView(
+      { userId: body.userId, viewedAt: getCurrentISOTime() },
+      body.researchId,
+    );
 
-    return await tryTransaction(userSession, async () => {
-      await this.userUpdateService.viewResearch(
-        userSession,
-        body.userId,
-        body.researchId,
-      );
-
-      await this.researchUpdateService.updateView(
-        { userId: body.userId, viewedAt: getCurrentISOTime() },
-        body.researchId,
-      );
-
-      return;
-    });
+    await Promise.all([updateUser, updateResearch]);
+    return;
   }
 
   /**
@@ -69,23 +55,23 @@ export class ResearchPatchController {
     @Body() body: { userId: string; researchId: string; researchTitle: string },
   ) {
     const currentISOTime = getCurrentISOTime();
-    const userSession = await this.userConnection.startSession();
 
-    return await tryTransaction(userSession, async () => {
-      await this.userUpdateService.scrapResearch(userSession, body.userId, {
-        researchId: body.researchId,
-        title: body.researchTitle,
-        scrappedAt: currentISOTime,
-      });
-
-      await this.researchUpdateService.updateScrap(
-        {
-          userId: body.userId,
-          scrappedAt: currentISOTime,
-        },
-        body.researchId,
-      );
+    const updateUser = await this.userUpdateService.scrapResearch(body.userId, {
+      researchId: body.researchId,
+      title: body.researchTitle,
+      scrappedAt: currentISOTime,
     });
+
+    const updateResearch = await this.researchUpdateService.updateScrap(
+      {
+        userId: body.userId,
+        scrappedAt: currentISOTime,
+      },
+      body.researchId,
+    );
+
+    await Promise.all([updateUser, updateResearch]);
+    return;
   }
 
   /**
@@ -100,26 +86,22 @@ export class ResearchPatchController {
       researchInfo: ScrappedResearchInfo;
     },
   ) {
-    const userSession = await this.userConnection.startSession();
+    const updateUser = await this.userUpdateService.unscrapResearch(
+      body.userId,
+      body.researchInfo,
+    );
 
-    return await tryTransaction(userSession, async () => {
-      await this.userUpdateService.unscrapResearch(
-        userSession,
-        body.userId,
-        body.researchInfo,
-      );
-
-      await this.researchUpdateService.updateUnscrap(
-        body.userId,
-        body.researchInfo.researchId,
-      );
-
-      return;
-    });
+    const updateResearch = await this.researchUpdateService.updateUnscrap(
+      body.userId,
+      body.researchInfo.researchId,
+    );
+    await Promise.all([updateUser, updateResearch]);
+    return;
   }
 
   /**
    * 리서치 참여시 호출.
+   * 조회, 스크랩과 다르게 데이터 정합성이 필요하므로 Transaction을 활용해야합니다.
    * @author 현웅
    */
   @Patch("participate")
@@ -132,15 +114,14 @@ export class ResearchPatchController {
       researchTitle: string;
     },
   ) {
-    // 유저측에서 리서치에 참여한 이력이 있는 경우,
-    //TODO: 에러를 발생시킵니다.
+    //* 유저측에서 리서치에 참여한 이력이 있는 경우, 에러를 발생시킵니다.
     if (
       await this.mongoUserFindService.didUserParticipatedResearch(
         body.userId,
         body.researchId,
       )
     ) {
-      return;
+      throw new AlreadyParticipatedResearchException();
     }
 
     const currentISOTime = getCurrentISOTime();

@@ -21,7 +21,7 @@ export class UserNotFoundException extends Status403Exception {
 
 /**
  * 중복된 이메일로 회원가입을 시도하는 경우 사용합니다.
- * 기본 messgae: '이미 사용 중인 이메일입니다'
+ * 기본 message: '이미 사용 중인 이메일입니다'
  * @author 현웅
  */
 export class EmailDuplicateException extends Status400Exception {
@@ -34,7 +34,7 @@ export class EmailDuplicateException extends Status400Exception {
 
 /**
  * 이메일 미인증 유저의 인증번호가 일치하지 않는 경우 사용합니다.
- * 기본 messgae: `인증번호가 일치하지 않습니다`
+ * 기본 message: `인증번호가 일치하지 않습니다`
  * @author 현웅
  */
 export class WrongAuthorizationCodeException extends Status401Exception {
@@ -47,7 +47,7 @@ export class WrongAuthorizationCodeException extends Status401Exception {
 
 /**
  * 비밀번호가 일치하지 않는 경우 사용합니다.
- * 기본 messgae: `비밀번호가 일치하지 않습니다`
+ * 기본 message: `비밀번호가 일치하지 않습니다`
  * @author 현웅
  */
 export class WrongPasswordException extends Status401Exception {
