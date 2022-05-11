@@ -2,6 +2,11 @@ export * from "./Feedback/feedback.schema";
 
 export * from "./Notice/notice.schema";
 
+// 파트너 관련 정보 스키마
+export * from "./Partner/partner.schema";
+export * from "./Partner/partnerPost.schema";
+export * from "./Partner/partnerProduct.schema";
+
 // 리서치 관련 정보 스키마
 export * from "./Research/research.schema";
 export * from "./Research/researchComment.schema";

@@ -6,6 +6,7 @@ import { ClientSession } from "mongoose";
  * @param func 정합성이 보장되어야 하는 기능들을 정의한 함수
  * @example
  * //* 함수 적용법
+ * //* 참조: https://wanago.io/2021/09/06/api-nestjs-transactions-mongodb-mongoose/
  * async deleteUser(){
  *  const session = await this.connection.startSession();
  *
@@ -19,7 +20,7 @@ import { ClientSession } from "mongoose";
  * }
  * @example
  * //* 원하는 곳에 session 넣는 법
- * //* 링크 참조: https://mongoosejs.com/docs/transactions.html
+ * //* 참조: https://mongoosejs.com/docs/transactions.html
  * const someUser = await this.User.findOne({...options}).session(session)
  * await someUser.save()
  *

@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Schema as MongooseSchema } from "mongoose";
 import {
   ParticipatedResearchInfo,
   ParticipatedResearchInfoSchema,
@@ -30,6 +30,18 @@ export class UserActivity {
 
   @Prop({ type: [ParticipatedVoteInfoSchema], default: [] }) // 참여한 투표들 정보
   participatedVoteInfos: ParticipatedVoteInfo[];
+
+  @Prop({
+    type: [{ type: MongooseSchema.Types.ObjectId, ref: "Research" }],
+    default: [],
+  }) // 작성한 리서치들 _id
+  createdResearchIds: MongooseSchema.Types.ObjectId[];
+
+  @Prop({
+    type: [{ type: MongooseSchema.Types.ObjectId, ref: "Vote" }],
+    default: [],
+  }) // 작성한 투표들 _id
+  createdVoteIds: MongooseSchema.Types.ObjectId[];
 }
 
 export const UserActivitySchema = SchemaFactory.createForClass(UserActivity);

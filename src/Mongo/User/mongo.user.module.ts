@@ -1,9 +1,11 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { MongoUserCreateService } from "./mongo.user.create.service";
-import { MongoUserDeleteService } from "./mongo.user.delete.service";
-import { MongoUserFindService } from "./mongo.user.find.service";
-import { MongoUserUpdateService } from "./mongo.user.update.service";
+import {
+  MongoUserCreateService,
+  MongoUserDeleteService,
+  MongoUserFindService,
+  MongoUserUpdateService,
+} from "src/Mongo";
 import {
   UnauthorizedUser,
   UnauthorizedUserSchema,

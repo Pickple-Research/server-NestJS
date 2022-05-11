@@ -14,6 +14,11 @@ export * from "./Feedback/feedback.find.service";
 // Notice
 export * from "./Notice/notice.find.service";
 
+// Partner
+export * from "./Partner/partner.create.service";
+export * from "./Partner/partner.find.service";
+export * from "./Partner/partner.update.service";
+
 // Research
 export * from "./Research/research.create.service";
 export * from "./Research/research.find.service";

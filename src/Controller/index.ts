@@ -13,6 +13,11 @@ export * from "./Feedback/feedback.get.controller";
 //Notice
 export * from "./Notice/notice.get.controller";
 
+//Partner
+export * from "./Partner/partner.get.controller";
+export * from "./Partner/partner.patch.controller";
+export * from "./Partner/partner.post.controller";
+
 //Research
 export * from "./Research/research.get.controller";
 export * from "./Research/research.patch.controller";

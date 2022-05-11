@@ -14,6 +14,12 @@ export * from "./Feedback/mongo.feedback.module";
 export * from "./Notice/mongo.notice.find.service";
 export * from "./Notice/mongo.notice.module";
 
+// Parter
+export * from "./Partner/mongo.partner.create.service";
+export * from "./Partner/mongo.partner.find.service";
+export * from "./Partner/mongo.partner.update.service";
+export * from "./Partner/mongo.partner.module";
+
 // Research
 export * from "./Research/mongo.research.create.service";
 export * from "./Research/mongo.research.find.service";

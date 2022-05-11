@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { UserType, AccountType } from "../../Object/Enum";
+import { UserType, AccountType } from "src/Object/Enum";
 
 /**
  * 유저 계정 정보 스키마입니다.
