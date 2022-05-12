@@ -9,7 +9,7 @@ export class PartnerGetController {
   @Public()
   @Get("test")
   async testPartnerRouter() {
-    return "test Partner Router";
+    return await this.partnerFindService.testPartnerRouter();
   }
 
   @Public()

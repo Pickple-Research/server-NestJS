@@ -8,6 +8,10 @@ export class PartnerFindService {
   @Inject()
   private readonly mongoPartnerFindService: MongoPartnerFindService;
 
+  async testPartnerRouter() {
+    return "testPartnerRouter@partner.find.service";
+  }
+
   async getPartners() {
     return await this.mongoPartnerFindService.getPartners();
   }

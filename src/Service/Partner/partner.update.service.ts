@@ -8,11 +8,11 @@ export class PartnerUpdateService {
   @Inject()
   private readonly mongoPartnerUpdateService: MongoPartnerUpdateService;
 
-  async uploadPost() {
-    return await this.mongoPartnerUpdateService.uploadPost();
+  async updatePost() {
+    return await this.mongoPartnerUpdateService.updatePost();
   }
 
-  async uploadProduct() {
-    return await this.mongoPartnerUpdateService.uploadProduct();
+  async updateProduct() {
+    return await this.mongoPartnerUpdateService.updateProduct();
   }
 }

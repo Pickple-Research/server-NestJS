@@ -4,5 +4,6 @@
  * @author 현웅
  */
 
+export * from "./partner.dto";
 export * from "./research.dto";
 export * from "./user.dto";

@@ -5,8 +5,11 @@ import { Document } from "mongoose";
  * 파트너 게시글/이벤트 스키마입니다.
  * @author 현웅
  */
-@Schema({ _id: false })
-export class PartnerPostInfo {
+@Schema()
+export class PartnerPost {
+  @Prop() // 파트너 _id
+  partnerId: string;
+
   @Prop({ required: true }) // 게시글/이벤트 제목
   title: string;
 
@@ -17,15 +20,7 @@ export class PartnerPostInfo {
   createdAt: string;
 
   @Prop({ type: [String], default: [] }) // 사진 url
-  photoUrls: string[];
-}
-
-const PartnerPostInfoSchema = SchemaFactory.createForClass(PartnerPostInfo);
-
-@Schema()
-export class PartnerPost {
-  @Prop({ type: [PartnerPostInfoSchema], default: [] })
-  posts: PartnerPostInfo[];
+  photoUrls?: string[];
 }
 
 export const PartnerPostSchema = SchemaFactory.createForClass(PartnerPost);

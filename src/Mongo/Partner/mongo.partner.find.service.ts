@@ -15,6 +15,8 @@ export class MongoPartnerFindService {
   constructor(
     @InjectModel(Partner.name)
     private readonly Partner: Model<PartnerDocument>,
+    @InjectModel(PartnerPost.name)
+    private readonly PartnerPost: Model<PartnerPostDocument>,
   ) {}
 
   async getPartners() {}

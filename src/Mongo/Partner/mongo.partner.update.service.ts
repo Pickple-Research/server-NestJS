@@ -21,7 +21,7 @@ export class MongoPartnerUpdateService {
     private readonly connection: Connection,
   ) {}
 
-  async uploadProduct() {}
+  async updateProduct() {}
 
-  async uploadPost() {}
+  async updatePost() {}
 }

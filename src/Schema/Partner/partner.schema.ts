@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Types, Schema as MongooseSchema } from "mongoose";
+import { PartnerPost, PartnerProduct } from "src/Schema";
 import { PartnerType, Category } from "src/Object/Enum";
 
 /**
@@ -16,6 +17,12 @@ export class Partner {
 
   @Prop({ type: [String], enum: Category }) // 파트너의 카테고리
   category: Category[];
+
+  @Prop({ type: [String], default: [] }) // 게시글/이벤트 _id
+  postIds: string[];
+
+  @Prop({ type: [String], default: [] }) // 제품/서비스 _id
+  productIds: string[];
 
   @Prop() // 가입일자
   createdAt: string;

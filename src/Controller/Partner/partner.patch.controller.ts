@@ -7,11 +7,11 @@ export class PartnerPatchController {
 
   @Patch("post")
   async uploadPost() {
-    return await this.partnerUpdateService.uploadPost();
+    return await this.partnerUpdateService.updatePost();
   }
 
   @Patch("product")
   async uploadProduct() {
-    return await this.partnerUpdateService.uploadProduct();
+    return await this.partnerUpdateService.updateProduct();
   }
 }
