@@ -89,16 +89,12 @@ export class MongoUserFindService {
   async didUserParticipatedResearch(userId: string, researchId: string) {
     const userActivity = await this.UserActivity.findOne({
       _id: userId,
-    })
-      .select({ participatedResearchInfos: 1 })
-      .lean();
+    });
 
     //* 참여한 리서치 목록에 researchId가 포함되어 있는 경우
     if (
       !userActivity ||
-      userActivity.participatedResearchInfos.some(
-        (researchInfo) => researchInfo.researchId === researchId,
-      )
+      userActivity.participatedResearchIds.includes(userId)
     ) {
       return true;
     }

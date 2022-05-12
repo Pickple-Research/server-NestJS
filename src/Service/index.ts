@@ -21,6 +21,7 @@ export * from "./Partner/partner.update.service";
 
 // Research
 export * from "./Research/research.create.service";
+export * from "./Research/research.delete.service";
 export * from "./Research/research.find.service";
 export * from "./Research/research.update.service";
 

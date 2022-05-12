@@ -6,8 +6,6 @@ import {
   ResearchDocument,
   ResearchParticipation,
   ResearchParticipationDocument,
-  ResearchViewedUserInfo,
-  ResearchScrappedUserInfo,
   ResearchParticipantInfo,
 } from "src/Schema";
 import { tryTransaction } from "src/Util";
@@ -30,84 +28,43 @@ export class MongoResearchUpdateService {
   ) {}
 
   /**
-   * 조회자 정보를 추가하고
-   * 리서치 조회수를 1 늘립니다.
+   * 조회자 정보를 추가합니다.
    * @author 현웅
    */
-  async updateView(userInfo: ResearchViewedUserInfo, researchId: string) {
-    //* 리서치 조회자 정보를 추가하고
-    const updateParticipation =
-      await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-        $push: { viewedUserInfos: userInfo },
-      });
-
-    //* 조회수를 1 늘립니다.
-    const updateNum = await this.Research.findByIdAndUpdate(researchId, {
-      $inc: { viewedNum: 1 },
+  async updateView(userId: string, researchId: string) {
+    await this.ResearchParticipation.findByIdAndUpdate(researchId, {
+      $addToSet: { viewedUserIds: userId },
     });
 
-    await Promise.all([updateParticipation, updateNum]);
     return;
   }
 
   /**
-   * 스크랩한 유저 정보를 추가하고
-   * 리서치 스크랩 수를 1 늘립니다.
+   * 스크랩한 유저 _id를 추가합니다.
    * @author 현웅
    */
-  async updateScrap(userInfo: ResearchScrappedUserInfo, researchId: string) {
-    //* 스크랩한 유저 정보를 추가한 후
-    const updateParticipation =
-      await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-        $push: { scrappedUserInfos: userInfo },
-      });
-
-    //* 스크랩 수를 1 늘립니다.
-    const updateNum = await this.Research.findByIdAndUpdate(researchId, {
-      $inc: { scrappedNum: 1 },
+  async updateScrap(userId: string, researchId: string) {
+    await this.ResearchParticipation.findByIdAndUpdate(researchId, {
+      $addToSet: { scrappedUserIds: userId },
     });
 
-    await Promise.all([updateParticipation, updateNum]);
     return;
   }
 
   /**
-   * 스크랩 취소한 유저 정보를 제거하고
-   * 리서치 스크랩 수를 1 줄입니다.
+   * 스크랩 취소한 유저 _id를 제거합니다.
    * @author 현웅
    */
   async updateUnscrap(userId: string, researchId: string) {
-    //* 우선, 스크랩한 유저 정보를 제거한 배열을 새로 선언합니다.
-    const researchParticipation = await this.ResearchParticipation.findById(
-      researchId,
-    )
-      .select({ scrappedUserInfos: 1 })
-      .lean();
-
-    const updatedUserInfos = researchParticipation.scrappedUserInfos.filter(
-      (info) => {
-        return info.userId !== userId;
-      },
-    );
-
-    //* 해당 배열로 업데이트 하고
-    const updateParticipation =
-      await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-        $set: { scrappedUserInfos: updatedUserInfos },
-      });
-
-    //* 스크랩 수를 1 줄입니다
-    const updateNum = await this.Research.findByIdAndUpdate(researchId, {
-      $inc: { scrappedNum: -1 },
+    await this.ResearchParticipation.findByIdAndUpdate(researchId, {
+      $pull: { scrappedUserIds: userId },
     });
 
-    await Promise.all([updateParticipation, updateNum]);
     return;
   }
 
   /**
    * @Transaction
-   * 리서치 참여자 수를 1 늘리고
    * 참여한 유저 정보를 추가합니다.
    * @author 현웅
    */
@@ -118,12 +75,6 @@ export class MongoResearchUpdateService {
     const session = await this.connection.startSession();
 
     return await tryTransaction(session, async () => {
-      //*
-      await this.Research.findByIdAndUpdate(
-        researchId,
-        { $inc: { participatedNum: 1 } },
-        { session },
-      );
       await this.ResearchParticipation.findByIdAndUpdate(
         researchId,
         { $push: { participantInfos: userInfo } },

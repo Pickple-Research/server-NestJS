@@ -1,13 +1,12 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Schema as MongooseSchema } from "mongoose";
+import { Document, Schema as MongooseSchema, Types } from "mongoose";
 import {
   ParticipatedResearchInfo,
   ParticipatedResearchInfoSchema,
   ParticipatedVoteInfo,
   ParticipatedVoteInfoSchema,
-  ScrappedResearchInfo,
-  ScrappedResearchInfoSchema,
 } from "./Embedded";
+import { Research } from "src/Schema";
 
 /**
  * 유저 활동(리서치나 투표 참여/조회/스크랩) 정보 스키마입니다.
@@ -21,27 +20,20 @@ export class UserActivity {
   @Prop({ type: [String], default: [] }) // 조회한 투표 _id
   viewedVoteIds: string[];
 
-  @Prop({ type: [ScrappedResearchInfoSchema], default: [] }) // 스크랩한 리서치들 정보
-  scrappedResearchInfos: ScrappedResearchInfo[];
+  @Prop({ type: [String], default: [] }) // 스크랩한 리서치 _id
+  scrappedResearchIds: string[];
 
-  //TODO: 이 스키마도 나중에 가면 너무 커질 우려가 있음. 15개 이후에는 id reference만 하는 건 아떤지?
-  @Prop({ type: [ParticipatedResearchInfoSchema], default: [] }) // 참여한 리서치들 정보
-  participatedResearchInfos: ParticipatedResearchInfo[];
+  @Prop({ type: [String] }) // 참여한 리서치 _id
+  participatedResearchIds: string[];
 
   @Prop({ type: [ParticipatedVoteInfoSchema], default: [] }) // 참여한 투표들 정보
   participatedVoteInfos: ParticipatedVoteInfo[];
 
-  @Prop({
-    type: [{ type: MongooseSchema.Types.ObjectId, ref: "Research" }],
-    default: [],
-  }) // 작성한 리서치들 _id
-  createdResearchIds: MongooseSchema.Types.ObjectId[];
+  @Prop({ type: [String], default: [] }) // 작성한 리서치들 _id
+  uploadedResearchIds: string[];
 
-  @Prop({
-    type: [{ type: MongooseSchema.Types.ObjectId, ref: "Vote" }],
-    default: [],
-  }) // 작성한 투표들 _id
-  createdVoteIds: MongooseSchema.Types.ObjectId[];
+  @Prop({ type: [String], default: [] }) // 작성한 투표들 _id
+  uploadedVoteIds: string[];
 }
 
 export const UserActivitySchema = SchemaFactory.createForClass(UserActivity);

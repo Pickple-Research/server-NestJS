@@ -1,11 +1,13 @@
 import { Module } from "@nestjs/common";
 import {
+  ResearchDeleteController,
   ResearchGetController,
   ResearchPatchController,
   ResearchPostController,
 } from "src/Controller";
 import {
   UserUpdateService,
+  ResearchDeleteService,
   ResearchFindService,
   ResearchCreateService,
   ResearchUpdateService,
@@ -18,10 +20,12 @@ import { MongoUserModule, MongoResearchModule } from "src/Mongo";
     ResearchGetController,
     ResearchPatchController,
     ResearchPostController,
+    ResearchDeleteController,
   ],
   providers: [
     AwsS3Service,
     UserUpdateService,
+    ResearchDeleteService,
     ResearchCreateService,
     ResearchFindService,
     ResearchUpdateService,

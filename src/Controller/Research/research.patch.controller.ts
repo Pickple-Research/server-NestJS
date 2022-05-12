@@ -38,7 +38,7 @@ export class ResearchPatchController {
     );
 
     const updateResearch = await this.researchUpdateService.updateView(
-      { userId: body.userId, viewedAt: getCurrentISOTime() },
+      body.userId,
       body.researchId,
     );
 
@@ -52,21 +52,15 @@ export class ResearchPatchController {
    */
   @Patch("scrap")
   async updateResearchScrapped(
-    @Body() body: { userId: string; researchId: string; researchTitle: string },
+    @Body() body: { userId: string; researchId: string },
   ) {
-    const currentISOTime = getCurrentISOTime();
-
-    const updateUser = await this.userUpdateService.scrapResearch(body.userId, {
-      researchId: body.researchId,
-      title: body.researchTitle,
-      scrappedAt: currentISOTime,
-    });
+    const updateUser = await this.userUpdateService.scrapResearch(
+      body.userId,
+      body.researchId,
+    );
 
     const updateResearch = await this.researchUpdateService.updateScrap(
-      {
-        userId: body.userId,
-        scrappedAt: currentISOTime,
-      },
+      body.userId,
       body.researchId,
     );
 
@@ -83,17 +77,17 @@ export class ResearchPatchController {
     @Body()
     body: {
       userId: string;
-      researchInfo: ScrappedResearchInfo;
+      researchId: string;
     },
   ) {
     const updateUser = await this.userUpdateService.unscrapResearch(
       body.userId,
-      body.researchInfo,
+      body.researchId,
     );
 
     const updateResearch = await this.researchUpdateService.updateUnscrap(
       body.userId,
-      body.researchInfo.researchId,
+      body.researchId,
     );
     await Promise.all([updateUser, updateResearch]);
     return;
@@ -109,12 +103,12 @@ export class ResearchPatchController {
     @Body()
     body: {
       userId: string;
-      consummedTime: string;
       researchId: string;
-      researchTitle: string;
+      consummedTime: string;
     },
   ) {
     //* 유저측에서 리서치에 참여한 이력이 있는 경우, 에러를 발생시킵니다.
+    //TODO: tryTransaction 안에 넣어서 좀 더 빠르게 설정
     if (
       await this.mongoUserFindService.didUserParticipatedResearch(
         body.userId,
@@ -132,11 +126,7 @@ export class ResearchPatchController {
       await this.userUpdateService.participateResearch(
         userSession,
         body.userId,
-        {
-          researchId: body.researchId,
-          title: body.researchTitle,
-          participatedAt: currentISOTime,
-        },
+        body.researchId,
       );
 
       //* Research와 ResearchParticipation에 참여자 정보 추가

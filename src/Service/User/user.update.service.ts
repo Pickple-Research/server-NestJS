@@ -24,37 +24,34 @@ export class UserUpdateService {
    * 리서치를 새로 스크랩합니다.
    * @author 현웅
    */
-  async scrapResearch(userId: string, researchInfo: ScrappedResearchInfo) {
-    return await this.mongoUserUpdateService.scrapResearch(
-      userId,
-      researchInfo,
-    );
+  async scrapResearch(userId: string, researchId: string) {
+    return await this.mongoUserUpdateService.scrapResearch(userId, researchId);
   }
 
   /**
    * 스크랩한 리서치를 제거합니다.
    * @author 현웅
    */
-  async unscrapResearch(userId: string, researchInfo: ScrappedResearchInfo) {
+  async unscrapResearch(userId: string, researchId: string) {
     return await this.mongoUserUpdateService.unscrapResearch(
       userId,
-      researchInfo,
+      researchId,
     );
   }
 
   /**
-   * 참여한 리서치 정보를 UserActivity에 추가합니다.
+   * 리서치에 참여합니다.
    * @author 현웅
    */
   async participateResearch(
     session: ClientSession,
     userId: string,
-    researchInfo: ParticipatedResearchInfo,
+    researchId: string,
   ) {
     return await this.mongoUserUpdateService.participateResearch(
       session,
       userId,
-      researchInfo,
+      researchId,
     );
   }
 }

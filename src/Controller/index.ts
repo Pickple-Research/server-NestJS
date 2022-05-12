@@ -19,6 +19,7 @@ export * from "./Partner/partner.patch.controller";
 export * from "./Partner/partner.post.controller";
 
 //Research
+export * from "./Research/research.delete.controller";
 export * from "./Research/research.get.controller";
 export * from "./Research/research.patch.controller";
 export * from "./Research/research.post.controller";

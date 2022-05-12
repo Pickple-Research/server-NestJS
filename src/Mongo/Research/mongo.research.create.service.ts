@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel, InjectConnection } from "@nestjs/mongoose";
 import { Model, Connection } from "mongoose";
-import { AwsS3Service } from "../../AWS";
-import { ResearchCreateDto } from "../../Dto";
-import { S3UploadingObject } from "../../Object/Type";
+import { AwsS3Service } from "src/AWS";
+import { ResearchCreateDto } from "src/Dto";
+import { S3UploadingObject } from "src/Object/Type";
 import {
   getCurrentISOTime,
   tryTransaction,
   getS3UploadingObject,
-} from "../../Util";
+} from "src/Util";
 import {
   Research,
   ResearchDocument,
@@ -16,8 +16,8 @@ import {
   ResearchCommentDocument,
   ResearchParticipation,
   ResearchParticipationDocument,
-} from "../../Schema";
-import { MONGODB_RESEARCH_CONNECTION, BUCKET_NAME } from "../../Constant";
+} from "src/Schema";
+import { MONGODB_RESEARCH_CONNECTION, BUCKET_NAME } from "src/Constant";
 
 @Injectable()
 export class MongoResearchCreateService {
@@ -74,7 +74,7 @@ export class MongoResearchCreateService {
 
       //* 첨부된 파일이 있다면, S3에 병렬적으로 업로드 해줍니다.
       //* (Promise.all()과 S3 버킷에 올릴 객체 배열의 map()을 이용합니다)
-      //* 이 과정이 실패하면 위에서 만든 리서치도 무효화됩니다.
+      //* 이 과정이 하나라도 실패하면 위에서 만든 리서치도 무효화됩니다.
       if (uploadingObjects.length) {
         await Promise.all(
           uploadingObjects.map((object) => {
