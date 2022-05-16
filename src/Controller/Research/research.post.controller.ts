@@ -6,13 +6,19 @@ import {
   Post,
 } from "@nestjs/common";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
-import { ResearchCreateService } from "src/Service";
+import { MongoResearchCreateService } from "src/Mongo";
 import { ResearchCreateBodyDto } from "src/Dto";
-import { getMulterOptions } from "src/Util";
+import {
+  getCurrentISOTime,
+  getISOTimeAfterGivenDays,
+  getMulterOptions,
+} from "src/Util";
 
 @Controller("researches")
 export class ResearchPostController {
-  constructor(private readonly researchCreateService: ResearchCreateService) {}
+  constructor(
+    private readonly mongoResearchCreateService: MongoResearchCreateService,
+  ) {}
 
   /**
    * 새로운 리서치를 생성합니다.
@@ -42,9 +48,14 @@ export class ResearchPostController {
     @Body() researchCreateBodyDto: ResearchCreateBodyDto,
   ) {
     //* Body로 전달된 리서치 정보(와 파일(들))를 researchCreateService로 넘깁니다.
-    return await this.researchCreateService.createResearch({
-      ...researchCreateBodyDto,
-      files: files,
-    });
+    return await this.mongoResearchCreateService.createResearch(
+      {
+        ...researchCreateBodyDto,
+        createdAt: getCurrentISOTime(),
+        //TODO: 기본 리서치 진행시간 상수화
+        deadline: getISOTimeAfterGivenDays(3),
+      },
+      files,
+    );
   }
 }

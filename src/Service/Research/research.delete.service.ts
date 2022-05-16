@@ -7,8 +7,4 @@ export class ResearchDeleteService {
 
   @Inject()
   private readonly mongoResearchDeleteService: MongoResearchDeleteService;
-
-  async deleteResearch(researchId: string) {
-    return await this.mongoResearchDeleteService.deleteResearch(researchId);
-  }
 }

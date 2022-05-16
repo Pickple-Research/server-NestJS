@@ -8,6 +8,8 @@ import {
 import {
   Partner,
   PartnerSchema,
+  PartnerActivity,
+  PartnerActivitySchema,
   PartnerPost,
   PartnerPostSchema,
   PartnerProduct,
@@ -25,6 +27,7 @@ import { MONGODB_PARTNER_CONNECTION } from "src/Constant";
     MongooseModule.forFeature(
       [
         { name: Partner.name, schema: PartnerSchema },
+        { name: PartnerActivity.name, schema: PartnerActivitySchema },
         { name: PartnerPost.name, schema: PartnerPostSchema },
         { name: PartnerProduct.name, schema: PartnerProductSchema },
       ],

@@ -44,8 +44,11 @@ export class Research {
   @Prop({ type: [String], enum: Category }) // 리서치 카테고리
   categories: Category[];
 
+  @Prop({ default: false }) // 종료 여부
+  closed: boolean;
+
   @Prop({ default: false }) // 숨김 여부
-  hide: boolean;
+  hidden: boolean;
 
   @Prop({ default: false }) // 삭제 여부
   deleted: boolean;

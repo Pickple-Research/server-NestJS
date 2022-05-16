@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Types, Schema as MongooseSchema } from "mongoose";
-import { PartnerPost, PartnerProduct } from "src/Schema";
+import { Document } from "mongoose";
 import { PartnerType, Category } from "src/Object/Enum";
 
 /**
@@ -18,16 +17,11 @@ export class Partner {
   @Prop({ type: [String], enum: Category }) // 파트너의 카테고리
   category: Category[];
 
-  @Prop({ type: [String], default: [] }) // 게시글/이벤트 _id
-  postIds: string[];
-
-  @Prop({ type: [String], default: [] }) // 제품/서비스 _id
-  productIds: string[];
-
   @Prop() // 가입일자
   createdAt: string;
 
   //TODO: Record<string, string> 형태의 array를 저장해야 합니다.
+  // MongoDB 문법 중 Raw 가 사용될 것 같습니다
   // @Prop({type: [], default: []}) // 외부 링크
   // externalLinks:string[]
 }

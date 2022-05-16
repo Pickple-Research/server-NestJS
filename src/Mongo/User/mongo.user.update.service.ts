@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Types, Connection, ClientSession } from "mongoose";
+import { Model, Connection, ClientSession } from "mongoose";
 import {
   User,
   UserDocument,
@@ -8,8 +8,6 @@ import {
   UserActivityDocument,
   UserCreditHistory,
   UserCreditHistoryDocument,
-  ScrappedResearchInfo,
-  ParticipatedResearchInfo,
 } from "src/Schema";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
 import { tryTransaction } from "src/Util";
@@ -31,7 +29,7 @@ export class MongoUserUpdateService {
    * 조회한 리서치 _id를 UserActivity에 추가합니다.
    * @author 현웅
    */
-  async updateViewedResearch(userId: string, researchId: string) {
+  async viewResearch(userId: string, researchId: string) {
     await this.UserActivity.findOneAndUpdate(
       { _id: userId },
       //? $addToSet: 추가하려는 원소가 이미 존재하면 push하지 않습니다.
@@ -68,9 +66,9 @@ export class MongoUserUpdateService {
    * @author 현웅
    */
   async participateResearch(
-    session: ClientSession,
     userId: string,
     researchId: string,
+    session?: ClientSession,
   ) {
     await this.UserActivity.findByIdAndUpdate(
       userId,
@@ -81,6 +79,7 @@ export class MongoUserUpdateService {
       },
       { session },
     );
+    return;
   }
 
   /**
@@ -104,5 +103,21 @@ export class MongoUserUpdateService {
       return;
     });
     return;
+  }
+
+  async followPartner(
+    userId: string,
+    partnerId: string,
+    session?: ClientSession,
+  ) {
+    return "follow";
+  }
+
+  async unfollowPartner(
+    userId: string,
+    partnerId: string,
+    session?: ClientSession,
+  ) {
+    return "unfollow";
   }
 }

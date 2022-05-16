@@ -15,4 +15,18 @@ export class PartnerUpdateService {
   async updateProduct() {
     return await this.mongoPartnerUpdateService.updateProduct();
   }
+
+  async followPartner(userId: string, partnerId: string) {
+    return await this.mongoPartnerUpdateService.updateFollower(
+      userId,
+      partnerId,
+    );
+  }
+
+  async unfollowPartner(userId: string, partnerId: string) {
+    return await this.mongoPartnerUpdateService.updateUnfollower(
+      userId,
+      partnerId,
+    );
+  }
 }

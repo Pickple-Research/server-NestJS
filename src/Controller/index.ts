@@ -27,6 +27,7 @@ export * from "./Research/research.post.controller";
 //User
 export * from "./User/user.delete.controller";
 export * from "./User/user.get.controller";
+export * from "./User/user.patch.controller";
 export * from "./User/user.post.controller";
 
 //Vote

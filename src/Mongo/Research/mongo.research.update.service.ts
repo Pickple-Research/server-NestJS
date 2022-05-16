@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection } from "mongoose";
+import { Model, Connection, ClientSession } from "mongoose";
 import {
   Research,
   ResearchDocument,
@@ -8,7 +8,7 @@ import {
   ResearchParticipationDocument,
   ResearchParticipantInfo,
 } from "src/Schema";
-import { tryTransaction } from "src/Util";
+import { getFutureDateFromGivenDate, tryTransaction } from "src/Util";
 import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
 
 /**
@@ -64,23 +64,42 @@ export class MongoResearchUpdateService {
   }
 
   /**
-   * @Transaction
    * 참여한 유저 정보를 추가합니다.
    * @author 현웅
    */
   async updateParticipant(
     userInfo: ResearchParticipantInfo,
     researchId: string,
+    session?: ClientSession,
   ) {
-    const session = await this.connection.startSession();
+    await this.ResearchParticipation.findByIdAndUpdate(
+      researchId,
+      { $push: { participantInfos: userInfo } },
+      { session },
+    );
+    return;
+  }
 
-    return await tryTransaction(session, async () => {
-      await this.ResearchParticipation.findByIdAndUpdate(
-        researchId,
-        { $push: { participantInfos: userInfo } },
-        { session },
-      );
-      return;
+  /**
+   * 리서치를 연장합니다.
+   * @author 현웅
+   */
+  async extendResearch(researchId: string) {
+    const research = await this.Research.findById(researchId);
+    const updatedDeadline = getFutureDateFromGivenDate(research.deadline, 2);
+    research.deadline = updatedDeadline;
+    research.save();
+    return;
+  }
+
+  /**
+   * 리서치를 종료합니다.
+   * @author 현웅
+   */
+  async closeResearch(researchId: string) {
+    await this.Research.findByIdAndUpdate(researchId, {
+      $set: { closed: true },
     });
+    return;
   }
 }

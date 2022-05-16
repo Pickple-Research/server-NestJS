@@ -4,6 +4,7 @@ export * from "./Notice/notice.schema";
 
 // 파트너 관련 정보 스키마
 export * from "./Partner/partner.schema";
+export * from "./Partner/partnerActivity.schema";
 export * from "./Partner/partnerPost.schema";
 export * from "./Partner/partnerProduct.schema";
 

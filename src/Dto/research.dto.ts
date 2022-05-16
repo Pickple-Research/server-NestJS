@@ -12,9 +12,6 @@ export class ResearchCreateBodyDto {
   content: string;
 
   @IsString()
-  deadline: string;
-
-  @IsString()
   target: string;
 
   @IsString()
@@ -22,15 +19,4 @@ export class ResearchCreateBodyDto {
 
   @IsString()
   researcherId: string;
-}
-
-/**
- * 실제 리서치 생성시 필요한 정보들입니다.
- * @author 현웅
- */
-export class ResearchCreateDto extends ResearchCreateBodyDto {
-  files?: {
-    thumbnail?: Express.Multer.File[];
-    images?: Express.Multer.File[];
-  };
 }

@@ -1,9 +1,12 @@
-import { Controller, Headers, Delete } from "@nestjs/common";
-import { ResearchDeleteService } from "src/Service";
+import { Controller, Inject, Headers, Delete } from "@nestjs/common";
+import { MongoResearchDeleteService } from "src/Mongo";
 
 @Controller("researches")
 export class ResearchDeleteController {
-  constructor(private readonly researchDeleteService: ResearchDeleteService) {}
+  constructor() {}
+
+  @Inject()
+  private readonly mongoResearchDeleteService: MongoResearchDeleteService;
 
   /**
    * 리서치를 삭제합니다.
@@ -11,6 +14,8 @@ export class ResearchDeleteController {
    */
   @Delete("")
   async deleteResearch(@Headers() headers: { research_id: string }) {
-    return await this.researchDeleteService.deleteResearch(headers.research_id);
+    return await this.mongoResearchDeleteService.deleteResearch(
+      headers.research_id,
+    );
   }
 }
