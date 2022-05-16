@@ -1,4 +1,4 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Param } from "@nestjs/common";
 import { UserFindService } from "src/Service";
 import { Public } from "src/Security/Metadata";
 

@@ -24,16 +24,18 @@ import {
 import {
   AuthModule,
   FeedbackModule,
-  VoteModule,
   NoticeModule,
+  PartnerModule,
   ResearchModule,
   UserModule,
+  VoteModule,
 } from "../Module";
 import {
   MONGODB_USER_CONNECTION,
   MONGODB_RESEARCH_CONNECTION,
   MONGODB_VOTE_CONNECTION,
   MONGODB_NOTICE_CONNECTION,
+  MONGODB_PARTNER_CONNECTION,
   MONGODB_FEEDBACK_CONNECTION,
 } from "../Constant";
 
@@ -69,6 +71,9 @@ import {
     MongooseModule.forRoot(process.env.MONGODB_NOTICE_ENDPOINT, {
       connectionName: MONGODB_NOTICE_CONNECTION,
     }),
+    MongooseModule.forRoot(process.env.MONGODB_PARTNER_ENDPOINT, {
+      connectionName: MONGODB_PARTNER_CONNECTION,
+    }),
     MongooseModule.forRoot(process.env.MONGODB_RESEARCH_ENDPOINT, {
       connectionName: MONGODB_RESEARCH_CONNECTION,
     }),
@@ -89,10 +94,11 @@ import {
     //* Controller & Service 형태의 일반 모듈
     AuthModule,
     FeedbackModule,
-    VoteModule,
     NoticeModule,
+    PartnerModule,
     ResearchModule,
     UserModule,
+    VoteModule,
   ],
 })
 export class AppModule implements NestModule {

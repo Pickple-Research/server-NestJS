@@ -10,6 +10,10 @@ import {
   UserActivityDocument,
 } from "src/Schema";
 import { AccountType, UserType } from "src/Object/Enum";
+import {
+  AlreadyParticipatedResearchException,
+  UserNotFoundException,
+} from "src/Exception";
 
 @Injectable()
 export class MongoUserFindService {
@@ -82,24 +86,33 @@ export class MongoUserFindService {
 
   /**
    * 유저가 리서치에 참여한 적이 있는지 확인합니다.
-   * 유저 정보가 없거나, 리서치에 참여한 적이 있는 경우 true를
+   * 유저 정보가 존재하지 않거나 리서치에 참여한 적이 있는 경우 true를
    * 리서치를 참여하지 않은 경우 false를 반환합니다.
+   * handleAsException 값을 true로 지정하는 경우, 결과가 Exception으로 처리됩니다.
+   * @param userId 유저 _id
+   * @param researchId 리서치 _id
+   * @param handleAsException 결과를 예외로 처리할지 여부
    * @author 현웅
    */
-  async didUserParticipatedResearch(userId: string, researchId: string) {
+  async didUserParticipatedResearch(
+    userId: string,
+    researchId: string,
+    handleAsException: boolean = false,
+  ) {
     const userActivity = await this.UserActivity.findOne({
       _id: userId,
-    })
-      .select({ participatedResearchInfos: 1 })
-      .lean();
+    });
+
+    //* 유저 정보가 존재하지 않는 경우
+    if (!userActivity) {
+      if (handleAsException === true) throw new UserNotFoundException();
+      return true;
+    }
 
     //* 참여한 리서치 목록에 researchId가 포함되어 있는 경우
-    if (
-      !userActivity ||
-      userActivity.participatedResearchInfos.some(
-        (researchInfo) => researchInfo.researchId === researchId,
-      )
-    ) {
+    if (userActivity.participatedResearchIds.includes(researchId)) {
+      if (handleAsException === true)
+        throw new AlreadyParticipatedResearchException();
       return true;
     }
 

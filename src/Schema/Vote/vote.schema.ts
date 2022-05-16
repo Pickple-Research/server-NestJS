@@ -13,6 +13,9 @@ export class Vote {
   @Prop({ required: true }) // 투표 내용
   content: string;
 
+  @Prop({ default: 0 }) // 참여자 수
+  participantsNum: number;
+
   @Prop() // 생성 날짜
   createdAt: Date;
 }

@@ -13,7 +13,13 @@ export * from "./Feedback/feedback.get.controller";
 //Notice
 export * from "./Notice/notice.get.controller";
 
+//Partner
+export * from "./Partner/partner.get.controller";
+export * from "./Partner/partner.patch.controller";
+export * from "./Partner/partner.post.controller";
+
 //Research
+export * from "./Research/research.delete.controller";
 export * from "./Research/research.get.controller";
 export * from "./Research/research.patch.controller";
 export * from "./Research/research.post.controller";
@@ -21,6 +27,7 @@ export * from "./Research/research.post.controller";
 //User
 export * from "./User/user.delete.controller";
 export * from "./User/user.get.controller";
+export * from "./User/user.patch.controller";
 export * from "./User/user.post.controller";
 
 //Vote

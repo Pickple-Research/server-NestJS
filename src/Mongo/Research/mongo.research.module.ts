@@ -3,6 +3,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { AwsS3Service } from "src/AWS";
 import {
   MongoResearchCreateService,
+  MongoResearchDeleteService,
   MongoResearchFindService,
   MongoResearchUpdateService,
 } from "src/Mongo";
@@ -20,6 +21,7 @@ import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
   providers: [
     AwsS3Service,
     MongoResearchCreateService,
+    MongoResearchDeleteService,
     MongoResearchFindService,
     MongoResearchUpdateService,
   ],
@@ -41,6 +43,7 @@ import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
   ],
   exports: [
     MongoResearchCreateService,
+    MongoResearchDeleteService,
     MongoResearchFindService,
     MongoResearchUpdateService,
   ],

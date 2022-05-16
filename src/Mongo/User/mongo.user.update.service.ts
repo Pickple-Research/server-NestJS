@@ -1,14 +1,16 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import { Model, ClientSession } from "mongoose";
+import { InjectModel, InjectConnection } from "@nestjs/mongoose";
+import { Model, Connection, ClientSession } from "mongoose";
 import {
   User,
   UserDocument,
   UserActivity,
   UserActivityDocument,
-  ScrappedResearchInfo,
-  ParticipatedResearchInfo,
+  UserCreditHistory,
+  UserCreditHistoryDocument,
 } from "src/Schema";
+import { MONGODB_USER_CONNECTION } from "src/Constant";
+import { tryTransaction } from "src/Util";
 
 @Injectable()
 export class MongoUserUpdateService {
@@ -16,13 +18,18 @@ export class MongoUserUpdateService {
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
     @InjectModel(UserActivity.name)
     private readonly UserActivity: Model<UserActivityDocument>,
+    @InjectModel(UserCreditHistory.name)
+    private readonly UserCreditHistory: Model<UserCreditHistoryDocument>,
+
+    @InjectConnection(MONGODB_USER_CONNECTION)
+    private readonly connection: Connection,
   ) {}
 
   /**
    * 조회한 리서치 _id를 UserActivity에 추가합니다.
    * @author 현웅
    */
-  async updateViewedResearch(userId: string, researchId: string) {
+  async viewResearch(userId: string, researchId: string) {
     await this.UserActivity.findOneAndUpdate(
       { _id: userId },
       //? $addToSet: 추가하려는 원소가 이미 존재하면 push하지 않습니다.
@@ -35,9 +42,9 @@ export class MongoUserUpdateService {
    * 리서치를 새로 스크랩합니다.
    * @author 현웅
    */
-  async scrapResearch(userId: string, researchInfo: ScrappedResearchInfo) {
+  async scrapResearch(userId: string, researchId: string) {
     await this.UserActivity.findByIdAndUpdate(userId, {
-      $push: { scrappedResearchInfos: researchInfo },
+      $addToSet: { scrappedResearchInfos: researchId },
     });
     return;
   }
@@ -46,30 +53,71 @@ export class MongoUserUpdateService {
    * 스크랩한 리서치를 제거합니다.
    * @author 현웅
    */
-  async unscrapResearch(userId: string, researchInfo: ScrappedResearchInfo) {
+  async unscrapResearch(userId: string, researchId: string) {
     await this.UserActivity.findByIdAndUpdate(userId, {
-      $pull: { scrappedResearchInfos: researchInfo },
+      $pull: { scrappedResearchInfos: researchId },
     });
     return;
   }
 
   /**
-   * 참여한 리서치 정보를 추가합니다.
+   * 리서치에 참여합니다. UserActivity를 업데이트하고
+   * TODO: 크레딧을 증가시킵니다.
    * @author 현웅
    */
   async participateResearch(
-    session: ClientSession,
     userId: string,
-    researchInfo: ParticipatedResearchInfo,
+    researchId: string,
+    session?: ClientSession,
   ) {
     await this.UserActivity.findByIdAndUpdate(
       userId,
       {
-        $push: {
-          participatedResearchInfos: researchInfo,
+        $addToSet: {
+          participatedResearchIds: researchId,
         },
       },
       { session },
     );
+    return;
+  }
+
+  /**
+   * @Transaction
+   * 리서치를 업로드합니다.
+   * UserActivity의 uploadedResearchIds에 Id를 추가하고 크레딧을 감소시킵니다.
+   * @author 현웅
+   */
+  async uploadResearch(
+    session: ClientSession,
+    userId: string,
+    researchId: string,
+  ) {
+    await tryTransaction(session, async () => {
+      await this.UserActivity.findByIdAndUpdate(
+        userId,
+        { $addToSet: { uploadedResearchIds: researchId } },
+        { session },
+      );
+      await this.UserCreditHistory.findByIdAndUpdate(userId, { $push: {} });
+      return;
+    });
+    return;
+  }
+
+  async followPartner(
+    userId: string,
+    partnerId: string,
+    session?: ClientSession,
+  ) {
+    return "follow";
+  }
+
+  async unfollowPartner(
+    userId: string,
+    partnerId: string,
+    session?: ClientSession,
+  ) {
+    return "unfollow";
   }
 }

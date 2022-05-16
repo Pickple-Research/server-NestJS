@@ -6,6 +6,7 @@ import { ClientSession } from "mongoose";
  * @param func 정합성이 보장되어야 하는 기능들을 정의한 함수
  * @example
  * //* 함수 적용법
+ * //* 참조: https://wanago.io/2021/09/06/api-nestjs-transactions-mongodb-mongoose/
  * async deleteUser(){
  *  const session = await this.connection.startSession();
  *
@@ -19,7 +20,7 @@ import { ClientSession } from "mongoose";
  * }
  * @example
  * //* 원하는 곳에 session 넣는 법
- * //* 링크 참조: https://mongoosejs.com/docs/transactions.html
+ * //* 참조: https://mongoosejs.com/docs/transactions.html
  * const someUser = await this.User.findOne({...options}).session(session)
  * await someUser.save()
  *
@@ -37,7 +38,7 @@ export async function tryTransaction<ReturnType>(
   session: ClientSession,
   func: () => Promise<ReturnType>,
 ) {
-  //TODO?: sessinon.withTransaction을 이용하면 좀 더 코드가 간단해지긴 하는데..
+  //TODO?: session.withTransaction을 이용하면 좀 더 코드가 간단해지긴 하는데..
   //* session을 통해 transaction을 시작합니다.
   session.startTransaction();
   try {
@@ -53,5 +54,39 @@ export async function tryTransaction<ReturnType>(
   } finally {
     //* 성공, 실패 모든 경우에 대해 session을 종료합니다.
     session.endSession();
+  }
+}
+
+/**
+ * 복수의 DB에 대한 transaction이 필요할 때 사용합니다.
+ * 사용법은 tryTransaction()과 동일합니다.
+ * @author 현웅
+ */
+export async function tryMultiTransaction<ReturnType>(
+  sessions: ClientSession[],
+  func: () => Promise<ReturnType>,
+) {
+  sessions.forEach((session) => {
+    session.startTransaction();
+  });
+  try {
+    const result = await func();
+    await Promise.all(
+      sessions.map(async (session) => {
+        await session.commitTransaction();
+      }),
+    );
+    return result;
+  } catch (error) {
+    await Promise.all(
+      sessions.map(async (session) => {
+        await session.abortTransaction();
+      }),
+    );
+    throw error;
+  } finally {
+    sessions.forEach((session) => {
+      session.endSession();
+    });
   }
 }

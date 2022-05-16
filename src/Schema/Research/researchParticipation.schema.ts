@@ -3,10 +3,6 @@ import { Document } from "mongoose";
 import {
   ResearchParticipantInfo,
   ResearchParticipantInfoSchema,
-  ResearchViewedUserInfo,
-  ResearchViewedUserInfoSchema,
-  ResearchScrappedUserInfo,
-  ResearchScrappedUserInfoSchema,
 } from "./Embedded";
 
 /**
@@ -18,11 +14,11 @@ export class ResearchParticipation {
   @Prop({ type: [ResearchParticipantInfoSchema], default: [] }) // 참여한 유저
   participantInfos: ResearchParticipantInfo[];
 
-  @Prop({ type: [ResearchViewedUserInfoSchema], default: [] }) // 조회한 유저
-  viewedUserInfos: ResearchViewedUserInfo[];
+  @Prop({ type: [String], default: [] }) // 조회한 유저 _id
+  viewedUserIds: string[];
 
-  @Prop({ type: [ResearchScrappedUserInfoSchema], default: [] }) // 스크랩한 유저
-  scrappedUserInfos: ResearchScrappedUserInfo[];
+  @Prop({ type: [String], default: [] }) // 스크랩한 유저 _id
+  scrappedUserIds: string[];
 }
 
 export const ResearchParticipationSchema = SchemaFactory.createForClass(

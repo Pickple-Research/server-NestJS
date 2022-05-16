@@ -15,7 +15,7 @@ export class UserDeleteController {
    * @author 현웅
    */
   @Delete("")
-  async deleteUserById(@Headers() headers: { _id: string }) {
-    return await this.userDeleteService.deleteUserById(headers._id);
+  async deleteUserById(@Headers() headers: { user_id: string }) {
+    return await this.userDeleteService.deleteUserById(headers.user_id);
   }
 }

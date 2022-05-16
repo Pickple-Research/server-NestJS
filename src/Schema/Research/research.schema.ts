@@ -23,6 +23,7 @@ export class Research {
   @Prop({ required: true }) // 설문지 폼 url
   formUrl: string;
 
+  //TODO: 리서치 예상시간
   // @Prop({ required: true, enum: ResearchEstimatedTime }) // 예상 소요시간
   @Prop({ enum: ResearchEstimatedTime }) // 예상 소요시간
   estimatedTime: ResearchEstimatedTime;
@@ -43,14 +44,17 @@ export class Research {
   @Prop({ type: [String], enum: Category }) // 리서치 카테고리
   categories: Category[];
 
-  @Prop({ default: 0 }) // 조회수
-  viewedNum: number;
+  @Prop({ default: false }) // 종료 여부
+  closed: boolean;
 
-  @Prop({ default: 0 }) // 스크랩수
-  scrappedNum: number;
+  @Prop({ default: false }) // 숨김 여부
+  hidden: boolean;
 
-  @Prop({ default: 0 }) // 참여자수
-  participatedNum: number;
+  @Prop({ default: false }) // 삭제 여부
+  deleted: boolean;
+
+  @Prop({ default: false }) // (신고 등으로 인한) 블락 여부
+  blocked: boolean;
 
   @Prop() // 생성일
   createdAt: string;
