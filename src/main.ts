@@ -25,8 +25,8 @@ async function bootstrap() {
     origin: CORS_ORIGINS,
     credentials: true,
   });
-  //? 모든 요청 주소 앞단에 "/api"를 추가합니다.
-  app.setGlobalPrefix("/api");
+  // //? 모든 요청 주소 앞단에 "/api"를 추가합니다.
+  // app.setGlobalPrefix("/api");
 
   /** @deprecated aws.s3.service.ts 클래스가 만들어질 때 실행합니다.  */
   //? AWS S3 서비스를 사용하기 위하여 IAM 인증을 진행합니다.

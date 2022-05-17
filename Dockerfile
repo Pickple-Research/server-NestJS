@@ -24,7 +24,10 @@ RUN apt-get install -y nodejs
 RUN npm install -g yarn -y && yarn set version 1.22.18
 
 # pm2 설치 && server 폴더 생성
-RUN npm install -g pm2 -y && mkdir /server
+#RUN npm install -g pm2 -y && mkdir /server
+
+# server 폴더 생성
+RUN mkdir /server
 
 # (github 레포지토리의) 모든 내용을 도커 내의 /server 폴더로 복사
 COPY . /server
@@ -36,10 +39,13 @@ WORKDIR /server
 # node modules 설치하고 build
 RUN yarn install && yarn build
 
+# 5000번 포트 개방(listen)
+EXPOSE 5000
+
 ##################################
 
 # 도커 이미지가 호출되었을 때 실행할 프로세스 지정.
 # (pm2가 아니라 pm2-runtime을 사용하는 이유는,
 # NestJS 서비스를 background가 아니라 foreground에서 동작시켜야하기 때문)
-ENTRYPOINT [ "pm2-runtime", "start", "dist/main.js" ]
+ENTRYPOINT [ "node", "dist/main.js" ]
 

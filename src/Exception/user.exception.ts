@@ -4,8 +4,6 @@ import {
   Status403Exception,
 } from "./Status";
 
-export class UserEmailDuplicatedException {}
-
 /**
  * 주어진 조건의 유저가 존재하지 않는 상황을 Exception으로 규정해야 하는 경우 사용합니다.
  * 기본 message: '유저가 존재하지 않습니다'
@@ -33,7 +31,7 @@ export class EmailDuplicateException extends Status400Exception {
 }
 
 /**
- * 이메일 미인증 유저의 인증번호가 일치하지 않는 경우 사용합니다.
+ * 주어진 인증번호가 미인증 유저의 인증번호와 일치하지 않는 경우 사용합니다.
  * 기본 message: `인증번호가 일치하지 않습니다`
  * @author 현웅
  */

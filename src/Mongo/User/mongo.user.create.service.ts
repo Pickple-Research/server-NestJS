@@ -18,6 +18,7 @@ import {
 import { AccountType, UserType } from "src/Object/Enum";
 import { tryTransaction, getCurrentISOTime } from "src/Util";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
+import { UserNotFoundException } from "src/Exception";
 
 /**
  * 유저 데이터를 생성하는 mongo 서비스 모음입니다.
@@ -55,11 +56,11 @@ export class MongoUserCreateService {
 
   /**
    * @Transaction
-   * 새로운 유저를 생성합니다. UserProperty, UserActivity, UserPrivacy Document도 함께 만들고,
+   * 미인증 유저를 정규 유저로 전환합니다. UserProperty, UserActivity, UserPrivacy Document도 함께 만들고,
    * 해당 email을 사용하는 미인증 유저 데이터를 삭제합니다.
    * @author 현웅
    */
-  async createEmailUser(email: string) {
+  async authorizeEmailUser(email: string) {
     const session = await this.connection.startSession();
 
     return await tryTransaction(session, async () => {
@@ -72,8 +73,7 @@ export class MongoUserCreateService {
       ).lean();
 
       //* 해당 유저가 존재하지 않는 경우
-      //TODO: 에러 발생시켜야 합니다 (논리 구조상 없을 것이지만)
-      if (!userData) return;
+      if (!userData) throw new UserNotFoundException();
 
       //* 기존 데이터를 사용하여 새로운 User 데이터 생성
       const newUser = await this.User.create(
@@ -81,8 +81,7 @@ export class MongoUserCreateService {
           {
             userType: UserType.USER,
             accountType: AccountType.EMAIL,
-            email: userData.email,
-            password: userData.password,
+            ...userData,
             createdAt: getCurrentISOTime(),
           },
         ],

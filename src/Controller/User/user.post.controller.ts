@@ -1,7 +1,11 @@
-import { Controller, Body, Post } from "@nestjs/common";
-import { EmailUserSignupDto, EmailUserAuthorizationBodyDto } from "src/Dto";
-import { UserCreateService } from "src/Service";
-import { getCurrentISOTime } from "src/Util";
+import { Controller, Inject, Body, Post } from "@nestjs/common";
+import { EmailUserSignupBodyDto, EmailUserAuthorizationBodyDto } from "src/Dto";
+import { MongoUserFindService, MongoUserCreateService } from "src/Mongo";
+import { getSalt, getKeccak512Hash, getCurrentISOTime } from "src/Util";
+import {
+  EmailDuplicateException,
+  WrongAuthorizationCodeException,
+} from "src/Exception";
 
 /**
  * 테스트 유저 계정을 만드는 Controller입니다. 일반 유저 회원가입은 auth module을 참고하세요.
@@ -9,7 +13,10 @@ import { getCurrentISOTime } from "src/Util";
  */
 @Controller("users")
 export class UserPostController {
-  constructor(private readonly userCreateService: UserCreateService) {}
+  constructor() {}
+
+  @Inject() private readonly mongoUserFindService: MongoUserFindService;
+  @Inject() private readonly mongoUserCreateService: MongoUserCreateService;
 
   /**
    * 이메일을 이용하여 회원가입하는 미인증 유저 데이터를 생성합니다.
@@ -17,13 +24,48 @@ export class UserPostController {
    * @author 현웅
    */
   @Post("unauthorized")
-  async createUnauthorizedUser(@Body() emailUserSignupDto: EmailUserSignupDto) {
-    return await this.userCreateService.createUnauthorizedUser({
+  async createUnauthorizedUser(
+    @Body() emailUserSignupDto: EmailUserSignupBodyDto,
+  ) {
+    //* 이미 해당 이메일로 회원가입 시도 중인 미인증 유저가 있는 경우
+    const checkUnauthorized =
+      await this.mongoUserFindService.getUnauthorizedUser(
+        emailUserSignupDto.email,
+      );
+
+    //* 이미 해당 이메일로 가입된 유저가 있는 경우
+    const checkAuthorized = await this.mongoUserFindService.getUserByEmail(
+      emailUserSignupDto.email,
+    );
+
+    //* 동시에 확인
+    const checkedResults = await Promise.all([
+      checkUnauthorized,
+      checkAuthorized,
+    ]);
+
+    //* 둘 중 하나라도 존재하면 에러 발생
+    if (checkedResults[0] || checkedResults[1])
+      throw new EmailDuplicateException();
+
+    //* 미인증 유저 데이터에 필요한 값을 생성합니다.
+    const salt = getSalt();
+    const hashedPassword = getKeccak512Hash(
+      emailUserSignupDto.password + salt,
+      parseInt(process.env.PEPPER),
+    );
+
+    return await this.mongoUserCreateService.createUnauthorizedUser({
       ...emailUserSignupDto,
-      //* Body로 주어진 email과 password 정보에 인증 번호와 생성시간을 추가합니다.
+      //* password값을 plainText에서 hash 처리한 값으로 교체
+      password: hashedPassword,
+      //* salt 값 추가
+      salt,
+      //* 6자리 인증 번호 추가
       authorizationCode: (
         "00000" + Math.floor(Math.random() * 1_000_000).toString()
       ).slice(-6),
+      //* 생성시간 추가
       createdAt: getCurrentISOTime(),
     });
   }
@@ -33,7 +75,26 @@ export class UserPostController {
    * @author 현웅
    */
   @Post("email")
-  async createEmailUser(@Body() body: EmailUserAuthorizationBodyDto) {
-    return await this.userCreateService.createEmailUser(body.email, body.code);
+  async authorizeEmailUser(@Body() body: EmailUserAuthorizationBodyDto) {
+    //* 입력한 인증 번호가 다르거나
+    //* 해당 이메일을 사용하는 유저가 존재하지 않으면 에러를 일으킵니다.
+    if (
+      !(await this.mongoUserFindService.checkUnauthorizedUserCode(
+        body.email,
+        body.code,
+      ))
+    ) {
+      throw new WrongAuthorizationCodeException();
+    }
+
+    //* 인증번호가 일치하는 경우 정규유저로 전환합니다.
+    return await this.mongoUserCreateService.authorizeEmailUser(body.email);
   }
+
+  /**
+   * 테스트 유저를 생성합니다.
+   * @author 현웅
+   */
+  @Post("tester")
+  async createTestUser() {}
 }

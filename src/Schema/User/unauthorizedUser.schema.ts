@@ -14,6 +14,9 @@ export class UnauthorizedUser {
   @Prop() // 비밀번호
   password: string;
 
+  @Prop() // 비밀번호 해쉬 salt
+  salt: string;
+
   @Prop() // 인증 코드
   authorizationCode: string;
 
