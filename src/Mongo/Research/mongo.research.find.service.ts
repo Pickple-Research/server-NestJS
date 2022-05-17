@@ -10,6 +10,10 @@ export class MongoResearchFindService {
     private readonly Research: Model<ResearchDocument>,
   ) {}
 
+  async testMongoResearchRouter() {
+    return "test mongoResearchFindRouter";
+  }
+
   /**
    * 최신 리서치를 원하는만큼 찾고 반환합니다.
    * @author 현웅
