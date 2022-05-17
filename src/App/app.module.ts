@@ -59,7 +59,7 @@ import {
     CronModule,
 
     //? ConfigModule: .env 변수를 사용할 수 있도록 도와주는 모듈. (내부적으로 dotenv를 사용)
-    //? {isGlobal: true}: .env 변수를 전역에서 사용할 수 있도록 설정
+    //? { isGlobal: true }: .env 변수를 전역에서 사용할 수 있도록 설정 (process.env.{환경변수} 로 접근합니다)
     ConfigModule.forRoot({ isGlobal: true }),
 
     //? MongooseModule: Mongoose를 사용할 수 있도록 도와주는 모듈.

@@ -1,10 +1,13 @@
-import { Controller, Query, Param, Get } from "@nestjs/common";
-import { ResearchFindService } from "../../Service";
-import { Public } from "../../Security/Metadata";
+import { Controller, Inject, Query, Param, Get } from "@nestjs/common";
+import { ResearchFindService } from "src/Service";
+import { MongoResearchFindService } from "src/Mongo";
+import { Public } from "src/Security/Metadata";
 
 @Controller("researches")
 export class ResearchGetController {
   constructor(private readonly researchFindService: ResearchFindService) {}
+
+  @Inject() private readonly mongoResearchFindService: MongoResearchFindService;
 
   /**
    * 테스트 라우터
@@ -13,7 +16,7 @@ export class ResearchGetController {
   @Get("test")
   @Public()
   async testResearchRouter() {
-    return await this.researchFindService.testResearchRouter();
+    return await this.mongoResearchFindService.testMongoResearchRouter();
   }
 
   /**

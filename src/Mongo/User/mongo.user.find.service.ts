@@ -9,7 +9,6 @@ import {
   UserActivity,
   UserActivityDocument,
 } from "src/Schema";
-import { AccountType, UserType } from "src/Object/Enum";
 import {
   AlreadyParticipatedResearchException,
   UserNotFoundException,
@@ -25,29 +24,8 @@ export class MongoUserFindService {
     private readonly UserActivity: Model<UserActivityDocument>,
   ) {}
 
-  /**
-   * 인자로 받은 이메일을 사용하여 회원가입을 시도 중인 유저가 있는지 확인합니다.
-   * @author 현웅
-   */
-  async getUnauthorizedUser(email: string) {
-    const user = await this.UnauthorizedUser.findOne({ email })
-      .select({ email: 1 })
-      .lean();
-
-    if (user) return true;
-    return false;
-  }
-
-  /**
-   * 인자로 받은 이메일을 사용하는 미인증 유저의 인증번호와
-   * 인자로 받은 인증번호가 일치하는지 확인합니다.
-   * @author 현웅
-   */
-  async checkUnauthorizedUserCode(email: string, code: string) {
-    const unauthorizedUser = await this.UnauthorizedUser.findOne({ email })
-      .select({ authorizationCode: 1 })
-      .lean();
-    return unauthorizedUser.authorizationCode === code;
+  async testMongoUserRouter() {
+    return "test MongoUserFindRouter";
   }
 
   /**
@@ -82,6 +60,47 @@ export class MongoUserFindService {
 
     if (user) return user;
     return null;
+  }
+
+  /**
+   * 인자로 받은 닉네임을 사용하는 유저를 찾고 반환합니다.
+   * 존재하지 않는다면 null을 반환합니다.
+   * @author 현웅
+   */
+  async getUserByNickname(nickname: string) {
+    const user = await this.User.findOne({
+      nickname,
+    })
+      .select({ _id: 1 })
+      .lean();
+
+    if (user) return user;
+    return null;
+  }
+
+  /**
+   * 인자로 받은 이메일을 사용하여 회원가입을 시도 중인 유저가 있는지 확인합니다.
+   * @author 현웅
+   */
+  async getUnauthorizedUser(email: string) {
+    const user = await this.UnauthorizedUser.findOne({ email })
+      .select({ email: 1 })
+      .lean();
+
+    if (user) return true;
+    return false;
+  }
+
+  /**
+   * 인자로 받은 이메일을 사용하는 미인증 유저의 인증번호와
+   * 인자로 받은 인증번호가 일치하는지 확인합니다.
+   * @author 현웅
+   */
+  async checkUnauthorizedUserCode(email: string, code: string) {
+    const unauthorizedUser = await this.UnauthorizedUser.findOne({ email })
+      .select({ authorizationCode: 1 })
+      .lean();
+    return unauthorizedUser.authorizationCode === code;
   }
 
   /**

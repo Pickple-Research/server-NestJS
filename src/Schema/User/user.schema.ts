@@ -14,13 +14,16 @@ export class User {
   @Prop({ enum: AccountType, required: true }) // 계정 회원가입 타입: 이메일, 카카오, 구글, 네이버
   accountType: AccountType;
 
-  @Prop({ index: { unique: true, sparse: true }, trim: true }) // 이메일
+  @Prop({ unique: true, sparse: true, trim: true }) // 이메일
   email: string;
 
   @Prop() // 비밀번호
   password: string;
 
-  @Prop({ index: { unique: true, sparse: true }, trim: true }) // 닉네임
+  @Prop() // 비밀번호 해쉬 salt
+  salt: string;
+
+  @Prop({ unique: true, sparse: true, trim: true }) // 닉네임
   nickname: string;
 
   @Prop({ default: 1 }) // 등급
