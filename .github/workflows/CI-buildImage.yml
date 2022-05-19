@@ -1,6 +1,6 @@
 #참고: https://teichae.tistory.com/entry/Github-Actions%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-Docker-Image-Build-%EB%B0%8F-Push
 
-name: CI-docker
+name: CI-build docker image & push
 
 on:
   workflow_dispatch:
