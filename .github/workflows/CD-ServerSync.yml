@@ -20,7 +20,7 @@ jobs:
     - name: Setting Github Actions' Environment Variables
       run: |
         echo "AWS_DEFAULT_REGION=ap-northeast-2" >> $GITHUB_ENV
-        echo "AWS_SG_NAME=PickpleResearch Server EC2 SG" >> $GITHUB_ENV
+        echo "AWS_SG_NAME=PickpleResearch-Server-EC2-SG" >> $GITHUB_ENV
     
     - name: Add Github Actions IP address to Security Group
       run: |
