@@ -39,6 +39,7 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
           whoami
+          cat server/proxy/nginx.conf
 
     - name: Remove Github Actions IP address from Security Group
       run: |
