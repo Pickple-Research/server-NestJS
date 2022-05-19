@@ -1,6 +1,7 @@
 import { Controller, Inject, Query, Param, Get } from "@nestjs/common";
 import { MongoResearchFindService } from "src/Mongo";
 import { Public } from "src/Security/Metadata";
+import { EmailDuplicateException } from "src/Exception";
 
 @Controller("researches")
 export class ResearchGetController {
@@ -15,7 +16,7 @@ export class ResearchGetController {
   @Get("test")
   @Public()
   async testResearchRouter() {
-    console.log(`PORT: ${process.env.PORT}`);
+    throw new EmailDuplicateException();
     return await this.mongoResearchFindService.testMongoResearchRouter();
   }
 

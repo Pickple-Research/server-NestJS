@@ -1,10 +1,13 @@
 import {
   Injectable,
+  Inject,
   NestInterceptor,
   ExecutionContext,
   CallHandler,
   HttpException,
+  LoggerService,
 } from "@nestjs/common";
+import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 import { Observable, throwError } from "rxjs";
 import { tap, catchError } from "rxjs/operators";
 import { CustomExceptionResonse } from "src/Exception/Status";
@@ -19,6 +22,11 @@ import { healthCheckUrl } from "src/Constant";
  */
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
+  constructor(
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+  ) {}
+
   //? ExecutionContext: ArgumentsHost를 상속받고 기능이 추가된 클래스입니다.
   //?     ArgumentsHost에 대해선 exception.filter.ts 파일을 참고하세요.
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
@@ -35,8 +43,8 @@ export class LoggingInterceptor implements NestInterceptor {
     return next.handle().pipe(
       //* 요청 응답이 성공적인 경우
       tap(() => {
-        console.log(
-          `SUCCESS@${new Date().toISOString()}: [${req.method}] ${req.url} +${
+        this.logger.log(
+          `SUCCESS: [${req.method}] ${req.url} +${
             Date.now() - onStartHandleDate
           }ms`,
         );

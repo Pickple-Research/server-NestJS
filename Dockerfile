@@ -23,6 +23,9 @@ RUN apt-get install -y nodejs
 # yarn 설치 && yarn 버전 세팅
 RUN npm install -g yarn -y && yarn set version 1.22.18
 
+# 로그 파일 저장용 디렉토리 생성
+RUN mkdir logs
+
 # pm2 설치
 # (docker와 pm2는 같이 쓰면 오히려 안 좋을 수 있음)
 # RUN npm install -g pm2 -y

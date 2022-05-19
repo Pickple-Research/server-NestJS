@@ -7,10 +7,16 @@ import {
 import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ScheduleModule } from "@nestjs/schedule";
+import {
+  WinstonModule,
+  utilities as nestWinstonModuleUtilities,
+} from "nest-winston";
+import * as winston from "winston";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 // Middlewares
 import { BlankMiddleware } from "../Middleware";
+import { format } from "winston";
 // CronJobs
 import { CronModule } from "../Cron";
 // Global Modules
@@ -54,6 +60,44 @@ import {
   controllers: [AppController],
   providers: [AppService],
   imports: [
+    //? WinstonModule: 앱 전역에서 winston logger를 사용할 수 있도록 설정합니다.
+    //?  winston 로거를 Inject하는 방식은 아래 공식 문서를 참조.
+    //? @ref main.ts
+    //? @see https://github.com/gremo/nest-winston
+    WinstonModule.forRoot({
+      transports: [
+        new winston.transports.Console({
+          level: "info",
+          format: winston.format.combine(
+            winston.format.timestamp(),
+            nestWinstonModuleUtilities.format.nestLike("Server", {
+              prettyPrint: true,
+            }),
+          ),
+        }),
+        new winston.transports.File({
+          filename: "logs/common.log",
+          level: "info",
+          format: winston.format.combine(
+            winston.format.timestamp({
+              format: "YYYY-MM-DD hh:mm:ss",
+            }),
+            winston.format.json(),
+          ),
+        }),
+        new winston.transports.File({
+          filename: "logs/error.log",
+          level: "error",
+          format: winston.format.combine(
+            winston.format.timestamp({
+              format: "YYYY-MM-DD hh:mm:ss",
+            }),
+            winston.format.json(),
+          ),
+        }),
+      ],
+    }),
+
     //? ScheduleModule: CronJob/Timeouts/Intervals를 통한 TaskScheduling을 할 수 있도록 도와주는 모듈.
     ScheduleModule.forRoot(),
     CronModule,

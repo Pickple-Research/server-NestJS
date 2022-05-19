@@ -1,10 +1,13 @@
 import {
   ExceptionFilter,
+  Inject,
   Catch,
   ArgumentsHost,
   HttpException,
+  LoggerService,
 } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
+import { WINSTON_MODULE_NEST_PROVIDER } from "nest-winston";
 import { MongoError } from "mongodb";
 import { CustomExceptionResonse } from "../Status";
 
@@ -14,7 +17,11 @@ import { CustomExceptionResonse } from "../Status";
  */
 @Catch()
 export class AllExceptionFilter implements ExceptionFilter {
-  constructor(private readonly httpAdapterHost: HttpAdapterHost) {}
+  constructor(
+    private readonly httpAdapterHost: HttpAdapterHost,
+    @Inject(WINSTON_MODULE_NEST_PROVIDER)
+    private readonly logger: LoggerService,
+  ) {}
 
   //? argumentsHost: handler에게 전달된 모든 arguments들을 가지고 있는 객체. (req, res, next 등)
   //?     getArgs(), getArgByIndex(), getType() 등의 함수를 사용하여 요청에 담긴 정보들을 읽어낼 수 있음.
@@ -59,21 +66,22 @@ export class AllExceptionFilter implements ExceptionFilter {
     //* /////////////////////////////////////////////////////////////
 
     //* 에러 내용 로깅
-    console.error(
+    this.logger.error(
       `FAILED(${exceptionType}: ${
         exceptionType == "MONGO-ERROR" ? code : status
-      })@${new Date().toISOString()}: [${request.method}] ${request.url}\n -> ${
-        exception.name
-      }: ${exception.message}`,
+      }): [${request.method}] ${request.url}\n -> ${exception.name}: ${
+        exception.message
+      }`,
+      [exception.stack],
     );
-    if (exception.stack)
-      console.error(
-        `<ERROR STACK>\n${"=".repeat(20)}\n${exception.stack}\n${"=".repeat(
-          20,
-        )}`,
-      );
+    // if (exception.stack)
+    //   this.logger.error(
+    //     `<ERROR STACK>\n${"=".repeat(20)}\n${exception.stack}\n${"=".repeat(
+    //       20,
+    //     )}`,
+    //   );
 
-    //* 반환
+    //* 사용자에게 응답 반환
     httpAdapter.reply(response, responseBody, status);
   }
 }
