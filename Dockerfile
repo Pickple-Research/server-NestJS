@@ -31,17 +31,14 @@ RUN mkdir logs
 # RUN npm install -g pm2 -y
 
 # server 폴더 생성
-# RUN mkdir /server
+RUN mkdir /server
 
 # (github 레포지토리의) 모든 내용을 도커 내의 /server 폴더로 복사
-# COPY . /server
-
-# (github 레포지토리의) 모든 내용을 도커로 복사
-COPY . .
+COPY . /server
 
 # WORKDIR를 server로 설정
 # (cd 명령어가 개별적으로 실행되기 때문에, cd server && yarn && yarn build 형태로 진행할 수 없음)
-# WORKDIR /server
+WORKDIR /server
 
 # node modules 설치하고 build
 # (일반적으로는 node modules를 .dokerignore를 통해 무시하지만 서버의 부담을 경감시키기 위해 이미지에 빌드)
