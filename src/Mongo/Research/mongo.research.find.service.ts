@@ -11,14 +11,14 @@ export class MongoResearchFindService {
   ) {}
 
   async testMongoResearchRouter() {
-    return "test mongoResearchFindRouter";
+    return `mongoResearchFindRouter@PORT:${process.env.PORT}`;
   }
 
   /**
    * 최신 리서치를 원하는만큼 찾고 반환합니다.
    * @author 현웅
    */
-  async getRecentResearches(get: number) {
+  async getRecentResearches(get: number = 10) {
     return await this.Research.find()
       .sort({ _id: -1 }) // 최신순 정렬 후 (mongodb의 _id가 생성일자 정보를 포함하기에 가능한 방식)
       .limit(get) // 원하는 수만큼

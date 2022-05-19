@@ -1,11 +1,10 @@
 import { Controller, Inject, Query, Param, Get } from "@nestjs/common";
-import { ResearchFindService } from "src/Service";
 import { MongoResearchFindService } from "src/Mongo";
 import { Public } from "src/Security/Metadata";
 
 @Controller("researches")
 export class ResearchGetController {
-  constructor(private readonly researchFindService: ResearchFindService) {}
+  constructor() {}
 
   @Inject() private readonly mongoResearchFindService: MongoResearchFindService;
 
@@ -16,6 +15,7 @@ export class ResearchGetController {
   @Get("test")
   @Public()
   async testResearchRouter() {
+    console.log(`PORT: ${process.env.PORT}`);
     return await this.mongoResearchFindService.testMongoResearchRouter();
   }
 
@@ -27,7 +27,7 @@ export class ResearchGetController {
   @Get("")
   @Public()
   async getRecentResearches(@Query() query: { get?: number }) {
-    return await this.researchFindService.getRecentResearches(query?.get);
+    return await this.mongoResearchFindService.getRecentResearches(query?.get);
   }
 
   /**
@@ -49,6 +49,6 @@ export class ResearchGetController {
   @Get(":researchId")
   @Public()
   async getResearchById(@Param() param: { researchId: string }) {
-    return this.researchFindService.getResearchById(param.researchId);
+    return this.mongoResearchFindService.getResearchById(param.researchId);
   }
 }

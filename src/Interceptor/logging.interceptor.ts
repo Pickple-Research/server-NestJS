@@ -7,7 +7,8 @@ import {
 } from "@nestjs/common";
 import { Observable, throwError } from "rxjs";
 import { tap, catchError } from "rxjs/operators";
-import { CustomExceptionResonse } from "../Exception/Status";
+import { CustomExceptionResonse } from "src/Exception/Status";
+import { healthCheckUrl } from "src/Constant";
 
 /**
  * 성공한 모든 요청에 대해 로그를 남기는 인터셉터입니다. 로그는 아래 내용을 포함합니다:
@@ -24,6 +25,10 @@ export class LoggingInterceptor implements NestInterceptor {
     //* Request 객체 저장
     const httpArgs = context.switchToHttp();
     const req = httpArgs.getRequest<Request>();
+
+    //* 서버 health check를 위한 요청인 경우 로그를 남기지 않음
+    if (req.url === healthCheckUrl) return next.handle();
+
     //* 최종적으로 핸들러에 넘기기 전 시간 저장
     const onStartHandleDate = Date.now();
 
