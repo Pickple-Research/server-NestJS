@@ -38,6 +38,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.PORT }}
           script: |
+            cd server
             docker-compose pull
             docker-compose up -d
 
