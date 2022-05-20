@@ -1,5 +1,5 @@
 import { Controller, Inject, Body, Post } from "@nestjs/common";
-import { EmailUserSignupBodyDto, EmailUserAuthorizationBodyDto } from "src/Dto";
+import { EmailUserSignupBodyDto, AuthCodeVerificationBodyDto } from "src/Dto";
 import { MongoUserFindService, MongoUserCreateService } from "src/Mongo";
 import { getSalt, getKeccak512Hash, getCurrentISOTime } from "src/Util";
 import {
@@ -23,22 +23,22 @@ export class UserPostController {
    * TODO: 생성되고 1주일 뒤 삭제되도록 동적 cronjob을 정의해야 합니다.
    * @author 현웅
    */
-  @Post("unauthorized")
+  @Post("email")
   async createUnauthorizedUser(
     @Body() emailUserSignupDto: EmailUserSignupBodyDto,
   ) {
-    //* 이미 해당 이메일로 회원가입 시도 중인 미인증 유저가 있는 경우
+    //* 해당 이메일로 회원가입 시도 중인 미인증 유저가 있는지 확인
     const checkUnauthorized =
       await this.mongoUserFindService.getUnauthorizedUser(
         emailUserSignupDto.email,
       );
 
-    //* 이미 해당 이메일로 가입된 유저가 있는 경우
+    //* 해당 이메일로 가입된 유저가 있는지 확인
     const checkAuthorized = await this.mongoUserFindService.getUserByEmail(
       emailUserSignupDto.email,
     );
 
-    //* 동시에 확인
+    //* 위 두 개 함수를 동시에 실행 후 결과값 반환
     const checkedResults = await Promise.all([
       checkUnauthorized,
       checkAuthorized,
@@ -48,7 +48,7 @@ export class UserPostController {
     if (checkedResults[0] || checkedResults[1])
       throw new EmailDuplicateException();
 
-    //* 미인증 유저 데이터에 필요한 값을 생성합니다.
+    //* 미인증 유저 데이터에 생성 필요한 값
     const salt = getSalt();
     const hashedPassword = getKeccak512Hash(
       emailUserSignupDto.password + salt,
@@ -68,27 +68,6 @@ export class UserPostController {
       //* 생성시간 추가
       createdAt: getCurrentISOTime(),
     });
-  }
-
-  /**
-   * 이메일 미인증 유저를 정규유저로 전환합니다.
-   * @author 현웅
-   */
-  @Post("email")
-  async authorizeEmailUser(@Body() body: EmailUserAuthorizationBodyDto) {
-    //* 입력한 인증 번호가 다르거나
-    //* 해당 이메일을 사용하는 유저가 존재하지 않으면 에러를 일으킵니다.
-    if (
-      !(await this.mongoUserFindService.checkUnauthorizedUserCode(
-        body.email,
-        body.code,
-      ))
-    ) {
-      throw new WrongAuthorizationCodeException();
-    }
-
-    //* 인증번호가 일치하는 경우 정규유저로 전환합니다.
-    return await this.mongoUserCreateService.authorizeEmailUser(body.email);
   }
 
   /**

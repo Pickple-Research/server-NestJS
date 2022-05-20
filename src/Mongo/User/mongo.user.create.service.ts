@@ -64,13 +64,15 @@ export class MongoUserCreateService {
     const session = await this.connection.startSession();
 
     return await tryTransaction(session, async () => {
-      //* 회원가입을 시도하던 기존의 미인증 유저 데이터를 가져오고 삭제
+      //* 회원가입을 시도하던 기존의 미인증 유저 데이터를 삭제하면서 가져옵니다
       const userData = await this.UnauthorizedUser.findOneAndDelete(
         {
           email,
         },
         { session },
-      ).lean();
+      )
+        .select({ email: 1, password: 1, salt: 1 })
+        .lean();
 
       //* 해당 유저가 존재하지 않는 경우
       if (!userData) throw new UserNotFoundException();
@@ -102,7 +104,7 @@ export class MongoUserCreateService {
       await this.UserPrivacy.create([{ _id: newUserId }], { session });
       await this.UserProperty.create([{ _id: newUserId }], { session });
 
-      return newUser[0];
+      return;
     });
   }
 }

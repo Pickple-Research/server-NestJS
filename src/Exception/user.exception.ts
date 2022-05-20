@@ -29,29 +29,3 @@ export class EmailDuplicateException extends Status400Exception {
     });
   }
 }
-
-/**
- * 주어진 인증번호가 미인증 유저의 인증번호와 일치하지 않는 경우 사용합니다.
- * 기본 message: `인증번호가 일치하지 않습니다`
- * @author 현웅
- */
-export class WrongAuthorizationCodeException extends Status401Exception {
-  constructor(newMessage?: string) {
-    super({
-      customMessage: newMessage ? newMessage : `인증번호가 일치하지 않습니다`,
-    });
-  }
-}
-
-/**
- * 비밀번호가 일치하지 않는 경우 사용합니다.
- * 기본 message: `비밀번호가 일치하지 않습니다`
- * @author 현웅
- */
-export class WrongPasswordException extends Status401Exception {
-  constructor(newMessage?: string) {
-    super({
-      customMessage: newMessage ? newMessage : `비밀번호가 일치하지 않습니다`,
-    });
-  }
-}

@@ -15,17 +15,16 @@ import * as winston from "winston";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
 // Middlewares
-import { BlankMiddleware } from "../Middleware";
-import { format } from "winston";
+import { BlankMiddleware } from "src/Middleware";
 // CronJobs
-import { CronModule } from "../Cron";
+import { CronModule } from "src/Cron";
 // Global Modules
 import {
   InterceptorModule,
   GuardModule,
   PipeModule,
   FilterModule,
-} from "../Module/Global";
+} from "src/Module/Global";
 // Main Modules
 import {
   AuthModule,
@@ -35,15 +34,20 @@ import {
   ResearchModule,
   UserModule,
   VoteModule,
-} from "../Module";
+} from "src/Module";
 import {
+  // MongoDB
   MONGODB_USER_CONNECTION,
   MONGODB_RESEARCH_CONNECTION,
   MONGODB_VOTE_CONNECTION,
   MONGODB_NOTICE_CONNECTION,
   MONGODB_PARTNER_CONNECTION,
   MONGODB_FEEDBACK_CONNECTION,
-} from "../Constant";
+  // Winston
+  WINSTON_LOG_CONSOLE_OPTION,
+  WINSTON_COMMON_LOG_FILE_OPTION,
+  WINSTON_ERROR_LOG_FILE_OPTION,
+} from "src/Constant";
 
 /**
  * NestJS에서 제공하는 기본 모듈과 서비스 제공을 위해 우리가 제작한 모든 모듈을 합치는 곳입니다.
@@ -66,35 +70,9 @@ import {
     //? @see https://github.com/gremo/nest-winston
     WinstonModule.forRoot({
       transports: [
-        new winston.transports.Console({
-          level: "info",
-          format: winston.format.combine(
-            winston.format.timestamp(),
-            nestWinstonModuleUtilities.format.nestLike("Server", {
-              prettyPrint: true,
-            }),
-          ),
-        }),
-        new winston.transports.File({
-          filename: "logs/common.log",
-          level: "info",
-          format: winston.format.combine(
-            winston.format.timestamp({
-              format: "YYYY-MM-DD hh:mm:ss",
-            }),
-            winston.format.json(),
-          ),
-        }),
-        new winston.transports.File({
-          filename: "logs/error.log",
-          level: "error",
-          format: winston.format.combine(
-            winston.format.timestamp({
-              format: "YYYY-MM-DD hh:mm:ss",
-            }),
-            winston.format.json(),
-          ),
-        }),
+        new winston.transports.Console(WINSTON_LOG_CONSOLE_OPTION),
+        new winston.transports.File(WINSTON_COMMON_LOG_FILE_OPTION),
+        new winston.transports.File(WINSTON_ERROR_LOG_FILE_OPTION),
       ],
     }),
 

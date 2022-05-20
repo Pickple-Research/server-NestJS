@@ -12,7 +12,9 @@ import {
 import {
   AlreadyParticipatedResearchException,
   UserNotFoundException,
+  WrongPasswordException,
 } from "src/Exception";
+import { getKeccak512Hash } from "src/Util";
 
 @Injectable()
 export class MongoUserFindService {
@@ -26,6 +28,34 @@ export class MongoUserFindService {
 
   async testMongoUserRouter() {
     return "test MongoUserFindRouter";
+  }
+
+  /**
+   * 주어진 이메일과 비밀번호를 사용해 로그인합니다.
+   * 해당 이메일을 사용하는 유저가 없는 경우
+   * 비밀번호가 다른 경우 오류를 일으킵니다.
+   * @param email
+   * @param password
+   */
+  async login(email: string, password: string) {
+    //* 유저 데이터 탐색
+    const user = await this.User.findOne({ email })
+      .select({ _id: 1, email: 1, salt: 1, password: 1 })
+      .lean();
+
+    //* 유저가 존재하지 않는 경우
+    if (!user) throw new UserNotFoundException();
+
+    //* 주어진 비밀번호 해쉬
+    const givenPassword = getKeccak512Hash(
+      password + user.salt,
+      parseInt(process.env.PEPPER),
+    );
+
+    //* 비밀번호가 일치하지 않는 경우
+    if (givenPassword !== user.password) throw new WrongPasswordException();
+
+    return user;
   }
 
   /**
@@ -124,14 +154,13 @@ export class MongoUserFindService {
 
     //* 유저 정보가 존재하지 않는 경우
     if (!userActivity) {
-      if (handleAsException === true) throw new UserNotFoundException();
+      if (handleAsException) throw new UserNotFoundException();
       return true;
     }
 
     //* 참여한 리서치 목록에 researchId가 포함되어 있는 경우
     if (userActivity.participatedResearchIds.includes(researchId)) {
-      if (handleAsException === true)
-        throw new AlreadyParticipatedResearchException();
+      if (handleAsException) throw new AlreadyParticipatedResearchException();
       return true;
     }
 
