@@ -1,7 +1,8 @@
-import { Controller, Inject, Get } from "@nestjs/common";
+import { Controller, Inject, Get, Request } from "@nestjs/common";
 import { UserFindService } from "src/Service";
 import { MongoUserFindService } from "src/Mongo";
 import { Public } from "src/Security/Metadata";
+import { JwtUserInfo } from "src/Object/Type";
 
 @Controller("users")
 export class UserGetController {
@@ -15,7 +16,7 @@ export class UserGetController {
    */
   @Public()
   @Get("test")
-  async testUserRouter() {
-    return await this.mongoUserFindService.testMongoUserRouter();
+  async testUserRouter(@Request() req: { user: JwtUserInfo }) {
+    return req.user;
   }
 }

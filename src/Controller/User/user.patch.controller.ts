@@ -14,7 +14,7 @@ import {
   MongoResearchUpdateService,
   MongoPartnerUpdateService,
 } from "src/Mongo";
-import { RequestUser } from "src/Object/Type";
+import { JwtUserInfo } from "src/Object/Type";
 import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import {
   MONGODB_USER_CONNECTION,
@@ -46,7 +46,7 @@ export class UserPatchController {
    */
   @Patch("view/:researchId")
   async viewResearch(
-    @Request() req: { user: RequestUser },
+    @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
   ) {
     const updateUser = await this.mongoUserUpdateService.viewResearch(
@@ -67,7 +67,7 @@ export class UserPatchController {
    */
   @Patch("scrap/:researchId")
   async scrapResearch(
-    @Request() req: { user: RequestUser },
+    @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
   ) {
     const updateUser = await this.mongoUserUpdateService.scrapResearch(
@@ -88,7 +88,7 @@ export class UserPatchController {
    */
   @Patch("unscrap/:researchId")
   async unscrapResearch(
-    @Request() req: { user: RequestUser },
+    @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
   ) {
     const updateUser = await this.mongoUserUpdateService.unscrapResearch(
@@ -176,7 +176,7 @@ export class UserPatchController {
    */
   @Patch("follow/:partnerId")
   async followPartner(
-    @Request() req: { user: RequestUser },
+    @Request() req: { user: JwtUserInfo },
     @Param() param: { partnerId: string },
   ) {
     //* User DB, Partner DB에 대한 Session을 시작하고
@@ -210,7 +210,7 @@ export class UserPatchController {
    */
   @Patch("unfollow/:partnerId")
   async unfollowPartner(
-    @Request() req: { user: RequestUser },
+    @Request() req: { user: JwtUserInfo },
     @Param() param: { partnerId: string },
   ) {
     //* User DB, Partner DB에 대한 Session을 시작하고

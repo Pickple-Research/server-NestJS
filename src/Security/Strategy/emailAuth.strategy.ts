@@ -13,8 +13,8 @@ import { Strategy as PassportLocalStrategy } from "passport-local";
  * username, password 속성의 이름을 바꾸고 싶다면 super()에
  * {usernameField:'<field name>', passwordField:'<field name>'} 형태의 인자를 넣어 설정해야 합니다.
  *
- * @link {http://www.passportjs.org/concepts/authentication/strategies} (공식문서)
- * @link {https://docs.nestjs.com/security/authentication} (예시)
+ * @see http://www.passportjs.org/concepts/authentication/strategies (공식문서)
+ * @see https://docs.nestjs.com/security/authentication (예시)
  * @author 현웅
  */
 @Injectable()
