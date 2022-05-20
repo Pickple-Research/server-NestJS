@@ -16,7 +16,6 @@ export class ResearchGetController {
   @Get("test")
   @Public()
   async testResearchRouter() {
-    throw new EmailDuplicateException();
     return await this.mongoResearchFindService.testMongoResearchRouter();
   }
 
