@@ -7,6 +7,14 @@ import { IsString } from "class-validator";
  * @author 현웅
  */
 export class EmailUserSignupBodyDto {
+  /** 성 */
+  @IsString()
+  lastName: string;
+
+  /** 이름 */
+  @IsString()
+  name: string;
+
   @IsString()
   email: string;
 

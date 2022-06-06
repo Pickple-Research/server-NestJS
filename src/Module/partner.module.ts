@@ -9,7 +9,7 @@ import {
   PartnerFindService,
   PartnerUpdateService,
 } from "src/Service";
-import { MongoPartnerModule } from "src/Mongo";
+import { MongoUserModule, MongoPartnerModule } from "src/Mongo";
 
 @Module({
   controllers: [
@@ -18,6 +18,6 @@ import { MongoPartnerModule } from "src/Mongo";
     PartnerPostController,
   ],
   providers: [PartnerCreateService, PartnerFindService, PartnerUpdateService],
-  imports: [MongoPartnerModule],
+  imports: [MongoUserModule, MongoPartnerModule],
 })
 export class PartnerModule {}

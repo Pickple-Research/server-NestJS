@@ -36,7 +36,7 @@ export class AuthController {
       body.password,
     );
 
-    return this.authService.issueJWT({
+    return await this.authService.issueJWT({
       userId: user._id,
       userEmail: user.email,
     });
@@ -61,7 +61,8 @@ export class AuthController {
     }
 
     //* 인증번호가 일치하는 경우 정규유저로 전환합니다.
-    return await this.mongoUserCreateService.authorizeEmailUser(body.email);
+    await this.mongoUserCreateService.authorizeEmailUser(body.email);
+    return true;
   }
 
   /**

@@ -44,6 +44,7 @@ export class UserPostController {
       checkAuthorized,
     ]);
 
+    //TODO: 첫번째 상황의 경우엔 에러 대신 인증 코드를 재설정해야 합니다.
     //* 둘 중 하나라도 존재하면 에러 발생
     if (checkedResults[0] || checkedResults[1])
       throw new EmailDuplicateException();

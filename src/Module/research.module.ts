@@ -12,7 +12,7 @@ import {
   ResearchUpdateService,
 } from "src/Service";
 import { AwsS3Service } from "src/AWS";
-import { MongoResearchModule } from "src/Mongo";
+import { MongoUserModule, MongoResearchModule } from "src/Mongo";
 
 @Module({
   controllers: [
@@ -28,6 +28,6 @@ import { MongoResearchModule } from "src/Mongo";
     ResearchFindService,
     ResearchUpdateService,
   ],
-  imports: [MongoResearchModule],
+  imports: [MongoUserModule, MongoResearchModule],
 })
 export class ResearchModule {}
