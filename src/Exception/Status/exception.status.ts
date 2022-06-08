@@ -16,7 +16,7 @@ export class Status400Exception extends HttpException {
 
 export class Status401Exception extends HttpException {
   constructor(customMessage: CustomExceptionResonse) {
-    super(customMessage, HttpStatus.BAD_REQUEST);
+    super(customMessage, HttpStatus.UNAUTHORIZED);
   }
 }
 

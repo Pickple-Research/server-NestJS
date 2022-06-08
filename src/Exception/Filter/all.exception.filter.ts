@@ -39,6 +39,9 @@ export class AllExceptionFilter implements ExceptionFilter {
     const request = httpArgumentsHost.getRequest<Request>();
     const response = httpArgumentsHost.getResponse<Response>();
 
+    console.log(`request data:`);
+    console.dir(request);
+
     //* /////////////////////////////////////////////////////////////
     //* 로그 정보 구성
 

@@ -1,4 +1,5 @@
 /**
+ * @deprecated
  * 리서치 예상 소요 시간
  * @author 현웅
  */

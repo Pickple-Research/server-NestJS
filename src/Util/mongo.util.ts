@@ -10,13 +10,13 @@ import { ClientSession } from "mongoose";
  * async deleteUser(){
  *  const session = await this.connection.startSession();
  *
- *  return tryTransaction(session, async()=>{
+ *  return tryTransaction(async()=>{
  *   const user = await this.userModel
  *    .findByIdAndDelete(userId)
  *    .populate('posts')
  *    .session(session);
  *   return user;
- *  })
+ *  }, session)
  * }
  * @example
  * //* 원하는 곳에 session 넣는 법
@@ -35,9 +35,12 @@ import { ClientSession } from "mongoose";
  * @author 현웅
  */
 export async function tryTransaction<ReturnType>(
-  session: ClientSession,
   func: () => Promise<ReturnType>,
+  session?: ClientSession,
 ) {
+  //* session이 주어지지 않은 경우 바로 실행하고 반환
+  if (!session) return await func();
+
   //TODO?: session.withTransaction을 이용하면 좀 더 코드가 간단해지긴 하는데..
   //* session을 통해 transaction을 시작합니다.
   session.startTransaction();
@@ -63,8 +66,8 @@ export async function tryTransaction<ReturnType>(
  * @author 현웅
  */
 export async function tryMultiTransaction<ReturnType>(
-  sessions: ClientSession[],
   func: () => Promise<ReturnType>,
+  sessions: ClientSession[],
 ) {
   sessions.forEach((session) => {
     session.startTransaction();

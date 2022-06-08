@@ -5,8 +5,7 @@ import { IsString } from "class-validator";
  * @param title 리서치 제목
  * @param content 리서치 내용
  * @param target 타겟
- * @param formUrl 폼 링크 url
- * @param researcherId 리서치 진행 유저 _id
+ * @param link 폼 링크 url
  * @author 현웅
  */
 export class ResearchCreateBodyDto {
@@ -14,14 +13,11 @@ export class ResearchCreateBodyDto {
   title: string;
 
   @IsString()
+  link: string;
+
+  @IsString()
   content: string;
 
   @IsString()
   target: string;
-
-  @IsString()
-  formUrl: string;
-
-  @IsString()
-  researcherId: string;
 }

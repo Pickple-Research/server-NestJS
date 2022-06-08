@@ -37,7 +37,7 @@ export class MongoResearchDeleteService {
   async deleteResearch(researchId: string) {
     const session = await this.connection.startSession();
 
-    return await tryTransaction(session, async () => {
+    return await tryTransaction(async () => {
       //* 리서치 기본 데이터는 삭제하지 않고 남겨둡니다.
       await this.Research.findByIdAndUpdate(
         researchId,
@@ -50,6 +50,6 @@ export class MongoResearchDeleteService {
         session,
       });
       return;
-    });
+    }, session);
   }
 }

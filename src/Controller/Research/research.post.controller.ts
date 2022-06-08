@@ -1,24 +1,37 @@
 import {
   Controller,
+  Inject,
   UseInterceptors,
   UploadedFiles,
+  Request,
   Body,
   Post,
 } from "@nestjs/common";
+import { InjectConnection } from "@nestjs/mongoose";
+import { Connection } from "mongoose";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
-import { MongoResearchCreateService } from "src/Mongo";
+import { MongoUserUpdateService, MongoResearchCreateService } from "src/Mongo";
+import { getMulterOptions, tryTransaction } from "src/Util";
 import { ResearchCreateBodyDto } from "src/Dto";
+import { JwtUserInfo } from "src/Object/Type";
 import {
-  getCurrentISOTime,
-  getISOTimeAfterGivenDays,
-  getMulterOptions,
-} from "src/Util";
+  MONGODB_USER_CONNECTION,
+  MONGODB_RESEARCH_CONNECTION,
+} from "src/Constant";
 
 @Controller("researches")
 export class ResearchPostController {
   constructor(
-    private readonly mongoResearchCreateService: MongoResearchCreateService,
+    @InjectConnection(MONGODB_USER_CONNECTION)
+    private readonly userConnection: Connection,
+    @InjectConnection(MONGODB_RESEARCH_CONNECTION)
+    private readonly researchConnection: Connection,
   ) {}
+
+  @Inject()
+  private readonly mongoUserUpdateService: MongoUserUpdateService;
+  @Inject()
+  private readonly mongoResearchCreateService: MongoResearchCreateService;
 
   /**
    * 새로운 리서치를 생성합니다.
@@ -33,29 +46,41 @@ export class ResearchPostController {
     //? 그 외 파일에 대한 제약 조건은 researchMulterOptions를 적용합니다. aws.constant.ts 파일을 참고하세요.
     FileFieldsInterceptor(
       [
-        { name: "thumbnail", maxCount: 1 },
+        // { name: "thumbnail", maxCount: 1 },
         { name: "images", maxCount: 6 },
       ],
       getMulterOptions(),
     ),
   )
   async createResearch(
+    @Request() req: { user: JwtUserInfo },
+    @Body() researchCreateBodyDto: ResearchCreateBodyDto,
     @UploadedFiles()
     files: {
       thumbnail?: Express.Multer.File[];
       images?: Express.Multer.File[];
     },
-    @Body() researchCreateBodyDto: ResearchCreateBodyDto,
   ) {
-    //* Body로 전달된 리서치 정보(와 파일(들))를 researchCreateService로 넘깁니다.
-    return await this.mongoResearchCreateService.createResearch(
-      {
-        ...researchCreateBodyDto,
-        createdAt: getCurrentISOTime(),
-        //TODO: 기본 리서치 진행시간 상수화
-        deadline: getISOTimeAfterGivenDays(3),
-      },
-      files,
-    );
+    const userSession = await this.userConnection.startSession();
+    const researchSession = await this.researchConnection.startSession();
+
+    await tryTransaction(async () => {
+      const newResearchId =
+        await this.mongoResearchCreateService.createResearch(
+          // req.user.userId
+          "62872828ce447005a0be3dbc",
+          researchCreateBodyDto,
+          files,
+          researchSession,
+        );
+
+      return await this.mongoUserUpdateService.uploadResearch(
+        "62872828ce447005a0be3dbc",
+        newResearchId,
+        userSession,
+      );
+    }, researchSession);
+
+    return true;
   }
 }

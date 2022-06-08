@@ -85,15 +85,15 @@ export class MongoUserUpdateService {
   /**
    * @Transaction
    * 리서치를 업로드합니다.
-   * UserActivity의 uploadedResearchIds에 Id를 추가하고 크레딧을 감소시킵니다.
+   * UserActivity의 uploadedResearchIds에 리서치 _id를 추가하고 유저 크레딧을 감소시킵니다.
    * @author 현웅
    */
   async uploadResearch(
-    session: ClientSession,
     userId: string,
     researchId: string,
+    session: ClientSession,
   ) {
-    await tryTransaction(session, async () => {
+    await tryTransaction(async () => {
       await this.UserActivity.findByIdAndUpdate(
         userId,
         { $addToSet: { uploadedResearchIds: researchId } },
@@ -101,7 +101,7 @@ export class MongoUserUpdateService {
       );
       await this.UserCreditHistory.findByIdAndUpdate(userId, { $push: {} });
       return;
-    });
+    }, session);
     return;
   }
 

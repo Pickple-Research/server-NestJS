@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { ResearchEstimatedTime, Category } from "src/Object/Enum";
+import { Category } from "src/Object/Enum";
 
 /**
  * 리서치 기본 정보 스키마입니다.
@@ -8,26 +8,6 @@ import { ResearchEstimatedTime, Category } from "src/Object/Enum";
  */
 @Schema()
 export class Research {
-  @Prop({ required: true }) // 리서치 제목
-  title: string;
-
-  @Prop({ required: true }) // 리서치 내용
-  content: string;
-
-  @Prop({ required: true }) // 마감일
-  deadline: string;
-
-  @Prop({ required: true }) // 참여대상 (줄글 작성)
-  target: string;
-
-  @Prop({ required: true }) // 설문지 폼 url
-  formUrl: string;
-
-  //TODO: 리서치 예상시간
-  // @Prop({ required: true, enum: ResearchEstimatedTime }) // 예상 소요시간
-  @Prop({ enum: ResearchEstimatedTime }) // 예상 소요시간
-  estimatedTime: ResearchEstimatedTime;
-
   //TODO: enum화
   // @Prop({ required: true }) // 리서치 진행자 타입 (일반 유저 or 파트너)
   @Prop() // 리서치 진행자 타입 (일반 유저 or 파트너)
@@ -35,6 +15,33 @@ export class Research {
 
   @Prop({ required: true }) // 리서치 진행자 Id
   researcherId: string;
+
+  @Prop({ required: true }) // 리서치 제목
+  title: string;
+
+  @Prop({ required: true }) // 설문지 폼 url
+  link: string;
+
+  @Prop({ required: true }) // 리서치 내용
+  content: string;
+
+  //TODO: enum화, required
+  @Prop() // 리서치 목적
+  purpose: string;
+
+  //TODO: enum화, required
+  @Prop() // 리서치 진행 단체
+  organization: string;
+
+  @Prop({ required: true }) // 참여 대상 (줄글 작성)
+  target: string;
+
+  // @Prop({ required: true }) // 예상 소요시간
+  @Prop() // 예상 소요시간
+  estimatedTime: number;
+
+  @Prop({ required: true }) // 마감일
+  deadline: string;
 
   //TODO: enum화
   // @Prop({ required: true }) // 최소 참여조건
@@ -44,7 +51,7 @@ export class Research {
   @Prop({ type: [String], enum: Category }) // 리서치 카테고리
   categories: Category[];
 
-  @Prop({ default: false }) // 종료 여부
+  @Prop({ default: false }) // 종료 여부. deadline이 지나기 전일지라도 사용자가 종료 가능.
   closed: boolean;
 
   @Prop({ default: false }) // 숨김 여부

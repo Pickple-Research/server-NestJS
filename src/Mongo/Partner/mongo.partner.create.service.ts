@@ -38,7 +38,7 @@ export class MongoPartnerCreateService {
    */
   async uploadPartner(partnerCreateBodyDto: PartnerCreateBodyDto) {
     const session = await this.connection.startSession();
-    return await tryTransaction(session, async () => {
+    return await tryTransaction(async () => {
       //* 먼저 파트너 데이터를 만듭니다.
       const newPartner = await this.Partner.create([partnerCreateBodyDto], {
         session,
@@ -47,7 +47,7 @@ export class MongoPartnerCreateService {
       const newPartnerId = newPartner[0]._id;
       await this.PartnerActivity.create([{ _id: newPartnerId }]);
       return;
-    });
+    }, session);
   }
 
   /**
@@ -57,7 +57,7 @@ export class MongoPartnerCreateService {
    */
   async uploadPost(partnerPost: PartnerPost) {
     const session = await this.connection.startSession();
-    return await tryTransaction(session, async () => {
+    return await tryTransaction(async () => {
       const newPost = await this.PartnerPost.create([partnerPost], {
         session,
       });
@@ -68,7 +68,7 @@ export class MongoPartnerCreateService {
         $push: { postIds: { $each: [newPostId], $position: 0 } },
       });
       return;
-    });
+    }, session);
   }
 
   /**
@@ -78,7 +78,7 @@ export class MongoPartnerCreateService {
    */
   async uploadProduct(partnerProduct: PartnerProduct) {
     const session = await this.connection.startSession();
-    return await tryTransaction(session, async () => {
+    return await tryTransaction(async () => {
       const newProduct = await this.PartnerProduct.create([partnerProduct], {
         session,
       });
@@ -89,6 +89,6 @@ export class MongoPartnerCreateService {
         $push: { productIds: { $each: [newProductId], $position: 0 } },
       });
       return;
-    });
+    }, session);
   }
 }
