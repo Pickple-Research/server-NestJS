@@ -31,4 +31,7 @@ export * from "./User/user.patch.controller";
 export * from "./User/user.post.controller";
 
 //Vote
+export * from "./Vote/vote.delete.controller";
 export * from "./Vote/vote.get.controller";
+export * from "./Vote/vote.patch.controller";
+export * from "./Vote/vote.post.controller";

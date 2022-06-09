@@ -50,6 +50,8 @@ async function bootstrap() {
   //   region: "ap-northeast-2",
   // });
 
+  //TODO: cluster 설정: 멀티 프로세스로 서버 운용 가능
+
   await app.listen(process.env.PORT || 5000);
 }
 

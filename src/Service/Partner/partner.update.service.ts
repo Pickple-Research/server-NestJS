@@ -8,14 +8,6 @@ export class PartnerUpdateService {
   @Inject()
   private readonly mongoPartnerUpdateService: MongoPartnerUpdateService;
 
-  async updatePost() {
-    return await this.mongoPartnerUpdateService.updatePost();
-  }
-
-  async updateProduct() {
-    return await this.mongoPartnerUpdateService.updateProduct();
-  }
-
   async followPartner(userId: string, partnerId: string) {
     return await this.mongoPartnerUpdateService.updateFollower(
       userId,
@@ -28,5 +20,13 @@ export class PartnerUpdateService {
       userId,
       partnerId,
     );
+  }
+
+  async updatePost() {
+    return await this.mongoPartnerUpdateService.updatePost();
+  }
+
+  async updateProduct() {
+    return await this.mongoPartnerUpdateService.updateProduct();
   }
 }

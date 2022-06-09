@@ -1,2 +1,2 @@
 export * from "./researchGift.schema";
-export * from "./researchParticipant.schema";
+export * from "./researchParticipantInfo.schema";

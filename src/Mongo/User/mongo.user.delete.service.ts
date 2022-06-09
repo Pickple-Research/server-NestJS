@@ -62,11 +62,11 @@ export class MongoUserDeleteService {
     const session = await this.connection.startSession();
 
     //TODO: #QUERY-EFFICIENCY #CREATE/DELETE-MANY (해당 해쉬태그로 모두 찾아서 바꿀 것)
-    return await tryTransaction(session, async () => {
+    return await tryTransaction(async () => {
       await this.User.findOneAndDelete({ _id }, session);
       await this.UserActivity.findOneAndDelete({ _id }, session);
       await this.UserCreditHistory.findOneAndDelete({ _id }, session);
       await this.UserPrivacy.findOneAndDelete({ _id }, session);
-    });
+    }, session);
   }
 }

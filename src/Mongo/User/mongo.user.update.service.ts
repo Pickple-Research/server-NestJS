@@ -9,6 +9,7 @@ import {
   UserCreditHistory,
   UserCreditHistoryDocument,
 } from "src/Schema";
+import { ParticipatedVoteInfo } from "src/Schema";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
 import { tryTransaction } from "src/Util";
 
@@ -85,22 +86,60 @@ export class MongoUserUpdateService {
   /**
    * @Transaction
    * 리서치를 업로드합니다.
-   * UserActivity의 uploadedResearchIds에 Id를 추가하고 크레딧을 감소시킵니다.
+   * UserActivity의 uploadedResearchIds에 리서치 _id를 추가하고 유저 크레딧을 감소시킵니다.
    * @author 현웅
    */
   async uploadResearch(
-    session: ClientSession,
     userId: string,
     researchId: string,
+    session: ClientSession,
   ) {
-    await tryTransaction(session, async () => {
+    await tryTransaction(async () => {
       await this.UserActivity.findByIdAndUpdate(
         userId,
-        { $addToSet: { uploadedResearchIds: researchId } },
+        {
+          $push: { uploadedResearchIds: { $each: [researchId], $position: 0 } },
+        },
         { session },
       );
       await this.UserCreditHistory.findByIdAndUpdate(userId, { $push: {} });
       return;
+    }, session);
+    return;
+  }
+
+  /**
+   * 투표에 참여합니다. UserActivity를 업데이트합니다.
+   * @author 현웅
+   */
+  async participateVote(
+    userId: string,
+    participatedVoteInfo: ParticipatedVoteInfo,
+    session?: ClientSession,
+  ) {
+    await this.UserActivity.findByIdAndUpdate(
+      userId,
+      {
+        $push: {
+          participatedVoteInfos: {
+            $each: [participatedVoteInfo],
+            $position: 0,
+          },
+        },
+      },
+      { session },
+    );
+    return;
+  }
+
+  /**
+   * 투표를 업로드합니다.
+   * UserActivity의 uploadedVoteIds에 투표 _id를 추가합니다.
+   * @author 현웅
+   */
+  async uploadVote(userId: string, voteId: string) {
+    await this.UserActivity.findByIdAndUpdate(userId, {
+      $addToSet: { uploadedVoteIds: voteId },
     });
     return;
   }

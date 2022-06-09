@@ -63,7 +63,7 @@ export class MongoUserCreateService {
   async authorizeEmailUser(email: string) {
     const session = await this.connection.startSession();
 
-    return await tryTransaction(session, async () => {
+    return await tryTransaction(async () => {
       //* 회원가입을 시도하던 기존의 미인증 유저 데이터를 삭제하면서 가져옵니다
       const userData = await this.UnauthorizedUser.findOneAndDelete(
         {
@@ -105,6 +105,6 @@ export class MongoUserCreateService {
       await this.UserProperty.create([{ _id: newUserId }], { session });
 
       return;
-    });
+    }, session);
   }
 }

@@ -11,14 +11,14 @@ import {
  */
 @Schema()
 export class ResearchParticipation {
-  @Prop({ type: [ResearchParticipantInfoSchema], default: [] }) // 참여한 유저
-  participantInfos: ResearchParticipantInfo[];
-
   @Prop({ type: [String], default: [] }) // 조회한 유저 _id
   viewedUserIds: string[];
 
   @Prop({ type: [String], default: [] }) // 스크랩한 유저 _id
   scrappedUserIds: string[];
+
+  @Prop({ type: [ResearchParticipantInfoSchema], default: [] }) // 참여한 유저
+  participantInfos: ResearchParticipantInfo[];
 }
 
 export const ResearchParticipationSchema = SchemaFactory.createForClass(

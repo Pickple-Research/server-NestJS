@@ -23,6 +23,9 @@ export class UserActivity {
   @Prop({ type: [String], default: [] }) // 스크랩한 리서치 _id
   scrappedResearchIds: string[];
 
+  @Prop({ type: [String], default: [] }) // 스크랩한 투표 _id
+  scrappedVoteIds: string[];
+
   @Prop({ type: [String] }) // 참여한 리서치 _id
   participatedResearchIds: string[];
 

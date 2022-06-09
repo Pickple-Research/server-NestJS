@@ -7,10 +7,7 @@ import {
 import { ConfigModule } from "@nestjs/config";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ScheduleModule } from "@nestjs/schedule";
-import {
-  WinstonModule,
-  utilities as nestWinstonModuleUtilities,
-} from "nest-winston";
+import { WinstonModule } from "nest-winston";
 import * as winston from "winston";
 import { AppController } from "./app.controller";
 import { AppService } from "./app.service";
@@ -35,6 +32,7 @@ import {
   UserModule,
   VoteModule,
 } from "src/Module";
+import { MongoResearchModule, MongoVoteModule } from "src/Mongo";
 import {
   // MongoDB
   MONGODB_USER_CONNECTION,
@@ -121,6 +119,10 @@ import {
     ResearchModule,
     UserModule,
     VoteModule,
+
+    //* MongoDB 모듈
+    MongoResearchModule,
+    MongoVoteModule,
   ],
 })
 export class AppModule implements NestModule {

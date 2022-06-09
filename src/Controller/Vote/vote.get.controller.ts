@@ -1,6 +1,6 @@
 import { Controller, Get } from "@nestjs/common";
-import { VoteFindService } from "../../Service";
-import { Public } from "../../Security/Metadata";
+import { VoteFindService } from "src/Service";
+import { Public } from "src/Security/Metadata";
 
 @Controller("votes")
 export class VoteGetController {

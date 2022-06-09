@@ -19,8 +19,6 @@ import {
   UserPrivacySchema,
   UserProperty,
   UserPropertySchema,
-  ParticipatedResearchInfo,
-  ParticipatedResearchInfoSchema,
 } from "src/Schema";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
 

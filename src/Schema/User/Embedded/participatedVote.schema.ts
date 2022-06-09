@@ -10,8 +10,11 @@ export class ParticipatedVoteInfo {
   @Prop() // 참여한 투표의 _id
   voteId: string;
 
-  @Prop() // 고른 선택지 인덱스
-  selectedOptionIndex: number;
+  @Prop() // 고른 선택지 인덱스들
+  selectedOptionIndexes: number[];
+
+  @Prop() // 참여 시각
+  participatedAt: string;
 }
 
 export const ParticipatedVoteInfoSchema =

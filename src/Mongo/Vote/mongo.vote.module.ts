@@ -1,17 +1,41 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
 import { MongoVoteFindService } from "./mongo.vote.find.service";
-import { Vote, VoteSchema } from "../../Schema";
-import { MONGODB_VOTE_CONNECTION } from "../../Constant";
+import { MongoVoteCreateService } from "./mongo.vote.create.service";
+import { MongoVoteUpdateService } from "./mongo.vote.update.service";
+import { MongoVoteDeleteService } from "./mongo.vote.delete.service";
+import {
+  Vote,
+  VoteSchema,
+  VoteComment,
+  VoteCommentSchema,
+  VoteParticipation,
+  VoteParticipationSchema,
+} from "src/Schema";
+import { MONGODB_VOTE_CONNECTION } from "src/Constant";
 
 @Module({
-  providers: [MongoVoteFindService],
+  providers: [
+    MongoVoteFindService,
+    MongoVoteCreateService,
+    MongoVoteUpdateService,
+    MongoVoteDeleteService,
+  ],
   imports: [
     MongooseModule.forFeature(
-      [{ name: Vote.name, schema: VoteSchema }],
+      [
+        { name: Vote.name, schema: VoteSchema },
+        { name: VoteComment.name, schema: VoteCommentSchema },
+        { name: VoteParticipation.name, schema: VoteParticipationSchema },
+      ],
       MONGODB_VOTE_CONNECTION,
     ),
   ],
-  exports: [MongoVoteFindService],
+  exports: [
+    MongoVoteFindService,
+    MongoVoteCreateService,
+    MongoVoteUpdateService,
+    MongoVoteDeleteService,
+  ],
 })
 export class MongoVoteModule {}
