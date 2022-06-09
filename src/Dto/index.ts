@@ -9,3 +9,4 @@ export * from "./auth.dto";
 export * from "./partner.dto";
 export * from "./research.dto";
 export * from "./user.dto";
+export * from "./vote.dto";

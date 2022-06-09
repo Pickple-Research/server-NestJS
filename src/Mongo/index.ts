@@ -35,5 +35,8 @@ export * from "./User/mongo.user.update.service";
 export * from "./User/mongo.user.module";
 
 // Vote
+export * from "./Vote/mongo.vote.create.service";
+export * from "./Vote/mongo.vote.delete.service";
 export * from "./Vote/mongo.vote.find.service";
+export * from "./Vote/mongo.vote.update.service";
 export * from "./Vote/mongo.vote.module";

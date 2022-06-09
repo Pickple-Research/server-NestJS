@@ -110,7 +110,7 @@ export class ResearchPatchController {
    */
   @Patch("participate/:researchId")
   async participateResearch(
-    // @Request() req: { user: JwtUserInfo },
+    @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
     @Body() body: { userId: string; consummedTime: string },
   ) {

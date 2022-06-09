@@ -1,12 +1,11 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection, ClientSession } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, ClientSession } from "mongoose";
 import { AwsS3Service } from "src/AWS";
 import { S3UploadingObject } from "src/Object/Type";
 import {
   getCurrentISOTime,
   getISOTimeAfterGivenDays,
-  tryTransaction,
   getS3UploadingObject,
 } from "src/Util";
 import {
@@ -17,7 +16,7 @@ import {
   ResearchParticipation,
   ResearchParticipationDocument,
 } from "src/Schema";
-import { MONGODB_RESEARCH_CONNECTION, BUCKET_NAME } from "src/Constant";
+import { BUCKET_NAME } from "src/Constant";
 
 @Injectable()
 export class MongoResearchCreateService {
@@ -30,21 +29,24 @@ export class MongoResearchCreateService {
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
 
     private readonly awsS3Service: AwsS3Service,
-
-    @InjectConnection(MONGODB_RESEARCH_CONNECTION)
-    private readonly connection: Connection,
   ) {}
 
   /**
    * @Transaction
    * 새로운 리서치를 생성합니다. 인자로 주어진 파일이 있는 경우, S3 업로드를 시도합니다.
    * (파일 업로드가 실패하면 리서치 생성도 무효화됩니다)
+   *
+   * @param authorId 리서치 업로더 _id
+   * @param research 리서치 정보
+   * @param files 리서치와 같이 업로드할 파일
+   * @param session
+   *
    * @return 생성된 리서치 _id
    * @author 현웅
    */
   //TODO: files 타입 잡아줘야함
   async createResearch(
-    userId: string,
+    authorId: string,
     research: Partial<Research>,
     files: {
       // thumbnail?: Express.Multer.File[];
@@ -61,7 +63,7 @@ export class MongoResearchCreateService {
       [
         {
           ...research,
-          researcherId: userId,
+          authorId,
           createdAt: getCurrentISOTime(),
           deadline: getISOTimeAfterGivenDays(3),
         },

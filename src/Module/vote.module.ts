@@ -1,11 +1,21 @@
 import { Module } from "@nestjs/common";
-import { VoteGetController } from "../Controller";
-import { VoteFindService } from "../Service";
-import { MongoVoteModule } from "../Mongo";
+import {
+  VoteGetController,
+  VotePostController,
+  VotePatchController,
+  VoteDeleteController,
+} from "src/Controller";
+import { VoteFindService } from "src/Service";
+import { MongoUserModule, MongoVoteModule } from "src/Mongo";
 
 @Module({
-  controllers: [VoteGetController],
+  controllers: [
+    VoteGetController,
+    VotePostController,
+    VotePatchController,
+    VoteDeleteController,
+  ],
   providers: [VoteFindService],
-  imports: [MongoVoteModule],
+  imports: [MongoUserModule, MongoVoteModule],
 })
 export class VoteModule {}

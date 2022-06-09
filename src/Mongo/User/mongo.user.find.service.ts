@@ -11,6 +11,7 @@ import {
 } from "src/Schema";
 import {
   AlreadyParticipatedResearchException,
+  AlreadyParticipatedVoteException,
   UserNotFoundException,
   WrongPasswordException,
 } from "src/Exception";
@@ -150,7 +151,9 @@ export class MongoUserFindService {
   ) {
     const userActivity = await this.UserActivity.findOne({
       _id: userId,
-    });
+    })
+      .select({ participatedResearchIds: 1 })
+      .lean();
 
     //* 유저 정보가 존재하지 않는 경우
     if (!userActivity) {
@@ -163,6 +166,38 @@ export class MongoUserFindService {
       if (handleAsException) throw new AlreadyParticipatedResearchException();
       return true;
     }
+
+    return false;
+  }
+
+  /**
+   * 유저가 투표에 참여한 적이 있는지 확인합니다.
+   * @author 현웅
+   */
+  async didUserParticipatedVote(
+    userId: string,
+    voteId: string,
+    handleAsException: boolean = false,
+  ) {
+    const userActivity = await this.UserActivity.findOne({
+      _id: userId,
+    })
+      .select({ participatedVoteInfos: 1 })
+      .lean();
+
+    //* 유저 정보가 존재하지 않는 경우
+    if (!userActivity) {
+      if (handleAsException) throw new UserNotFoundException();
+      return true;
+    }
+
+    //* 참여한 투표 정보 목록에 voteId를 포함한 데이터가 있는 경우
+    userActivity.participatedVoteInfos.forEach((voteInfo) => {
+      if (voteInfo.voteId === voteId) {
+        if (handleAsException) throw new AlreadyParticipatedVoteException();
+        return true;
+      }
+    });
 
     return false;
   }
