@@ -8,6 +8,12 @@ import {
   UserDocument,
   UserActivity,
   UserActivityDocument,
+  UserCreditHistory,
+  UserCreditHistoryDocument,
+  UserPrivacy,
+  UserPrivacyDocument,
+  UserProperty,
+  UserPropertyDocument,
 } from "src/Schema";
 import {
   AlreadyParticipatedResearchException,
@@ -25,6 +31,12 @@ export class MongoUserFindService {
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
     @InjectModel(UserActivity.name)
     private readonly UserActivity: Model<UserActivityDocument>,
+    @InjectModel(UserCreditHistory.name)
+    private readonly UserCreditHistory: Model<UserCreditHistoryDocument>,
+    @InjectModel(UserPrivacy.name)
+    private readonly UserPrivacy: Model<UserPrivacyDocument>,
+    @InjectModel(UserProperty.name)
+    private readonly UserProperty: Model<UserPropertyDocument>,
   ) {}
 
   async testMongoUserRouter() {
@@ -56,7 +68,48 @@ export class MongoUserFindService {
     //* 비밀번호가 일치하지 않는 경우
     if (givenPassword !== user.password) throw new WrongPasswordException();
 
-    return user;
+    return await this.getUserInfoById(user._id);
+  }
+
+  /**
+   * 로그인 인증에 성공한 유저 데이터를 반환합니다.
+   * @author 현웅
+   */
+  async getUserInfoById(userId: string) {
+    const user = await this.User.findById(userId)
+      .select({
+        email: 1,
+        nickname: 1,
+        grade: 1,
+        createdAt: 1,
+      })
+      .lean();
+
+    const userActivity = await this.UserActivity.findById(userId).lean();
+    const userCreditHistory = await this.UserCreditHistory.findById(
+      userId,
+    ).lean();
+    const userPrivacy = await this.UserPrivacy.findById(userId).lean();
+    const userProperty = await this.UserProperty.findById(userId).lean();
+
+    return await Promise.all([
+      user,
+      userActivity,
+      userCreditHistory,
+      userPrivacy,
+      userProperty,
+    ]).then(
+      //* [user, userActivity, ...] 형태였던 반환값을 {user, userActivity, ...} 형태로 바꿔줍니다.
+      ([user, userActivity, userCreditHistory, userPrivacy, userProperty]) => {
+        return {
+          user,
+          userActivity,
+          userCreditHistory,
+          userPrivacy,
+          userProperty,
+        };
+      },
+    );
   }
 
   /**

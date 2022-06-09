@@ -31,15 +31,12 @@ export class AuthController {
   @Public()
   @Post("login")
   async login(@Body() body: LoginBodyDto) {
-    const user = await this.mongoUserFindService.login(
-      body.email,
-      body.password,
-    );
+    return await this.mongoUserFindService.login(body.email, body.password);
 
-    return await this.authService.issueJWT({
-      userId: user._id,
-      userEmail: user.email,
-    });
+    // return await this.authService.issueJWT({
+    //   userId: user._id,
+    //   userEmail: user.email,
+    // });
   }
 
   /**

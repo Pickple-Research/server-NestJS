@@ -8,11 +8,14 @@ import { VoteParticipantInfo, VoteParticipantInfoSchema } from "./Embedded";
  */
 @Schema()
 export class VoteParticipation {
-  @Prop({ type: [VoteParticipantInfoSchema], default: [] }) // 참여한 유저 정보
-  participantInfos: VoteParticipantInfo[];
+  @Prop({ type: [String], default: [] }) // 조회한 유저 _id
+  viewedUserIds: string[];
 
   @Prop({ type: [String], default: [] }) // 스크랩한 유저 _id
   scrappedUserIds: string[];
+
+  @Prop({ type: [VoteParticipantInfoSchema], default: [] }) // 참여한 유저 정보
+  participantInfos: VoteParticipantInfo[];
 
   @Prop({ type: [Number] }) // 투표 결과. 각 인덱스의 값은 투표 선택지가 얼마나 선택되었는지 알려줍니다.
   result: number[];
