@@ -56,16 +56,6 @@ export class MongoResearchFindService {
    * @author 현웅
    */
   async getResearchById(researchId: string) {
-    const research = await this.Research.findById(researchId).lean();
-    const researchParticipation = await this.ResearchParticipation.findById(
-      researchId,
-    )
-      .select({
-        viewedNum: 1,
-        scrappedNum: 1,
-        participantNum: 1,
-      })
-      .lean();
-    return await Promise.all([research, researchParticipation]);
+    return await this.Research.findById(researchId).lean();
   }
 }

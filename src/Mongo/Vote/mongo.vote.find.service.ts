@@ -25,15 +25,11 @@ export class MongoVoteFindService {
   ) {}
 
   async getVoteById(voteId: string) {
-    const vote = await this.Vote.findById(voteId).lean();
-    const voteParticipation = await this.VoteParticipation.findById(voteId)
-      .select({
-        viewedNum: 1,
-        scrappedNum: 1,
-        participantNum: 1,
-      })
-      .lean();
-    return await Promise.all([vote, voteParticipation]);
+    return await this.Vote.findById(voteId).lean();
+  }
+
+  async getVotes() {
+    return await this.Vote.find().sort({ _id: -1 }).lean();
   }
 
   /**

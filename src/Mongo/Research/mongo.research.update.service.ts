@@ -33,7 +33,6 @@ export class MongoResearchUpdateService {
    */
   async updateView(userId: string, researchId: string) {
     await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-      $inc: { viewedNum: 1 },
       $addToSet: { viewedUserIds: userId },
     });
 
@@ -46,7 +45,6 @@ export class MongoResearchUpdateService {
    */
   async updateScrap(userId: string, researchId: string) {
     await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-      $inc: { scrappedNum: 1 },
       $addToSet: { scrappedUserIds: userId },
     });
 
@@ -59,7 +57,6 @@ export class MongoResearchUpdateService {
    */
   async updateUnscrap(userId: string, researchId: string) {
     await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-      $inc: { scrappedNum: -1 },
       $pull: { scrappedUserIds: userId },
     });
 
@@ -77,7 +74,7 @@ export class MongoResearchUpdateService {
   ) {
     await this.ResearchParticipation.findByIdAndUpdate(
       researchId,
-      { $inc: { participantNum: 1 }, $push: { participantInfos: userInfo } },
+      { $push: { participantInfos: userInfo } },
       { session },
     );
     return;

@@ -28,7 +28,7 @@ export class MongoVoteCreateService {
    * @param vote 투표 정보
    * @param session
    *
-   * @return 생성된 투표 _id
+   * @return 생성된 투표 정보
    * @author 현웅
    */
   async createVote(
@@ -36,17 +36,17 @@ export class MongoVoteCreateService {
     vote: Partial<Vote>,
     session: ClientSession,
   ) {
-    const newVote = await this.Vote.create([{ ...vote, authorId }], {
+    const newVotes = await this.Vote.create([{ ...vote, authorId }], {
       session,
     });
 
-    const newVoteId = newVote[0]._id;
-    // await this.VoteComment.create([{ _id: newVoteId }], { session });
+    const newVote = newVotes[0];
+    // await this.VoteComment.create([{ _id: newVote._id }], { session });
     await this.VoteParticipation.create(
-      [{ _id: newVoteId, result: Array(vote.options?.length).fill(0) }],
+      [{ _id: newVote._id, result: Array(vote.options?.length).fill(0) }],
       { session },
     );
 
-    return newVoteId;
+    return newVote;
   }
 }

@@ -34,16 +34,24 @@ export class MongoVoteUpdateService {
   ) {
     //* $inc 쿼리가 동적으로 생성되어야 하므로, 쿼리문 상수를 만듭니다
     const incQuery = {};
-    //* result의 어떤 부분을 증가시킬지 설정합니다
+    //* result의 어떤 부분을 증가시킬지 설정합니다. 결과적으로 다음과 같은 쿼리를 실행시키는 것과 같은 결과를 도출합니다:
+    /**
+     * { $inc: { result.0: 1, result.1: 1 ... }}
+     */
     participantInfo.selectedOptionIndexes.forEach((optionIndex) => {
       incQuery[`result.${optionIndex}`] = 1;
     });
 
-    await this.VoteParticipation.updateOne(
-      { _id: voteId },
+    await this.Vote.findByIdAndUpdate(
+      voteId,
+      { $inc: { participantsNum: 1, ...incQuery } },
+      { session },
+    );
+
+    await this.VoteParticipation.findByIdAndUpdate(
+      voteId,
       {
-        $push: { participantInfos: { $each: [participantInfo], $position: 0 } },
-        $inc: { participantNum: 1, ...incQuery },
+        $addToSet: { participantInfos: participantInfo },
       },
       { session },
     );

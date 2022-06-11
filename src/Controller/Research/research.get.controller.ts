@@ -49,14 +49,15 @@ export class ResearchGetController {
   @Get(":researchId")
   @Public()
   async getResearchById(@Param("researchId") researchId: string) {
-    const [research, researchParticipation] =
-      await this.mongoResearchFindService.getResearchById(researchId);
+    const research = await this.mongoResearchFindService.getResearchById(
+      researchId,
+    );
 
     //* 리서치 정보가 존재하지 않는 경우, 에러를 일으킵니다.
-    if (research === null || researchParticipation === null) {
+    if (research === null || research.deleted) {
       throw new ResearchNotFoundException();
     }
 
-    return { research, researchParticipation };
+    return research;
   }
 }
