@@ -26,17 +26,23 @@ export class AuthController {
    * 이메일, 비밀번호를 받아 로그인합니다.
    * 이메일과 비밀번호가 일치하지 않는다면 에러를 일으키고,
    * 일치한다면 JWT를 발급합니다.
+   * @return JWT와 유저 정보
    * @author 현웅
    */
   @Public()
   @Post("login")
   async login(@Body() body: LoginBodyDto) {
-    return await this.mongoUserFindService.login(body.email, body.password);
+    const userInfo = await this.mongoUserFindService.login(
+      body.email,
+      body.password,
+    );
 
     // return await this.authService.issueJWT({
     //   userId: user._id,
     //   userEmail: user.email,
     // });
+
+    return userInfo;
   }
 
   /**

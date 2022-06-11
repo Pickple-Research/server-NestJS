@@ -30,25 +30,26 @@ export class MongoResearchDeleteService {
   ) {}
 
   /**
+   * @Transaction
    * 리서치를 삭제합니다.
    * @author 현웅
    */
   //TODO: AWS S3 오브젝트도 함께 지워야 합니다.
-  async deleteResearch(researchId: string) {
+  async deleteResearchById(researchId: string) {
     const session = await this.connection.startSession();
 
     return await tryTransaction(async () => {
-      //* 리서치 기본 데이터는 삭제하지 않고 남겨둡니다.
+      //* 리서치 기본 데이터는 삭제하지 않고 deleted만 수정한 채 남겨둡니다.
       await this.Research.findByIdAndUpdate(
         researchId,
         { $set: { deleted: true } },
         { session },
       );
       //TODO: Comment는 추후 변경
-      await this.ResearchComment.findByIdAndDelete(researchId, { session });
-      await this.ResearchParticipation.findByIdAndDelete(researchId, {
-        session,
-      });
+      // await this.ResearchComment.findByIdAndDelete(researchId, { session });
+      // await this.ResearchParticipation.findByIdAndDelete(researchId, {
+      //   session,
+      // });
       return;
     }, session);
   }

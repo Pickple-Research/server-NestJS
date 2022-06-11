@@ -28,13 +28,15 @@ export class AlreadyParticipatedVoteException extends Status400Exception {
 
 /**
  * 투표가 존재하지 않는 경우가 에러로 처리되어야 할 때 사용합니다.
- * 기본 message: `투표를 찾을 수 없습니다`
+ * 기본 message: `삭제되었거나 존재하지 않는 투표입니다`
  * @author 현웅
  */
 export class VoteNotFoundException extends Status404Exception {
   constructor(newMessage?: string) {
     super({
-      customMessage: newMessage ? newMessage : "투표를 찾을 수 없습니다",
+      customMessage: newMessage
+        ? newMessage
+        : "삭제되었거나 존재하지 않는 투표입니다",
     });
   }
 }

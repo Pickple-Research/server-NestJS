@@ -20,6 +20,9 @@ export class UnauthorizedUser {
   @Prop() // 인증 코드
   authorizationCode: string;
 
+  @Prop() // 인증 코드 만료 시간
+  codeExpiredAt: string;
+
   @Prop() //TODO: 회원가입 일자 (일주일 지나면 데이터 삭제: cronjob을 동적으로 생성하여 제거)
   createdAt: string;
 }

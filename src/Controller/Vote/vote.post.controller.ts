@@ -25,6 +25,7 @@ export class VotePostController {
    * @Transaction
    * 새로운 투표를 업로드합니다.
    * 먼저 투표를 생성하고, 해당 투표 _id를 유저 활동 정보에 추가합니다.
+   * @return 생성된 투표 정보
    * @author 현웅
    */
   @Post("")
@@ -34,21 +35,21 @@ export class VotePostController {
   ) {
     const voteSession = await this.voteConnection.startSession();
 
-    await tryTransaction(async () => {
-      const newVoteId = await this.mongoVoteCreateService.createVote(
+    return await tryTransaction(async () => {
+      const newVote = await this.mongoVoteCreateService.createVote(
         // req.user.userId,
-        "62872828ce447005a0be3dbc",
+        "62a2e7e94048ace3fc28b87e",
         voteCreateBodyDto,
         voteSession,
       );
 
-      return await this.mongoUserUpdateService.uploadVote(
+      await this.mongoUserUpdateService.uploadVote(
         // req.user.userId,
-        "62872828ce447005a0be3dbc",
-        newVoteId,
+        "62a2e7e94048ace3fc28b87e",
+        newVote._id,
       );
-    }, voteSession);
 
-    return true;
+      return newVote;
+    }, voteSession);
   }
 }

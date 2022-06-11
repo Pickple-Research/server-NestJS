@@ -74,8 +74,8 @@ export class MongoUserUpdateService {
     await this.UserActivity.findByIdAndUpdate(
       userId,
       {
-        $addToSet: {
-          participatedResearchIds: researchId,
+        $push: {
+          participatedResearchIds: { $each: [researchId], $position: 0 },
         },
       },
       { session },
@@ -139,7 +139,7 @@ export class MongoUserUpdateService {
    */
   async uploadVote(userId: string, voteId: string) {
     await this.UserActivity.findByIdAndUpdate(userId, {
-      $addToSet: { uploadedVoteIds: voteId },
+      $push: { uploadedVoteIds: { $each: [voteId], $position: 0 } },
     });
     return;
   }

@@ -13,9 +13,9 @@ export class ResearchDeleteController {
    * @author 현웅
    */
   @Delete("")
-  async deleteResearch(@Headers() headers: { research_id: string }) {
-    return await this.mongoResearchDeleteService.deleteResearch(
-      headers.research_id,
+  async deleteResearch(@Headers("research_id") research_id: string) {
+    return await this.mongoResearchDeleteService.deleteResearchById(
+      research_id,
     );
   }
 }

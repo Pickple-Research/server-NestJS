@@ -1,7 +1,7 @@
 import { Controller, Inject, Query, Param, Get } from "@nestjs/common";
 import { MongoResearchFindService } from "src/Mongo";
 import { Public } from "src/Security/Metadata";
-import { EmailDuplicateException } from "src/Exception";
+import { ResearchNotFoundException } from "src/Exception";
 
 @Controller("researches")
 export class ResearchGetController {
@@ -16,7 +16,7 @@ export class ResearchGetController {
   @Get("test")
   @Public()
   async testResearchRouter() {
-    return await this.mongoResearchFindService.testMongoResearchRouter();
+    return "test Research Router()";
   }
 
   /**
@@ -48,7 +48,16 @@ export class ResearchGetController {
    */
   @Get(":researchId")
   @Public()
-  async getResearchById(@Param() param: { researchId: string }) {
-    return this.mongoResearchFindService.getResearchById(param.researchId);
+  async getResearchById(@Param("researchId") researchId: string) {
+    const research = await this.mongoResearchFindService.getResearchById(
+      researchId,
+    );
+
+    //* 리서치 정보가 존재하지 않는 경우, 에러를 일으킵니다.
+    if (research === null || research.deleted) {
+      throw new ResearchNotFoundException();
+    }
+
+    return research;
   }
 }

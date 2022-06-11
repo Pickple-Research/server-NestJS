@@ -11,6 +11,9 @@ export class Vote {
   @Prop({ required: true }) // 업로더 _id
   authorId: string;
 
+  @Prop() // 업로더 닉네임
+  authorNickname: string;
+
   @Prop({ required: true }) // 투표 제목
   title: string;
 
@@ -28,6 +31,23 @@ export class Vote {
 
   @Prop() // 생성 날짜
   createdAt: Date;
+
+  //? 앱단에 정보를 넘겨줄 때는 유저 _id를 넘겨줄 필요가 없고 숫자만 넘기면 되는데,
+  //? 그 때마다 .length를 사용하여 넘겨주면 (아마도) 좋지 않기에 숫자만 따로 관리합니다.
+  @Prop({ default: 0 }) // 조회 수
+  viewsNum: number;
+
+  @Prop({ default: 0 }) // 스크랩 수
+  scrapsNum: number;
+
+  @Prop({ default: 0 }) // 참여자 수
+  participantsNum: number;
+
+  @Prop({ type: [Number] }) // 투표 결과. 각 인덱스의 값은 투표 선택지가 얼마나 선택되었는지 알려줍니다.
+  result: number[];
+
+  @Prop({ default: 0 }) // 댓글 수
+  commentsNum: number;
 
   @Prop({ default: false }) // 종료 여부. deadline이 지나기 전일지라도 사용자가 종료 가능.
   closed: boolean;

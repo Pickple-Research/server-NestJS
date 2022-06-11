@@ -33,7 +33,7 @@ export class Research {
   @Prop() // 리서치 진행 단체
   organization: string;
 
-  @Prop({ required: true }) // 참여 대상 (줄글 작성)
+  @Prop() // 참여 대상 (줄글 작성)
   target: string;
 
   // @Prop({ required: true }) // 예상 소요시간
@@ -53,6 +53,20 @@ export class Research {
 
   @Prop({ type: [String], enum: Category }) // 리서치 카테고리
   categories: Category[];
+
+  //? 앱단에 정보를 넘겨줄 때는 유저 _id를 넘겨줄 필요가 없고 숫자만 넘기면 되는데,
+  //? 그 때마다 .length를 사용하여 넘겨주면 (아마도) 좋지 않기에 숫자만 따로 관리합니다.
+  @Prop({ default: 0 }) // 조회 수
+  viewsNum: number;
+
+  @Prop({ default: 0 }) // 스크랩 수
+  scrapsNum: number;
+
+  @Prop({ default: 0 }) // 참여자 수
+  participantsNum: number;
+
+  @Prop({ default: 0 }) // 댓글 수
+  commentsNum: number;
 
   @Prop({ default: false }) // 종료 여부. deadline이 지나기 전일지라도 사용자가 종료 가능.
   closed: boolean;

@@ -19,6 +19,9 @@ export class ResearchParticipation {
 
   @Prop({ type: [ResearchParticipantInfoSchema], default: [] }) // 참여한 유저
   participantInfos: ResearchParticipantInfo[];
+
+  @Prop({ type: [String], default: [] }) // 댓글 _id
+  commentIds: string[];
 }
 
 export const ResearchParticipationSchema = SchemaFactory.createForClass(
