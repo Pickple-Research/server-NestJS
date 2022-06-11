@@ -33,7 +33,7 @@ export class Research {
   @Prop() // 리서치 진행 단체
   organization: string;
 
-  @Prop({ required: true }) // 참여 대상 (줄글 작성)
+  @Prop() // 참여 대상 (줄글 작성)
   target: string;
 
   // @Prop({ required: true }) // 예상 소요시간

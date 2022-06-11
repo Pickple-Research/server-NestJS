@@ -1,13 +1,24 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { Research, ResearchDocument } from "../../Schema";
+import {
+  Research,
+  ResearchDocument,
+  ResearchComment,
+  ResearchCommentDocument,
+  ResearchParticipation,
+  ResearchParticipationDocument,
+} from "src/Schema";
 
 @Injectable()
 export class MongoResearchFindService {
   constructor(
     @InjectModel(Research.name)
     private readonly Research: Model<ResearchDocument>,
+    @InjectModel(ResearchComment.name)
+    private readonly ResearchComment: Model<ResearchCommentDocument>,
+    @InjectModel(ResearchParticipation.name)
+    private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
   ) {}
 
   async testMongoResearchRouter() {
@@ -45,6 +56,16 @@ export class MongoResearchFindService {
    * @author 현웅
    */
   async getResearchById(researchId: string) {
-    return await this.Research.findOne({ _id: researchId }).lean();
+    const research = await this.Research.findById(researchId).lean();
+    const researchParticipation = await this.ResearchParticipation.findById(
+      researchId,
+    )
+      .select({
+        viewedNum: 1,
+        scrappedNum: 1,
+        participantNum: 1,
+      })
+      .lean();
+    return await Promise.all([research, researchParticipation]);
   }
 }

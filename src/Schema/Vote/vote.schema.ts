@@ -11,6 +11,9 @@ export class Vote {
   @Prop({ required: true }) // 업로더 _id
   authorId: string;
 
+  @Prop() // 업로더 닉네임
+  authorNickname: string;
+
   @Prop({ required: true }) // 투표 제목
   title: string;
 

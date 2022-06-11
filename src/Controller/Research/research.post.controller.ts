@@ -64,23 +64,23 @@ export class ResearchPostController {
     const userSession = await this.userConnection.startSession();
     const researchSession = await this.researchConnection.startSession();
 
-    await tryTransaction(async () => {
+    return await tryTransaction(async () => {
       const newResearchId =
         await this.mongoResearchCreateService.createResearch(
           // req.user.userId
-          "62872828ce447005a0be3dbc",
+          "62a2e7e94048ace3fc28b87e",
           researchCreateBodyDto,
           files,
           researchSession,
         );
 
-      return await this.mongoUserUpdateService.uploadResearch(
-        "62872828ce447005a0be3dbc",
+      await this.mongoUserUpdateService.uploadResearch(
+        "62a2e7e94048ace3fc28b87e",
         newResearchId,
         userSession,
       );
-    }, researchSession);
 
-    return true;
+      return newResearchId;
+    }, researchSession);
   }
 }

@@ -1,4 +1,4 @@
-import { IsString } from "class-validator";
+import { IsOptional, IsString } from "class-validator";
 
 /**
  * 이메일을 사용한 회원가입 요청시 Body에 포함되어야 하는 정보들입니다.
@@ -8,10 +8,12 @@ import { IsString } from "class-validator";
  */
 export class EmailUserSignupBodyDto {
   /** 성 */
+  @IsOptional()
   @IsString()
   lastName: string;
 
   /** 이름 */
+  @IsOptional()
   @IsString()
   name: string;
 

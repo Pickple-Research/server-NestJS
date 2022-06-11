@@ -46,6 +46,15 @@ export class MongoUserCreateService {
   ) {}
 
   /**
+   * @Transaction
+   * 유저를 생성합니다.
+   * @author 현웅
+   */
+  async createUser() {
+    return "create User";
+  }
+
+  /**
    * 이메일을 이용하여 회원가입을 시도하는 미인증 유저를 생성합니다.
    * @author 현웅
    */

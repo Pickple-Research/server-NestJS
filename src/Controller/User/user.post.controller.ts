@@ -1,7 +1,12 @@
 import { Controller, Inject, Body, Post } from "@nestjs/common";
 import { EmailUserSignupBodyDto, AuthCodeVerificationBodyDto } from "src/Dto";
 import { MongoUserFindService, MongoUserCreateService } from "src/Mongo";
-import { getSalt, getKeccak512Hash, getCurrentISOTime } from "src/Util";
+import {
+  getSalt,
+  getKeccak512Hash,
+  getCurrentISOTime,
+  getISOTimeAfterGivenMinutes,
+} from "src/Util";
 import {
   EmailDuplicateException,
   WrongAuthorizationCodeException,
@@ -66,6 +71,7 @@ export class UserPostController {
       authorizationCode: (
         "00000" + Math.floor(Math.random() * 1_000_000).toString()
       ).slice(-6),
+      codeExpiredAt: getISOTimeAfterGivenMinutes(),
       //* 생성시간 추가
       createdAt: getCurrentISOTime(),
     });

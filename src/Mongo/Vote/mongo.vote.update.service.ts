@@ -43,7 +43,7 @@ export class MongoVoteUpdateService {
       { _id: voteId },
       {
         $push: { participantInfos: { $each: [participantInfo], $position: 0 } },
-        $inc: { ...incQuery },
+        $inc: { participantNum: 1, ...incQuery },
       },
       { session },
     );
