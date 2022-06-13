@@ -1,3 +1,3 @@
-export * from "./participatedResearch.schema";
-export * from "./participatedVote.schema";
+export * from "./participatedResearchInfo.schema";
+export * from "./participatedVoteInfo.schema";
 export * from "./scrappedResearch.schema";

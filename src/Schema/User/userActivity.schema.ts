@@ -1,12 +1,11 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Schema as MongooseSchema, Types } from "mongoose";
+import { Document } from "mongoose";
 import {
   ParticipatedResearchInfo,
   ParticipatedResearchInfoSchema,
   ParticipatedVoteInfo,
   ParticipatedVoteInfoSchema,
 } from "./Embedded";
-import { Research } from "src/Schema";
 
 /**
  * 유저 활동(리서치나 투표 참여/조회/스크랩) 정보 스키마입니다.
@@ -26,8 +25,8 @@ export class UserActivity {
   @Prop({ type: [String], default: [] }) // 스크랩한 투표 _id
   scrappedVoteIds: string[];
 
-  @Prop({ type: [String] }) // 참여한 리서치 _id
-  participatedResearchIds: string[];
+  @Prop({ type: [ParticipatedResearchInfoSchema], default: [] }) // 참여한 리서치들 정보
+  participatedResearchInfos: ParticipatedResearchInfo[];
 
   @Prop({ type: [ParticipatedVoteInfoSchema], default: [] }) // 참여한 투표들 정보
   participatedVoteInfos: ParticipatedVoteInfo[];

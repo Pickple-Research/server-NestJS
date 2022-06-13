@@ -9,7 +9,8 @@ import {
   UserCreditHistory,
   UserCreditHistoryDocument,
 } from "src/Schema";
-import { ParticipatedVoteInfo } from "src/Schema";
+
+import { ParticipatedResearchInfo, ParticipatedVoteInfo } from "src/Schema";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
 import { tryTransaction } from "src/Util";
 
@@ -45,7 +46,7 @@ export class MongoUserUpdateService {
    */
   async scrapResearch(userId: string, researchId: string) {
     await this.UserActivity.findByIdAndUpdate(userId, {
-      $addToSet: { scrappedResearchInfos: researchId },
+      $addToSet: { scrappedResearchIds: researchId },
     });
     return;
   }
@@ -56,7 +57,7 @@ export class MongoUserUpdateService {
    */
   async unscrapResearch(userId: string, researchId: string) {
     await this.UserActivity.findByIdAndUpdate(userId, {
-      $pull: { scrappedResearchInfos: researchId },
+      $pull: { scrappedResearchIds: researchId },
     });
     return;
   }
@@ -68,14 +69,17 @@ export class MongoUserUpdateService {
    */
   async participateResearch(
     userId: string,
-    researchId: string,
+    participatedResearchInfo: ParticipatedResearchInfo,
     session?: ClientSession,
   ) {
     await this.UserActivity.findByIdAndUpdate(
       userId,
       {
         $push: {
-          participatedResearchIds: { $each: [researchId], $position: 0 },
+          participatedResearchInfos: {
+            $each: [participatedResearchInfo],
+            $position: 0,
+          },
         },
       },
       { session },
@@ -105,6 +109,41 @@ export class MongoUserUpdateService {
       await this.UserCreditHistory.findByIdAndUpdate(userId, { $push: {} });
       return;
     }, session);
+    return;
+  }
+
+  /**
+   * 조회한 리서치 _id를 UserActivity에 추가합니다.
+   * @author 현웅
+   */
+  async viewVote(userId: string, voteId: string) {
+    await this.UserActivity.findOneAndUpdate(
+      { _id: userId },
+      //? $addToSet: 추가하려는 원소가 이미 존재하면 push하지 않습니다.
+      { $addToSet: { viewedVoteIds: voteId } },
+    );
+    return;
+  }
+
+  /**
+   * 리서치를 새로 스크랩합니다.
+   * @author 현웅
+   */
+  async scrapVote(userId: string, voteId: string) {
+    await this.UserActivity.findByIdAndUpdate(userId, {
+      $addToSet: { scrappedVoteIds: voteId },
+    });
+    return;
+  }
+
+  /**
+   * 스크랩한 리서치를 제거합니다.
+   * @author 현웅
+   */
+  async unscrapVote(userId: string, voteId: string) {
+    await this.UserActivity.findByIdAndUpdate(userId, {
+      $pull: { scrappedVoteIds: voteId },
+    });
     return;
   }
 

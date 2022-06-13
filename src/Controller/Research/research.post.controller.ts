@@ -12,7 +12,11 @@ import { Connection } from "mongoose";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { MongoUserUpdateService, MongoResearchCreateService } from "src/Mongo";
 import { getMulterOptions, tryTransaction } from "src/Util";
-import { ResearchCreateBodyDto } from "src/Dto";
+import {
+  ResearchCreateBodyDto,
+  ResearchCommentCreateBodyDto,
+  ResearchReplyCreateBodyDto,
+} from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
 import {
   MONGODB_USER_CONNECTION,
@@ -116,6 +120,67 @@ export class ResearchPostController {
       );
 
       return newResearch;
+    }, researchSession);
+  }
+
+  /**
+   * @Transaction
+   * 리서치 댓글을 작성합니다.
+   * @return 생성된 리서치 댓글
+   * @author 현웅
+   */
+  @Post("comments")
+  async uploadResearchComment(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: ResearchCommentCreateBodyDto,
+  ) {
+    const researchSession = await this.researchConnection.startSession();
+
+    return await tryTransaction(async () => {
+      const newComment =
+        await this.mongoResearchCreateService.createResearchComment(
+          {
+            researchId: body.researchId,
+            // authorId: req.user.userId,
+            authorId: "req.user.userId",
+            authorNickname: "req.user.userNickname",
+            content: body.content,
+          },
+          researchSession,
+        );
+
+      return newComment;
+    }, researchSession);
+  }
+
+  /**
+   * @Transaction
+   * 리서치 대댓글을 작성합니다.
+   * @return 생성된 리서치 대댓글
+   * @author 현웅
+   */
+  @Post("replies")
+  async uploadResearchReply(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: ResearchReplyCreateBodyDto,
+  ) {
+    const researchSession = await this.researchConnection.startSession();
+
+    return await tryTransaction(async () => {
+      const newReply =
+        await this.mongoResearchCreateService.createResearchReply(
+          {
+            researchId: body.researchId,
+            commentId: body.commentId,
+            // authorId: req.user.userId,
+            authorId: "req.user.userId",
+            authorNickname: "req.user.userNickname",
+            content: body.content,
+          },
+          researchSession,
+        );
+
+      return newReply;
     }, researchSession);
   }
 }

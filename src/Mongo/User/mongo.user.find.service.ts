@@ -205,7 +205,7 @@ export class MongoUserFindService {
     const userActivity = await this.UserActivity.findOne({
       _id: userId,
     })
-      .select({ participatedResearchIds: 1 })
+      .select({ participatedResearchInfos: 1 })
       .lean();
 
     //* 유저 정보가 존재하지 않는 경우
@@ -215,7 +215,11 @@ export class MongoUserFindService {
     }
 
     //* 참여한 리서치 목록에 researchId가 포함되어 있는 경우
-    if (userActivity.participatedResearchIds.includes(researchId)) {
+    if (
+      userActivity.participatedResearchInfos.some((researchInfo) => {
+        return researchInfo.researchId === researchId;
+      })
+    ) {
       if (handleAsException) throw new AlreadyParticipatedResearchException();
       return true;
     }
@@ -245,12 +249,14 @@ export class MongoUserFindService {
     }
 
     //* 참여한 투표 정보 목록에 voteId를 포함한 데이터가 있는 경우
-    userActivity.participatedVoteInfos.forEach((voteInfo) => {
-      if (voteInfo.voteId === voteId) {
-        if (handleAsException) throw new AlreadyParticipatedVoteException();
-        return true;
-      }
-    });
+    if (
+      userActivity.participatedVoteInfos.some((voteInfo) => {
+        return voteInfo.voteId === voteId;
+      })
+    ) {
+      if (handleAsException) throw new AlreadyParticipatedVoteException();
+      return true;
+    }
 
     return false;
   }

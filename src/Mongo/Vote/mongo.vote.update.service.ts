@@ -22,9 +22,67 @@ export class MongoVoteUpdateService {
   ) {}
 
   /**
+   * 조회자 정보를 추가합니다.
+   * @author 현웅
+   */
+  async updateView(userId: string, voteId: string) {
+    const updateResearch = await this.Vote.findByIdAndUpdate(voteId, {
+      $inc: { viewsNum: 1 },
+    });
+    const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
+      voteId,
+      {
+        $addToSet: { viewedUserIds: userId },
+      },
+    );
+
+    await Promise.all([updateResearch, updateParticipation]);
+    return;
+  }
+
+  /**
+   * 스크랩한 유저 _id를 추가합니다.
+   * @author 현웅
+   */
+  async updateScrap(userId: string, voteId: string) {
+    const updateResearch = await this.Vote.findByIdAndUpdate(voteId, {
+      $inc: { scrapsNum: 1 },
+    });
+    const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
+      voteId,
+      {
+        $addToSet: { scrappedUserIds: userId },
+      },
+    );
+
+    await Promise.all([updateResearch, updateParticipation]);
+    return;
+  }
+
+  /**
+   * 스크랩 취소한 유저 _id를 제거합니다.
+   * @author 현웅
+   */
+  async updateUnscrap(userId: string, voteId: string) {
+    const updateResearch = await this.Vote.findByIdAndUpdate(voteId, {
+      $inc: { scrapsNum: -1 },
+    });
+    const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
+      voteId,
+      {
+        $pull: { scrappedUserIds: userId },
+      },
+    );
+
+    await Promise.all([updateResearch, updateParticipation]);
+    return;
+  }
+
+  /**
    * 투표에 참여한 유저 정보를 추가하고 결과값을 증가시킵니다.
    *
    * @see https://stackoverflow.com/questions/21035603/mongo-node-syntax-for-inc-when-number-is-associated-with-dynamic-field-name
+   * @return 업데이트된 투표 정보
    * @author 현웅
    */
   async updateParticipant(
@@ -42,11 +100,11 @@ export class MongoVoteUpdateService {
       incQuery[`result.${optionIndex}`] = 1;
     });
 
-    await this.Vote.findByIdAndUpdate(
+    const updatedVote = await this.Vote.findByIdAndUpdate(
       voteId,
       { $inc: { participantsNum: 1, ...incQuery } },
       { session },
-    );
+    ).lean();
 
     await this.VoteParticipation.findByIdAndUpdate(
       voteId,
@@ -55,5 +113,7 @@ export class MongoVoteUpdateService {
       },
       { session },
     );
+
+    return updatedVote;
   }
 }

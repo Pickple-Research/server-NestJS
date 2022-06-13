@@ -8,7 +8,10 @@ import {
   VoteCommentDocument,
   VoteParticipation,
   VoteParticipationDocument,
+  VoteReply,
+  VoteReplyDocument,
 } from "src/Schema";
+import { getCurrentISOTime } from "src/Util";
 
 @Injectable()
 export class MongoVoteCreateService {
@@ -18,6 +21,8 @@ export class MongoVoteCreateService {
     private readonly VoteComment: Model<VoteCommentDocument>,
     @InjectModel(VoteParticipation.name)
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
+    @InjectModel(VoteReply.name)
+    private readonly VoteReply: Model<VoteReplyDocument>,
   ) {}
 
   /**
@@ -36,17 +41,63 @@ export class MongoVoteCreateService {
     vote: Partial<Vote>,
     session: ClientSession,
   ) {
-    const newVotes = await this.Vote.create([{ ...vote, authorId }], {
-      session,
-    });
-
-    const newVote = newVotes[0];
-    // await this.VoteComment.create([{ _id: newVote._id }], { session });
-    await this.VoteParticipation.create(
-      [{ _id: newVote._id, result: Array(vote.options?.length).fill(0) }],
+    const newVotes = await this.Vote.create(
+      [{ ...vote, authorId, result: Array(vote.options?.length).fill(0) }],
       { session },
     );
 
+    const newVote = newVotes[0];
+    // await this.VoteComment.create([{ _id: newVote._id }], { session });
+    await this.VoteParticipation.create([{ _id: newVote._id }], { session });
+
     return newVote;
+  }
+
+  /**
+   * @Transaction
+   * 투표 댓글을 작성합니다.
+   * @return 생성된 투표 댓글
+   * @author 현웅
+   */
+  async createVoteComment(voteComment: VoteComment, session?: ClientSession) {
+    await this.Vote.findByIdAndUpdate(
+      voteComment.voteId,
+      { $inc: { commentsNum: 1 } },
+      { session },
+    );
+    const newComments = await this.VoteComment.create(
+      [{ ...voteComment, createdAt: getCurrentISOTime() }],
+      { session },
+    );
+    await this.VoteParticipation.findByIdAndUpdate(
+      voteComment.voteId,
+      { $push: { commentIds: newComments[0]._id } },
+      { session },
+    );
+    return newComments[0];
+  }
+
+  /**
+   * @Transaction
+   * 투표 대댓글을 작성합니다.
+   * @return 생성된 투표 대댓글
+   * @author 현웅
+   */
+  async createVoteReply(voteReply: VoteReply, session?: ClientSession) {
+    await this.Vote.findByIdAndUpdate(
+      voteReply.voteId,
+      { $inc: { commentsNum: 1 } },
+      { session },
+    );
+    const newReplies = await this.VoteReply.create(
+      [{ ...voteReply, createdAt: getCurrentISOTime() }],
+      { session },
+    );
+    await this.VoteComment.findByIdAndUpdate(
+      voteReply.commentId,
+      { $push: { replyIds: newReplies[0]._id } },
+      { session },
+    );
+    return newReplies[0];
   }
 }

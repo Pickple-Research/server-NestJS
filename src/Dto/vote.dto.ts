@@ -46,3 +46,29 @@ export class VoteParticipateBodyDto {
   @IsNumber({}, { each: true })
   selectedOptionIndexes: number[];
 }
+
+/**
+ * 투표 댓글 생성 요청시 Body에 포함되어야 하는 정보들
+ * @author 현웅
+ */
+export class VoteCommentCreateBodyDto {
+  @IsString()
+  voteId: string;
+
+  @IsString()
+  content: string;
+}
+/**
+ * 투표 대댓글 생성 요청시 Body에 포함되어야 하는 정보들
+ * @author 현웅
+ */
+export class VoteReplyCreateBodyDto {
+  @IsString()
+  voteId: string;
+
+  @IsString()
+  commentId: string;
+
+  @IsString()
+  content: string;
+}

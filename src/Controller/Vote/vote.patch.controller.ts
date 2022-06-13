@@ -14,13 +14,11 @@ import {
   MongoVoteFindService,
   MongoVoteUpdateService,
 } from "src/Mongo";
+import { ParticipatedVoteInfo } from "src/Schema/User/Embedded";
+import { VoteParticipantInfo } from "src/Schema/Vote/Embedded";
 import { VoteParticipateBodyDto } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
-import {
-  getCurrentISOTime,
-  tryMultiTransaction,
-  tryTransaction,
-} from "src/Util";
+import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import { MONGODB_USER_CONNECTION, MONGODB_VOTE_CONNECTION } from "src/Constant";
 
 @Controller("votes")
@@ -42,6 +40,70 @@ export class VotePatchController {
   private readonly mongoVoteUpdateService: MongoVoteUpdateService;
 
   /**
+   * 투표를 조회합니다.
+   * @author 현웅
+   */
+  @Patch("view/:voteId")
+  async viewResearch(
+    @Request() req: { user: JwtUserInfo },
+    @Param() param: { voteId: string },
+  ) {
+    const updateUser = await this.mongoUserUpdateService.viewVote(
+      req.user.userId,
+      param.voteId,
+    );
+    const updateResearch = await this.mongoVoteUpdateService.updateView(
+      req.user.userId,
+      param.voteId,
+    );
+    await Promise.all([updateUser, updateResearch]);
+    return true;
+  }
+
+  /**
+   * 투표를 스크랩합니다.
+   * @author 현웅
+   */
+  @Patch("scrap/:voteId")
+  async scrapResearch(
+    @Request() req: { user: JwtUserInfo },
+    @Param() param: { voteId: string },
+  ) {
+    const updateUser = await this.mongoUserUpdateService.scrapVote(
+      req.user.userId,
+      param.voteId,
+    );
+    const updateResearch = await this.mongoVoteUpdateService.updateScrap(
+      req.user.userId,
+      param.voteId,
+    );
+    await Promise.all([updateUser, updateResearch]);
+    return true;
+  }
+
+  /**
+   * 투표 스크랩을 취소합니다.
+   * @author 현웅
+   */
+  @Patch("unscrap/:voteId")
+  async unscrapResearch(
+    @Request() req: { user: JwtUserInfo },
+    @Param() param: { voteId: string },
+  ) {
+    const updateUser = await this.mongoUserUpdateService.unscrapVote(
+      req.user.userId,
+      param.voteId,
+    );
+
+    const updateResearch = await this.mongoVoteUpdateService.updateUnscrap(
+      req.user.userId,
+      param.voteId,
+    );
+    await Promise.all([updateUser, updateResearch]);
+    return true;
+  }
+
+  /**
    * @Transaction
    * 투표에 참여합니다.
    * @author 현웅
@@ -50,7 +112,7 @@ export class VotePatchController {
   async participateVote(
     @Request() req: { user: JwtUserInfo },
     @Param("voteId") voteId: string,
-    @Body() voteParticipateBodyDto: VoteParticipateBodyDto,
+    @Body() body: VoteParticipateBodyDto,
   ) {
     const currentISOTime = getCurrentISOTime();
     const userSession = await this.userConnection.startSession();
@@ -61,39 +123,40 @@ export class VotePatchController {
       const checkIndexesValid =
         await this.mongoVoteFindService.isOptionIndexesValid(
           voteId,
-          voteParticipateBodyDto.selectedOptionIndexes,
+          body.selectedOptionIndexes,
         );
 
       //* 유저가 이미 투표에 참여했는지 확인
       const checkAlreadyParticipated =
         await this.mongoUserFindService.didUserParticipatedVote(
-          // req.user.userId,
-          "62872828ce447005a0be3dbc",
+          req.user.userId,
           voteId,
           true,
         );
 
       //* 유저의 투표 참여 정보를 업데이트
+      const participatedVoteInfo: ParticipatedVoteInfo = {
+        voteId,
+        selectedOptionIndexes: body.selectedOptionIndexes,
+        participatedAt: currentISOTime,
+      };
+
       const updateUser = await this.mongoUserUpdateService.participateVote(
-        // req.user.userId,
-        "62872828ce447005a0be3dbc",
-        {
-          voteId,
-          selectedOptionIndexes: voteParticipateBodyDto.selectedOptionIndexes,
-          participatedAt: currentISOTime,
-        },
+        req.user.userId,
+        participatedVoteInfo,
         userSession,
       );
 
       //* 투표의 참여 정보를 업데이트
+      const voteParticipantInfo: VoteParticipantInfo = {
+        userId: req.user.userId,
+        selectedOptionIndexes: body.selectedOptionIndexes,
+        participatedAt: currentISOTime,
+      };
+
       const updateVote = await this.mongoVoteUpdateService.updateParticipant(
         voteId,
-        {
-          // userId: req.user.userId,
-          userId: "62872828ce447005a0be3dbc",
-          selectedOptionIndexes: voteParticipateBodyDto.selectedOptionIndexes,
-          participatedAt: currentISOTime,
-        },
+        voteParticipantInfo,
         voteSession,
       );
 
@@ -105,7 +168,7 @@ export class VotePatchController {
         updateUser,
         updateVote,
       ]);
-      return;
+      return true;
     }, [userSession, voteSession]);
   }
 }

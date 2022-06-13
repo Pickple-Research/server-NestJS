@@ -2,7 +2,11 @@ import { Controller, Inject, Request, Body, Post } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { MongoUserUpdateService, MongoVoteCreateService } from "src/Mongo";
-import { VoteCreateBodyDto } from "src/Dto";
+import {
+  VoteCreateBodyDto,
+  VoteCommentCreateBodyDto,
+  VoteReplyCreateBodyDto,
+} from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
 import { tryTransaction } from "src/Util";
 import { MONGODB_USER_CONNECTION, MONGODB_VOTE_CONNECTION } from "src/Constant";
@@ -31,7 +35,7 @@ export class VotePostController {
   @Post("")
   async uploadVote(
     @Request() req: { user: JwtUserInfo },
-    @Body() voteCreateBodyDto: VoteCreateBodyDto,
+    @Body() body: VoteCreateBodyDto,
   ) {
     const voteSession = await this.voteConnection.startSession();
 
@@ -39,7 +43,7 @@ export class VotePostController {
       const newVote = await this.mongoVoteCreateService.createVote(
         // req.user.userId,
         "62a2e7e94048ace3fc28b87e",
-        voteCreateBodyDto,
+        body,
         voteSession,
       );
 
@@ -50,6 +54,63 @@ export class VotePostController {
       );
 
       return newVote;
+    }, voteSession);
+  }
+
+  /**
+   * @Transaction
+   * 투표 댓글을 작성합니다.
+   * @return 생성된 투표 댓글
+   * @author 현웅
+   */
+  @Post("comments")
+  async uploadVoteComment(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteCommentCreateBodyDto,
+  ) {
+    const voteSession = await this.voteConnection.startSession();
+
+    return await tryTransaction(async () => {
+      const newComment = await this.mongoVoteCreateService.createVoteComment(
+        {
+          voteId: body.voteId,
+          // authorId: req.user.userId,
+          authorId: "req.user.userId",
+          authorNickname: "req.user.userNickname",
+          content: body.content,
+        },
+        voteSession,
+      );
+      return newComment;
+    }, voteSession);
+  }
+
+  /**
+   * @Transaction
+   * 투표 대댓글을 작성합니다.
+   * @return 생성된 투표 대댓글
+   * @author 현웅
+   */
+  @Post("replies")
+  async uploadVoteReply(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteReplyCreateBodyDto,
+  ) {
+    const voteSession = await this.voteConnection.startSession();
+
+    return await tryTransaction(async () => {
+      const newReply = await this.mongoVoteCreateService.createVoteReply(
+        {
+          voteId: body.voteId,
+          commentId: body.commentId,
+          // authorId: req.user.userId,
+          authorId: "req.user.userId",
+          authorNickname: "req.user.userNickname",
+          content: body.content,
+        },
+        voteSession,
+      );
+      return newReply;
     }, voteSession);
   }
 }

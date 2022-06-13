@@ -8,6 +8,8 @@ import {
   VoteCommentDocument,
   VoteParticipation,
   VoteParticipationDocument,
+  VoteReply,
+  VoteReplyDocument,
 } from "src/Schema";
 import {
   SelectedOptionInvalidException,
@@ -22,6 +24,8 @@ export class MongoVoteFindService {
     private readonly VoteComment: Model<VoteCommentDocument>,
     @InjectModel(VoteParticipation.name)
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
+    @InjectModel(VoteReply.name)
+    private readonly VoteReply: Model<VoteReplyDocument>,
   ) {}
 
   async getVoteById(voteId: string) {
@@ -30,6 +34,21 @@ export class MongoVoteFindService {
 
   async getVotes() {
     return await this.Vote.find().sort({ _id: -1 }).lean();
+  }
+
+  /**
+   * 투표 댓글을 모두 가져옵니다.
+   * @author 현웅
+   */
+  async getVoteComments(voteId: string) {
+    return await this.VoteParticipation.findById(voteId)
+      .select({ commentIds: 1 })
+      .populate({
+        path: "commentIds",
+        model: this.VoteComment,
+        populate: { path: "replyIds", model: this.VoteReply },
+      })
+      .lean();
   }
 
   /**

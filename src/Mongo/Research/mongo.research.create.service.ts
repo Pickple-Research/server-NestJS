@@ -15,6 +15,8 @@ import {
   ResearchCommentDocument,
   ResearchParticipation,
   ResearchParticipationDocument,
+  ResearchReply,
+  ResearchReplyDocument,
 } from "src/Schema";
 import { BUCKET_NAME } from "src/Constant";
 
@@ -27,6 +29,8 @@ export class MongoResearchCreateService {
     private readonly ResearchComment: Model<ResearchCommentDocument>,
     @InjectModel(ResearchParticipation.name)
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
+    @InjectModel(ResearchReply.name)
+    private readonly ResearchReply: Model<ResearchReplyDocument>,
 
     private readonly awsS3Service: AwsS3Service,
   ) {}
@@ -104,5 +108,59 @@ export class MongoResearchCreateService {
     }
 
     return newResearch;
+  }
+
+  /**
+   * @Transaction
+   * 리서치 댓글을 작성합니다.
+   * @return 생성된 리서치 댓글
+   * @author 현웅
+   */
+  async createResearchComment(
+    researchComment: ResearchComment,
+    session?: ClientSession,
+  ) {
+    await this.Research.findByIdAndUpdate(
+      researchComment.researchId,
+      { $inc: { commentsNum: 1 } },
+      { session },
+    );
+    const newComments = await this.ResearchComment.create(
+      [{ ...researchComment, createdAt: getCurrentISOTime() }],
+      { session },
+    );
+    await this.ResearchParticipation.findByIdAndUpdate(
+      researchComment.researchId,
+      { $push: { commentIds: newComments[0]._id } },
+      { session },
+    );
+    return newComments[0];
+  }
+
+  /**
+   * @Transaction
+   * 리서치 대댓글을 작성합니다.
+   * @return 생성된 리서치 대댓글
+   * @author 현웅
+   */
+  async createResearchReply(
+    researchReply: ResearchReply,
+    session?: ClientSession,
+  ) {
+    await this.Research.findByIdAndUpdate(
+      researchReply.researchId,
+      { $inc: { commentsNum: 1 } },
+      { session },
+    );
+    const newReplies = await this.ResearchReply.create(
+      [{ ...researchReply, createdAt: getCurrentISOTime() }],
+      { session },
+    );
+    await this.ResearchComment.findByIdAndUpdate(
+      researchReply.commentId,
+      { $push: { replyIds: newReplies[0]._id } },
+      { session },
+    );
+    return newReplies[0];
   }
 }
