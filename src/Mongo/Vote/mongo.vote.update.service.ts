@@ -26,7 +26,7 @@ export class MongoVoteUpdateService {
    * @author 현웅
    */
   async updateView(userId: string, voteId: string) {
-    const updateResearch = await this.Vote.findByIdAndUpdate(voteId, {
+    const updateVote = await this.Vote.findByIdAndUpdate(voteId, {
       $inc: { viewsNum: 1 },
     });
     const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
@@ -36,7 +36,7 @@ export class MongoVoteUpdateService {
       },
     );
 
-    await Promise.all([updateResearch, updateParticipation]);
+    await Promise.all([updateVote, updateParticipation]);
     return;
   }
 
@@ -45,9 +45,9 @@ export class MongoVoteUpdateService {
    * @author 현웅
    */
   async updateScrap(userId: string, voteId: string) {
-    const updateResearch = await this.Vote.findByIdAndUpdate(voteId, {
+    const updateVote = await this.Vote.findByIdAndUpdate(voteId, {
       $inc: { scrapsNum: 1 },
-    });
+    }).lean();
     const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
       voteId,
       {
@@ -55,7 +55,7 @@ export class MongoVoteUpdateService {
       },
     );
 
-    await Promise.all([updateResearch, updateParticipation]);
+    await Promise.all([updateVote, updateParticipation]);
     return;
   }
 
@@ -64,7 +64,7 @@ export class MongoVoteUpdateService {
    * @author 현웅
    */
   async updateUnscrap(userId: string, voteId: string) {
-    const updateResearch = await this.Vote.findByIdAndUpdate(voteId, {
+    const updateVote = await this.Vote.findByIdAndUpdate(voteId, {
       $inc: { scrapsNum: -1 },
     });
     const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
@@ -74,7 +74,7 @@ export class MongoVoteUpdateService {
       },
     );
 
-    await Promise.all([updateResearch, updateParticipation]);
+    await Promise.all([updateVote, updateParticipation]);
     return;
   }
 
