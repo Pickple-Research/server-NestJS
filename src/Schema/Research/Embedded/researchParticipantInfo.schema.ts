@@ -10,7 +10,7 @@ export class ResearchParticipantInfo {
   userId: string;
 
   @Prop({ required: true }) // 리서치 참여에 걸린 시간
-  consumedTime: string;
+  consumedTime: number;
 
   @Prop({ required: true }) // 리서치에 참여한 시각
   participatedAt: string;

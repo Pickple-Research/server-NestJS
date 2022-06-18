@@ -1,8 +1,9 @@
-import { Controller, Inject, Body, Get, Post } from "@nestjs/common";
+import { Controller, Inject, Request, Body, Get, Post } from "@nestjs/common";
 import { AuthService } from "src/Service";
 import { MongoUserFindService, MongoUserCreateService } from "src/Mongo";
 import { Public } from "src/Security/Metadata";
 import { LoginBodyDto, AuthCodeVerificationBodyDto } from "src/Dto";
+import { JwtUserInfo } from "src/Object/Type";
 import { WrongAuthorizationCodeException } from "src/Exception";
 
 @Controller("auth")
@@ -37,12 +38,33 @@ export class AuthController {
       body.password,
     );
 
-    // return await this.authService.issueJWT({
-    //   userId: user._id,
-    //   userEmail: user.email,
-    // });
+    const jwt = await this.authService.issueJWT({
+      userId: userInfo.user._id,
+      userNickname: userInfo.user.nickname,
+      userEmail: userInfo.user.email,
+    });
 
-    return userInfo;
+    return { jwt, ...userInfo };
+  }
+
+  /**
+   * 기존에 발급했던 JWT로 로그인합니다.
+   * TODO: JWT가 만료되었을 경우 커스텀 메세지 / 혹은 refreshToken 필요
+   * @return 새로운 JWT와 유저 정보
+   * @author 현웅
+   */
+  @Post("login/jwt")
+  async loginWithJwt(@Request() req: { user: JwtUserInfo }) {
+    const userInfo = await this.mongoUserFindService.getUserInfoById(
+      req.user.userId,
+    );
+
+    const jwt = await this.authService.issueJWT({
+      userId: userInfo.user._id,
+      userEmail: userInfo.user.email,
+    });
+
+    return { jwt, ...userInfo };
   }
 
   /**

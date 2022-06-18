@@ -13,7 +13,10 @@ import {
   MongoUserUpdateService,
   MongoResearchUpdateService,
 } from "src/Mongo";
+import { ParticipatedResearchInfo } from "src/Schema/User/Embedded";
+import { ResearchParticipantInfo } from "src/Schema/Research/Embedded";
 import { JwtUserInfo } from "src/Object/Type";
+import { ResearchParticiateBodyDto } from "src/Dto";
 import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import {
   MONGODB_USER_CONNECTION,
@@ -112,7 +115,7 @@ export class ResearchPatchController {
   async participateResearch(
     @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
-    @Body() body: { userId: string; consummedTime: string },
+    @Body() body: ResearchParticiateBodyDto,
   ) {
     const currentISOTime = getCurrentISOTime();
     //* User DB, Research DB에 대한 Session을 시작하고
@@ -125,37 +128,50 @@ export class ResearchPatchController {
       //* 아래의 updateUser와 updateResearch를 통한 변화가 무시됩니다.
       const checkAlreadyParticipated =
         await this.mongoUserFindService.didUserParticipatedResearch(
-          // req.user.userId,
-          body.userId,
+          req.user.userId,
           param.researchId,
           true,
         );
 
       //* UserActivity에 리서치 참여 정보 추가
+      const participatedResearchInfo: ParticipatedResearchInfo = {
+        researchId: param.researchId,
+        participatedAt: currentISOTime,
+      };
+
       const updateUser = await this.mongoUserUpdateService.participateResearch(
-        // req.user.userId,
-        body.userId,
-        param.researchId,
+        req.user.userId,
+        participatedResearchInfo,
         userSession,
       );
 
       //* ResearchParticipation에 참여자 정보 추가
+      const researchParticipationInfo: ResearchParticipantInfo = {
+        userId: req.user.userId,
+        consumedTime: body.consummedTime,
+        participatedAt: currentISOTime,
+      };
+
       const updateResearch =
         await this.mongoResearchUpdateService.updateParticipant(
-          {
-            // userId: req.user.userId,
-            userId: body.userId,
-            consumedTime: body.consummedTime,
-            participatedAt: currentISOTime,
-          },
+          researchParticipationInfo,
           param.researchId,
           researchSession,
         );
 
       //* 위 세 개의 함수를 한꺼번에 실행합니다.
       //* 셋 중 하나라도 에러가 발생하면 변경사항이 반영되지 않습니다.
-      await Promise.all([checkAlreadyParticipated, updateUser, updateResearch]);
-      return;
+      const updatedResearch = await Promise.all([
+        checkAlreadyParticipated,
+        updateUser,
+        updateResearch,
+      ]).then(([_, __, updatedResearch]) => {
+        //* 이 때, 참여 정보가 반영된 최신 리서치 정보는 따로 빼내어 반환합니다.
+        return updatedResearch;
+      });
+
+      //* 리서치 참여 정보와 최신 리서치 정보를 반환합니다.
+      return { participatedResearchInfo, updatedResearch };
     }, [userSession, researchSession]);
   }
 

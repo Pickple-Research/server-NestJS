@@ -8,6 +8,8 @@ import {
   ResearchCommentDocument,
   ResearchParticipation,
   ResearchParticipationDocument,
+  ResearchReply,
+  ResearchReplyDocument,
 } from "src/Schema";
 
 @Injectable()
@@ -19,6 +21,8 @@ export class MongoResearchFindService {
     private readonly ResearchComment: Model<ResearchCommentDocument>,
     @InjectModel(ResearchParticipation.name)
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
+    @InjectModel(ResearchReply.name)
+    private readonly ResearchReply: Model<ResearchReplyDocument>,
   ) {}
 
   async testMongoResearchRouter() {
@@ -57,5 +61,20 @@ export class MongoResearchFindService {
    */
   async getResearchById(researchId: string) {
     return await this.Research.findById(researchId).lean();
+  }
+
+  /**
+   * 리서치 댓글을 모두 가져옵니다.
+   * @author 현웅
+   */
+  async getResearchComments(researchId: string) {
+    return await this.ResearchParticipation.findById(researchId)
+      .select({ commentIds: 1 })
+      .populate({
+        path: "commentIds",
+        model: this.ResearchComment,
+        populate: { path: "replyIds", model: this.ResearchReply },
+      })
+      .lean();
   }
 }

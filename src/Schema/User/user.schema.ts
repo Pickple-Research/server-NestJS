@@ -8,7 +8,7 @@ import { UserType, AccountType } from "src/Object/Enum";
  */
 @Schema()
 export class User {
-  @Prop({ enum: UserType, required: true }) // 유저 타입: 일반 유저, 테스터, 관리자
+  @Prop({ enum: UserType, required: true }) // 유저 타입: 일반 유저, 테스터, 파트너, 관리자
   userType: UserType;
 
   @Prop({ enum: AccountType, required: true }) // 계정 회원가입 타입: 이메일, 카카오, 구글, 네이버
@@ -28,6 +28,9 @@ export class User {
 
   @Prop({ default: 1 }) // 등급
   grade: number;
+
+  @Prop({ default: 0 }) // 크레딧
+  credit: number;
 
   @Prop({}) // 회원가입 일자
   createdAt: string;

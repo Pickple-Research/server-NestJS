@@ -34,4 +34,10 @@ export class VoteGetController {
 
     return vote;
   }
+
+  @Public()
+  @Get(":voteId/comments")
+  async getVoteComments(@Param("voteId") voteId: string) {
+    return await this.mongoVoteFindService.getVoteComments(voteId);
+  }
 }

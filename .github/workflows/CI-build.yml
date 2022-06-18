@@ -23,36 +23,46 @@ jobs:
       - name: checkout
         uses: actions/checkout@v2
 
-      # yarn 을 캐싱합니다.
-      # 링크 참조: https://dev.to/mpocock1/how-to-cache-nodemodules-in-github-actions-with-yarn-24eh
-      # 링크 참조: https://github.com/actions/cache/blob/main/examples.md#node---yarn
-      - name: Get yarn cache directory path
-        id: yarn-cache-dir-path
-        run: echo "::set-output name=dir::$(yarn cache dir)"
+      # 캐싱 부분은 잠시 제외
+      # # yarn 을 캐싱합니다.
+      # # 링크 참조: https://dev.to/mpocock1/how-to-cache-nodemodules-in-github-actions-with-yarn-24eh
+      # # 링크 참조: https://github.com/actions/cache/blob/main/examples.md#node---yarn
+      # - name: Get yarn cache directory path
+      #   id: yarn-cache-dir-path
+      #   run: echo "::set-output name=dir::$(yarn cache dir)"
 
-      - name: yarn cache
-        uses: actions/cache@v3
-        id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
-        with:
-          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
-          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
+      # - name: yarn cache
+      #   uses: actions/cache@v3
+      #   id: yarn-cache # use this to check for `cache-hit` (`steps.yarn-cache.outputs.cache-hit != 'true'`)
+      #   with:
+      #     path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+      #     key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-yarn-
 
       # yarn을 사용해 의존성 모듈을 설치합니다.
       # 링크 참조: https://github.com/marketplace/actions/github-action-for-yarn
       - name: yarn install
-        uses: borales/actions-yarn@v2.3.0
+        uses: borales/actions-yarn@v3.0.0
         with:
           cmd: install # 'yarn install' 명령어를 실행합니다.
 
+      # 내부적인 문법/의존성 문제가 없는지 확인합니다.
       - name: check typescript grammar
-        uses: borales/actions-yarn@v2.3.0
+        uses: borales/actions-yarn@v3.0.0
         with:
           cmd: tsc # 'yarn tsc' 명령어를 실행합니다.
 
-      # yarn build 시도합니다.
+      # 서비스 빌드를 시도합니다.
       - name: yarn build
-        uses: borales/actions-yarn@v2.3.0
+        uses: borales/actions-yarn@v3.0.0
         with:
           cmd: build # 'yarn build' 명령어를 실행합니다.
+
+
+      # .env 파일을 가져올 수 있는 방식을 찾기 전까지는 주석처리합니다.
+      # # 서비스가 정상적으로 시작되는지 확인합니다.
+      # - name: yarn start
+      #   uses: borales/actions-yarn@v3.0.0
+      #   with:
+      #     cmd: start # 'yarn start' 명령어를 실행합니다.

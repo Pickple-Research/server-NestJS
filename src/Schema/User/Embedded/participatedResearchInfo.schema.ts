@@ -10,9 +10,6 @@ export class ParticipatedResearchInfo {
   @Prop() // 참여한 리서치의 _id
   researchId: string;
 
-  @Prop() // 참여한 리서치 제목
-  title: string;
-
   @Prop() // 참여 시각
   participatedAt: string;
 }

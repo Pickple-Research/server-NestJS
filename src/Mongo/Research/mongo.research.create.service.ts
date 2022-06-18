@@ -15,6 +15,8 @@ import {
   ResearchCommentDocument,
   ResearchParticipation,
   ResearchParticipationDocument,
+  ResearchReply,
+  ResearchReplyDocument,
 } from "src/Schema";
 import { BUCKET_NAME } from "src/Constant";
 
@@ -27,6 +29,8 @@ export class MongoResearchCreateService {
     private readonly ResearchComment: Model<ResearchCommentDocument>,
     @InjectModel(ResearchParticipation.name)
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
+    @InjectModel(ResearchReply.name)
+    private readonly ResearchReply: Model<ResearchReplyDocument>,
 
     private readonly awsS3Service: AwsS3Service,
   ) {}
@@ -88,7 +92,12 @@ export class MongoResearchCreateService {
 
     files.images?.forEach((image, index) => {
       uploadingObjects.push(
-        getS3UploadingObject(BUCKET_NAME.RESEARCH, image, `image${index}`),
+        getS3UploadingObject({
+          BucketName: BUCKET_NAME.RESEARCH,
+          file: image,
+          ACL: "public-read",
+          Key: `image${index}.jpg`,
+        }),
       );
     });
 
@@ -104,5 +113,64 @@ export class MongoResearchCreateService {
     }
 
     return newResearch;
+  }
+
+  /**
+   * @Transaction
+   * 리서치 댓글을 작성합니다.
+   * @return 업데이트된 리서치 정보와 생성된 리서치 댓글
+   * @author 현웅
+   */
+  async createResearchComment(
+    researchComment: ResearchComment,
+    session?: ClientSession,
+  ) {
+    const updatedResearch = await this.Research.findByIdAndUpdate(
+      researchComment.researchId,
+      { $inc: { commentsNum: 1 } },
+      { session, returnOriginal: false },
+    ).lean();
+    const newComments = await this.ResearchComment.create(
+      [{ ...researchComment, createdAt: getCurrentISOTime() }],
+      { session },
+    );
+    await this.ResearchParticipation.findByIdAndUpdate(
+      researchComment.researchId,
+      { $push: { commentIds: newComments[0]._id } },
+      { session },
+    );
+
+    const newComment = newComments[0].toObject();
+    newComment["replies"] = newComment["replyIds"];
+    delete newComment["replyIds"];
+
+    return { updatedResearch, newComment };
+  }
+
+  /**
+   * @Transaction
+   * 리서치 대댓글을 작성합니다.
+   * @return 업데이트된 리서치 정보와 생성된 리서치 대댓글
+   * @author 현웅
+   */
+  async createResearchReply(
+    researchReply: ResearchReply,
+    session?: ClientSession,
+  ) {
+    const updatedReserach = await this.Research.findByIdAndUpdate(
+      researchReply.researchId,
+      { $inc: { commentsNum: 1 } },
+      { session, returnOriginal: false },
+    ).lean();
+    const newReplies = await this.ResearchReply.create(
+      [{ ...researchReply, createdAt: getCurrentISOTime() }],
+      { session },
+    );
+    await this.ResearchComment.findByIdAndUpdate(
+      researchReply.commentId,
+      { $push: { replyIds: newReplies[0]._id } },
+      { session },
+    );
+    return { updatedReserach, newReply: newReplies[0].toObject() };
   }
 }

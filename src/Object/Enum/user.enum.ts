@@ -15,6 +15,7 @@ export enum Gender {
 export enum UserType {
   USER = "USER",
   TESTER = "TESTER",
+  PARTNER = "PARTNER",
   ADMIN = "ADMIN",
 }
 

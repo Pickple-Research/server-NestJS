@@ -32,10 +32,15 @@ export class MongoResearchUpdateService {
    * @author 현웅
    */
   async updateView(userId: string, researchId: string) {
-    await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-      $addToSet: { viewedUserIds: userId },
+    const updateResearch = await this.Research.findByIdAndUpdate(researchId, {
+      $inc: { viewsNum: 1 },
     });
+    const updateParticipation =
+      await this.ResearchParticipation.findByIdAndUpdate(researchId, {
+        $addToSet: { viewedUserIds: userId },
+      });
 
+    await Promise.all([updateResearch, updateParticipation]);
     return;
   }
 
@@ -44,10 +49,15 @@ export class MongoResearchUpdateService {
    * @author 현웅
    */
   async updateScrap(userId: string, researchId: string) {
-    await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-      $addToSet: { scrappedUserIds: userId },
+    const updateResearch = await this.Research.findByIdAndUpdate(researchId, {
+      $inc: { scrapsNum: 1 },
     });
+    const updateParticipation =
+      await this.ResearchParticipation.findByIdAndUpdate(researchId, {
+        $addToSet: { scrappedUserIds: userId },
+      });
 
+    await Promise.all([updateResearch, updateParticipation]);
     return;
   }
 
@@ -56,15 +66,21 @@ export class MongoResearchUpdateService {
    * @author 현웅
    */
   async updateUnscrap(userId: string, researchId: string) {
-    await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-      $pull: { scrappedUserIds: userId },
+    const updateResearch = await this.Research.findByIdAndUpdate(researchId, {
+      $inc: { scrapsNum: -1 },
     });
+    const updateParticipation =
+      await this.ResearchParticipation.findByIdAndUpdate(researchId, {
+        $pull: { scrappedUserIds: userId },
+      });
 
+    await Promise.all([updateResearch, updateParticipation]);
     return;
   }
 
   /**
    * 참여한 유저 정보를 추가합니다.
+   * @return 참여 정보가 반영된 최신 리서치 정보
    * @author 현웅
    */
   async updateParticipant(
@@ -72,12 +88,18 @@ export class MongoResearchUpdateService {
     researchId: string,
     session?: ClientSession,
   ) {
+    const updatedResearch = await this.Research.findByIdAndUpdate(
+      researchId,
+      { $inc: { participantsNum: 1 } },
+      { session, returnOriginal: false },
+    );
+
     await this.ResearchParticipation.findByIdAndUpdate(
       researchId,
       { $push: { participantInfos: userInfo } },
       { session },
     );
-    return;
+    return updatedResearch;
   }
 
   /**

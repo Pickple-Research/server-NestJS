@@ -13,8 +13,8 @@ export class ResearchGetController {
    * 테스트 라우터
    * @author 현웅
    */
-  @Get("test")
   @Public()
+  @Get("test")
   async testResearchRouter() {
     return "test Research Router()";
   }
@@ -24,8 +24,8 @@ export class ResearchGetController {
    * get 인자가 주어지지 않은 경우 기본적으로 20개를 반환합니다.
    * @author 현웅
    */
-  @Get("")
   @Public()
+  @Get("")
   async getRecentResearches(@Query() query: { get?: number }) {
     return await this.mongoResearchFindService.getRecentResearches(query?.get);
   }
@@ -35,8 +35,8 @@ export class ResearchGetController {
    * TODO: 경로 이름을 뭘로 할까
    * @author 현웅
    */
-  @Get()
   @Public()
+  @Get()
   async getPaginatedResearches() {
     return;
   }
@@ -46,8 +46,8 @@ export class ResearchGetController {
    * 존재하지 않는 경우 exception을 일으킵니다.
    * @author 현웅
    */
-  @Get(":researchId")
   @Public()
+  @Get(":researchId")
   async getResearchById(@Param("researchId") researchId: string) {
     const research = await this.mongoResearchFindService.getResearchById(
       researchId,
@@ -59,5 +59,15 @@ export class ResearchGetController {
     }
 
     return research;
+  }
+
+  /**
+   * 리서치 댓글을 모두 가져옵니다.
+   * @author 현웅
+   */
+  @Public()
+  @Get(":researchId/comments")
+  async getResearchComments(@Param("researchId") researchId: string) {
+    return await this.mongoResearchFindService.getResearchComments(researchId);
   }
 }
