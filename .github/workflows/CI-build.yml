@@ -59,8 +59,10 @@ jobs:
         with:
           cmd: build # 'yarn build' 명령어를 실행합니다.
 
-      # 서비스가 정상적으로 시작되는지 확인합니다.
-      - name: yarn start
-        uses: borales/actions-yarn@v3.0.0
-        with:
-          cmd: start # 'yarn start' 명령어를 실행합니다.
+
+      # .env 파일을 가져올 수 있는 방식을 찾기 전까지는 주석처리합니다.
+      # # 서비스가 정상적으로 시작되는지 확인합니다.
+      # - name: yarn start
+      #   uses: borales/actions-yarn@v3.0.0
+      #   with:
+      #     cmd: start # 'yarn start' 명령어를 실행합니다.
