@@ -162,13 +162,18 @@ export class VotePatchController {
 
       //* 위 네 개의 함수를 한꺼번에 실행.
       //* 넷 중 하나라도 에러가 발생하면 모든 변경사항이 취소됨.
-      await Promise.all([
+      const updatedVote = await Promise.all([
         checkIndexesValid,
         checkAlreadyParticipated,
         updateUser,
         updateVote,
-      ]);
-      return true;
+      ]).then(([_, __, ___, updatedVote]) => {
+        //* 이 때, 업데이트 된 투표 정보는 따로 빼서 반환해줍니다.
+        //* (로컬에서 재활용합니다)
+        return updatedVote;
+      });
+
+      return { participatedVoteInfo, updatedVote };
     }, [userSession, voteSession]);
   }
 }

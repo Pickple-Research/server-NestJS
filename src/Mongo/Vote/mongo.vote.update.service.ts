@@ -103,7 +103,7 @@ export class MongoVoteUpdateService {
     const updatedVote = await this.Vote.findByIdAndUpdate(
       voteId,
       { $inc: { participantsNum: 1, ...incQuery } },
-      { session },
+      { session, returnOriginal: false },
     ).lean();
 
     await this.VoteParticipation.findByIdAndUpdate(

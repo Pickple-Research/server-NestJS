@@ -41,15 +41,13 @@ export class VotePostController {
 
     return await tryTransaction(async () => {
       const newVote = await this.mongoVoteCreateService.createVote(
-        // req.user.userId,
-        "62a2e7e94048ace3fc28b87e",
+        req.user.userId,
         body,
         voteSession,
       );
 
       await this.mongoUserUpdateService.uploadVote(
-        // req.user.userId,
-        "62a2e7e94048ace3fc28b87e",
+        req.user.userId,
         newVote._id,
       );
 
@@ -60,35 +58,37 @@ export class VotePostController {
   /**
    * @Transaction
    * 투표 댓글을 작성합니다.
-   * @return 생성된 투표 댓글
+   * @return 업데이트된 투표 정보와 생성된 투표 댓글
    * @author 현웅
    */
   @Post("comments")
   async uploadVoteComment(
     @Request() req: { user: JwtUserInfo },
-    @Body() body: VoteCommentCreateBodyDto,
+    // @Body() body: VoteCommentCreateBodyDto,
+    @Body() body: any,
   ) {
     const voteSession = await this.voteConnection.startSession();
 
     return await tryTransaction(async () => {
-      const newComment = await this.mongoVoteCreateService.createVoteComment(
-        {
-          voteId: body.voteId,
-          // authorId: req.user.userId,
-          authorId: "req.user.userId",
-          authorNickname: "req.user.userNickname",
-          content: body.content,
-        },
-        voteSession,
-      );
-      return newComment;
+      const { updatedVote, newComment } =
+        await this.mongoVoteCreateService.createVoteComment(
+          {
+            voteId: body.voteId,
+            // authorId: req.user.userId,
+            authorId: "req.user.userId",
+            authorNickname: "req.user.userNickname",
+            content: body.content,
+          },
+          voteSession,
+        );
+      return { updatedVote, newComment };
     }, voteSession);
   }
 
   /**
    * @Transaction
    * 투표 대댓글을 작성합니다.
-   * @return 생성된 투표 대댓글
+   * @return 업데이트된 투표 정보와 생성된 투표 대댓글
    * @author 현웅
    */
   @Post("replies")
@@ -99,18 +99,19 @@ export class VotePostController {
     const voteSession = await this.voteConnection.startSession();
 
     return await tryTransaction(async () => {
-      const newReply = await this.mongoVoteCreateService.createVoteReply(
-        {
-          voteId: body.voteId,
-          commentId: body.commentId,
-          // authorId: req.user.userId,
-          authorId: "req.user.userId",
-          authorNickname: "req.user.userNickname",
-          content: body.content,
-        },
-        voteSession,
-      );
-      return newReply;
+      const { updatedVote, newReply } =
+        await this.mongoVoteCreateService.createVoteReply(
+          {
+            voteId: body.voteId,
+            commentId: body.commentId,
+            // authorId: req.user.userId,
+            authorId: "req.user.userId",
+            authorNickname: "req.user.userNickname",
+            content: body.content,
+          },
+          voteSession,
+        );
+      return { updatedVote, newReply };
     }, voteSession);
   }
 }

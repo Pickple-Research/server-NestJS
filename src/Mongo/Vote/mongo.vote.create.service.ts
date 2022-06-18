@@ -56,15 +56,15 @@ export class MongoVoteCreateService {
   /**
    * @Transaction
    * 투표 댓글을 작성합니다.
-   * @return 생성된 투표 댓글
+   * @return 업데이트 된 투표 정보와 생성된 투표 댓글
    * @author 현웅
    */
   async createVoteComment(voteComment: VoteComment, session?: ClientSession) {
-    await this.Vote.findByIdAndUpdate(
+    const updatedVote = await this.Vote.findByIdAndUpdate(
       voteComment.voteId,
       { $inc: { commentsNum: 1 } },
-      { session },
-    );
+      { session, returnOriginal: false },
+    ).lean();
     const newComments = await this.VoteComment.create(
       [{ ...voteComment, createdAt: getCurrentISOTime() }],
       { session },
@@ -74,21 +74,27 @@ export class MongoVoteCreateService {
       { $push: { commentIds: newComments[0]._id } },
       { session },
     );
-    return newComments[0];
+
+    //* 반환하기 전에 새로운 댓글의 replyId는 replies로 이름을 바꿔줍니다.
+    const newComment = newComments[0].toObject();
+    newComment["replies"] = newComment["replyIds"];
+    delete newComment["replyIds"];
+
+    return { updatedVote, newComment };
   }
 
   /**
    * @Transaction
    * 투표 대댓글을 작성합니다.
-   * @return 생성된 투표 대댓글
+   * @return 업데이트 된 투표 정보와 생성된 투표 대댓글
    * @author 현웅
    */
   async createVoteReply(voteReply: VoteReply, session?: ClientSession) {
-    await this.Vote.findByIdAndUpdate(
+    const updatedVote = await this.Vote.findByIdAndUpdate(
       voteReply.voteId,
       { $inc: { commentsNum: 1 } },
-      { session },
-    );
+      { session, returnOriginal: false },
+    ).lean();
     const newReplies = await this.VoteReply.create(
       [{ ...voteReply, createdAt: getCurrentISOTime() }],
       { session },
@@ -98,6 +104,6 @@ export class MongoVoteCreateService {
       { $push: { replyIds: newReplies[0]._id } },
       { session },
     );
-    return newReplies[0];
+    return { updatedVote, newReply: newReplies[0].toObject() };
   }
 }

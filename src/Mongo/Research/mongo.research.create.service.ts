@@ -92,7 +92,12 @@ export class MongoResearchCreateService {
 
     files.images?.forEach((image, index) => {
       uploadingObjects.push(
-        getS3UploadingObject(BUCKET_NAME.RESEARCH, image, `image${index}`),
+        getS3UploadingObject({
+          BucketName: BUCKET_NAME.RESEARCH,
+          file: image,
+          ACL: "public-read",
+          Key: `image${index}.jpg`,
+        }),
       );
     });
 
@@ -113,18 +118,18 @@ export class MongoResearchCreateService {
   /**
    * @Transaction
    * 리서치 댓글을 작성합니다.
-   * @return 생성된 리서치 댓글
+   * @return 업데이트된 리서치 정보와 생성된 리서치 댓글
    * @author 현웅
    */
   async createResearchComment(
     researchComment: ResearchComment,
     session?: ClientSession,
   ) {
-    await this.Research.findByIdAndUpdate(
+    const updatedResearch = await this.Research.findByIdAndUpdate(
       researchComment.researchId,
       { $inc: { commentsNum: 1 } },
-      { session },
-    );
+      { session, returnOriginal: false },
+    ).lean();
     const newComments = await this.ResearchComment.create(
       [{ ...researchComment, createdAt: getCurrentISOTime() }],
       { session },
@@ -134,24 +139,29 @@ export class MongoResearchCreateService {
       { $push: { commentIds: newComments[0]._id } },
       { session },
     );
-    return newComments[0];
+
+    const newComment = newComments[0].toObject();
+    newComment["replies"] = newComment["replyIds"];
+    delete newComment["replyIds"];
+
+    return { updatedResearch, newComment };
   }
 
   /**
    * @Transaction
    * 리서치 대댓글을 작성합니다.
-   * @return 생성된 리서치 대댓글
+   * @return 업데이트된 리서치 정보와 생성된 리서치 대댓글
    * @author 현웅
    */
   async createResearchReply(
     researchReply: ResearchReply,
     session?: ClientSession,
   ) {
-    await this.Research.findByIdAndUpdate(
+    const updatedReserach = await this.Research.findByIdAndUpdate(
       researchReply.researchId,
       { $inc: { commentsNum: 1 } },
-      { session },
-    );
+      { session, returnOriginal: false },
+    ).lean();
     const newReplies = await this.ResearchReply.create(
       [{ ...researchReply, createdAt: getCurrentISOTime() }],
       { session },
@@ -161,6 +171,6 @@ export class MongoResearchCreateService {
       { $push: { replyIds: newReplies[0]._id } },
       { session },
     );
-    return newReplies[0];
+    return { updatedReserach, newReply: newReplies[0].toObject() };
   }
 }

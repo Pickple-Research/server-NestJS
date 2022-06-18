@@ -1,16 +1,14 @@
 import { Controller, Inject, Body, Post } from "@nestjs/common";
-import { EmailUserSignupBodyDto, AuthCodeVerificationBodyDto } from "src/Dto";
+import { EmailUserSignupBodyDto } from "src/Dto";
 import { MongoUserFindService, MongoUserCreateService } from "src/Mongo";
+import { Public } from "src/Security/Metadata";
 import {
   getSalt,
   getKeccak512Hash,
   getCurrentISOTime,
   getISOTimeAfterGivenMinutes,
 } from "src/Util";
-import {
-  EmailDuplicateException,
-  WrongAuthorizationCodeException,
-} from "src/Exception";
+import { EmailDuplicateException } from "src/Exception";
 
 /**
  * 테스트 유저 계정을 만드는 Controller입니다. 일반 유저 회원가입은 auth module을 참고하세요.
@@ -28,6 +26,7 @@ export class UserPostController {
    * TODO: 생성되고 1주일 뒤 삭제되도록 동적 cronjob을 정의해야 합니다.
    * @author 현웅
    */
+  @Public()
   @Post("email")
   async createUnauthorizedUser(
     @Body() emailUserSignupDto: EmailUserSignupBodyDto,

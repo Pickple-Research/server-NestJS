@@ -80,6 +80,7 @@ export class MongoResearchUpdateService {
 
   /**
    * 참여한 유저 정보를 추가합니다.
+   * @return 참여 정보가 반영된 최신 리서치 정보
    * @author 현웅
    */
   async updateParticipant(
@@ -87,10 +88,10 @@ export class MongoResearchUpdateService {
     researchId: string,
     session?: ClientSession,
   ) {
-    await this.Research.findByIdAndUpdate(
+    const updatedResearch = await this.Research.findByIdAndUpdate(
       researchId,
       { $inc: { participantsNum: 1 } },
-      { session },
+      { session, returnOriginal: false },
     );
 
     await this.ResearchParticipation.findByIdAndUpdate(
@@ -98,7 +99,7 @@ export class MongoResearchUpdateService {
       { $push: { participantInfos: userInfo } },
       { session },
     );
-    return;
+    return updatedResearch;
   }
 
   /**
