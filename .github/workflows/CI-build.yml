@@ -47,13 +47,20 @@ jobs:
         with:
           cmd: install # 'yarn install' 명령어를 실행합니다.
 
+      # 내부적인 문법/의존성 문제가 없는지 확인합니다.
       - name: check typescript grammar
         uses: borales/actions-yarn@v3.0.0
         with:
           cmd: tsc # 'yarn tsc' 명령어를 실행합니다.
 
-      # yarn build 시도합니다.
+      # 서비스 빌드를 시도합니다.
       - name: yarn build
         uses: borales/actions-yarn@v3.0.0
         with:
           cmd: build # 'yarn build' 명령어를 실행합니다.
+
+      # 서비스가 정상적으로 시작되는지 확인합니다.
+      - name: yarn start
+        uses: borales/actions-yarn@v3.0.0
+        with:
+          cmd: start # 'yarn start' 명령어를 실행합니다.
