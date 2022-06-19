@@ -16,6 +16,19 @@ export class ResearchNotFoundException extends Status404Exception {
 }
 
 /**
+ * 유저가 리서치 작성자가 아닌 경우 사용합니다.
+ * 기본 message: `권한이 없습니다`
+ * @author 현웅
+ */
+export class NotResearchAuthorException extends Status400Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage ? newMessage : "권한이 없습니다",
+    });
+  }
+}
+
+/**
  * 이미 참여한 리서치에 참여를 시도하는 경우 사용합니다.
  * 기본 message: `이미 참여한 리서치입니다`
  * @author 현웅

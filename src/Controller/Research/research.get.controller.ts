@@ -20,7 +20,7 @@ export class ResearchGetController {
   }
 
   /**
-   * 최신 리서치를 원하는만큼 찾고 반환합니다.
+   * pulledupAt을 기준으로 최신 리서치를 원하는만큼 찾고 반환합니다.
    * get 인자가 주어지지 않은 경우 기본적으로 20개를 반환합니다.
    * @author 현웅
    */
@@ -31,14 +31,23 @@ export class ResearchGetController {
   }
 
   /**
-   * 주어진 리서치 _id를 기준으로 하여 과거의 리서치 10개를 찾고 반환합니다.
-   * TODO: 경로 이름을 뭘로 할까
+   * 주어진 리서치 pulledupAt 을 기준으로 하여 더 최근의 리서치 10개를 찾고 반환합니다.
    * @author 현웅
    */
   @Public()
-  @Get()
-  async getPaginatedResearches() {
-    return;
+  @Get("newer/:pulledupAt")
+  async getNewerResearches(@Param("pulledupAt") pulledupAt: string) {
+    return await this.mongoResearchFindService.getNewerResearches(pulledupAt);
+  }
+
+  /**
+   * 주어진 리서치 pulledupAt 을 기준으로 하여 과거의 리서치 10개를 찾고 반환합니다.
+   * @author 현웅
+   */
+  @Public()
+  @Get("older/:pulledupAt")
+  async getOlderResearches(@Param("pulledupAt") pulledupAt: string) {
+    return await this.mongoResearchFindService.getOlderResearches(pulledupAt);
   }
 
   /**

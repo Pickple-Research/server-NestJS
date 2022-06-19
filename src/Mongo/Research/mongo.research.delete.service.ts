@@ -9,6 +9,8 @@ import {
   ResearchCommentDocument,
   ResearchParticipation,
   ResearchParticipationDocument,
+  ResearchReply,
+  ResearchReplyDocument,
 } from "src/Schema";
 import { MONGODB_RESEARCH_CONNECTION, BUCKET_NAME } from "src/Constant";
 import { tryTransaction } from "src/Util";
@@ -22,6 +24,8 @@ export class MongoResearchDeleteService {
     private readonly ResearchComment: Model<ResearchCommentDocument>,
     @InjectModel(ResearchParticipation.name)
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
+    @InjectModel(ResearchReply.name)
+    private readonly ResearchReply: Model<ResearchReplyDocument>,
 
     private readonly awsS3Service: AwsS3Service,
 
@@ -45,11 +49,41 @@ export class MongoResearchDeleteService {
         { $set: { deleted: true } },
         { session },
       );
-      //TODO: Comment는 추후 변경
-      // await this.ResearchComment.findByIdAndDelete(researchId, { session });
-      // await this.ResearchParticipation.findByIdAndDelete(researchId, {
-      //   session,
-      // });
+
+      //* 리서치 참여자 정보를 가져옵니다.
+      const researchParticipation = await this.ResearchParticipation.findById(
+        researchId,
+      )
+        .select({ commentIds: 1 })
+        .populate({
+          path: "commentIds",
+          model: this.ResearchComment,
+          select: "replyIds",
+        })
+        .lean();
+
+      //* 모든 댓글 _id와 대댓글 _id를 추출
+      const commentIds = researchParticipation.commentIds.map((commentId) => {
+        return commentId["_id"];
+      });
+      const replyIds = researchParticipation.commentIds
+        .map((commentId) => {
+          return commentId.replyIds.map((replyId) => {
+            return replyId["_id"];
+          });
+        })
+        .flat();
+
+      //* 댓글과 대댓글 모두 삭제
+      await this.ResearchComment.deleteMany(
+        { _id: { $in: commentIds } },
+        { session },
+      );
+      await this.ResearchReply.deleteMany(
+        { _id: { $in: replyIds } },
+        { session },
+      );
+
       return;
     }, session);
   }

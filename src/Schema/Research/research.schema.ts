@@ -29,7 +29,6 @@ export class Research {
   @Prop() // 리서치 목적
   purpose: string;
 
-  //TODO: enum화, required
   @Prop() // 리서치 진행 단체
   organization: string;
 
@@ -42,6 +41,11 @@ export class Research {
 
   @Prop({ required: true }) // 마감일
   deadline: string;
+
+  //! 끌올한 날짜. 리서치는 _id가 아니라 이 일자를 기준으로 노출됩니다.
+  //* 끌올하기 전에는 생성일과 같습니다.
+  @Prop({ index: true, required: true })
+  pulledupAt: string;
 
   @Prop() // 생성일
   createdAt: string;

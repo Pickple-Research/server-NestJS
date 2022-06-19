@@ -1,9 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Schema as MongooseSchema } from "mongoose";
 import {
   ResearchParticipantInfo,
   ResearchParticipantInfoSchema,
 } from "./Embedded";
+import { ResearchComment } from "./researchComment.schema";
 
 /**
  * 리서치 참여 정보 스키마입니다. 리서치 기본 정보의 _id를 공유합니다.
@@ -20,8 +21,11 @@ export class ResearchParticipation {
   @Prop({ type: [ResearchParticipantInfoSchema], default: [] }) // 참여한 유저
   participantInfos: ResearchParticipantInfo[];
 
-  @Prop({ type: [String], default: [] }) // 댓글 _id
-  commentIds: string[];
+  @Prop({
+    type: [{ type: [MongooseSchema.Types.ObjectId], ref: "ResearchComment" }],
+    default: [],
+  }) // 댓글 _id
+  commentIds: ResearchComment[];
 }
 
 export const ResearchParticipationSchema = SchemaFactory.createForClass(

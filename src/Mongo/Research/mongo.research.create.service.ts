@@ -50,14 +50,18 @@ export class MongoResearchCreateService {
    */
   //TODO: files 타입 잡아줘야함
   async createResearch(
-    authorId: string,
-    research: Partial<Research>,
-    files: {
-      // thumbnail?: Express.Multer.File[];
-      images?: Express.Multer.File[];
+    param: {
+      authorId: string;
+      research: Partial<Research>;
+      files: {
+        // thumbnail?: Express.Multer.File[];
+        images?: Express.Multer.File[];
+      };
     },
     session: ClientSession,
   ) {
+    const currentTime = getCurrentISOTime();
+
     //* 인자로 주어진 Session을 이용해 진행합니다.
 
     //* 먼저 주어진 리서치 정보에 누락된 필수정보인
@@ -66,9 +70,10 @@ export class MongoResearchCreateService {
     const newResearches = await this.Research.create(
       [
         {
-          ...research,
-          authorId,
-          createdAt: getCurrentISOTime(),
+          ...param.research,
+          authorId: param.authorId,
+          pulledupAt: currentTime,
+          createdAt: currentTime,
           deadline: getISOTimeAfterGivenDays(3),
         },
       ],
@@ -90,7 +95,7 @@ export class MongoResearchCreateService {
     //   );
     // });
 
-    files.images?.forEach((image, index) => {
+    param.files.images?.forEach((image, index) => {
       uploadingObjects.push(
         getS3UploadingObject({
           BucketName: BUCKET_NAME.RESEARCH,

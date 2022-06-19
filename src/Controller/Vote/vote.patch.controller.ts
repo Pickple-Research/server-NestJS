@@ -18,7 +18,11 @@ import { ParticipatedVoteInfo } from "src/Schema/User/Embedded";
 import { VoteParticipantInfo } from "src/Schema/Vote/Embedded";
 import { VoteParticipateBodyDto } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
-import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
+import {
+  getCurrentISOTime,
+  tryTransaction,
+  tryMultiTransaction,
+} from "src/Util";
 import { MONGODB_USER_CONNECTION, MONGODB_VOTE_CONNECTION } from "src/Constant";
 
 @Controller("votes")
@@ -44,7 +48,7 @@ export class VotePatchController {
    * @author 현웅
    */
   @Patch("view/:voteId")
-  async viewResearch(
+  async viewVote(
     @Request() req: { user: JwtUserInfo },
     @Param() param: { voteId: string },
   ) {
@@ -52,20 +56,21 @@ export class VotePatchController {
       req.user.userId,
       param.voteId,
     );
-    const updateResearch = await this.mongoVoteUpdateService.updateView(
+    const updateVote = await this.mongoVoteUpdateService.updateView(
       req.user.userId,
       param.voteId,
     );
-    await Promise.all([updateUser, updateResearch]);
-    return true;
+    await Promise.all([updateUser, updateVote]);
+    return;
   }
 
   /**
    * 투표를 스크랩합니다.
+   * @return 업데이트된 투표 정보
    * @author 현웅
    */
   @Patch("scrap/:voteId")
-  async scrapResearch(
+  async scrapVote(
     @Request() req: { user: JwtUserInfo },
     @Param() param: { voteId: string },
   ) {
@@ -73,20 +78,26 @@ export class VotePatchController {
       req.user.userId,
       param.voteId,
     );
-    const updateResearch = await this.mongoVoteUpdateService.updateScrap(
+    const updateVote = await this.mongoVoteUpdateService.updateScrap(
       req.user.userId,
       param.voteId,
     );
-    await Promise.all([updateUser, updateResearch]);
-    return true;
+
+    const updatedVote = await Promise.all([updateUser, updateVote]).then(
+      ([_, updatedVote]) => {
+        return updatedVote;
+      },
+    );
+    return updatedVote;
   }
 
   /**
    * 투표 스크랩을 취소합니다.
+   * @return 업데이트된 투표 정보
    * @author 현웅
    */
   @Patch("unscrap/:voteId")
-  async unscrapResearch(
+  async unscrapVote(
     @Request() req: { user: JwtUserInfo },
     @Param() param: { voteId: string },
   ) {
@@ -94,18 +105,23 @@ export class VotePatchController {
       req.user.userId,
       param.voteId,
     );
-
-    const updateResearch = await this.mongoVoteUpdateService.updateUnscrap(
+    const updateVote = await this.mongoVoteUpdateService.updateUnscrap(
       req.user.userId,
       param.voteId,
     );
-    await Promise.all([updateUser, updateResearch]);
-    return true;
+
+    const updatedVote = await Promise.all([updateUser, updateVote]).then(
+      ([_, updatedVote]) => {
+        return updatedVote;
+      },
+    );
+    return updatedVote;
   }
 
   /**
    * @Transaction
    * 투표에 참여합니다.
+   * @return 투표 참여 정보, 업데이트된 투표 정보
    * @author 현웅
    */
   @Patch("participate/:voteId")
@@ -175,5 +191,36 @@ export class VotePatchController {
 
       return { participatedVoteInfo, updatedVote };
     }, [userSession, voteSession]);
+  }
+
+  /**
+   * @Transaction
+   * 투표를 마감합니다.
+   * @return 업데이트된 투표 정보
+   * @author 현웅
+   */
+  @Patch("close/:voteId")
+  async closeVote(
+    @Request() req: { user: JwtUserInfo },
+    @Param("voteId") voteId: string,
+  ) {
+    const voteSession = await this.voteConnection.startSession();
+
+    return await tryTransaction(async () => {
+      //* 투표 마감을 요청한 유저가 투표 작성자인지 여부를 확인합니다.
+      const checkIsAuthor = await this.mongoVoteFindService.isVoteAuthor({
+        userId: req.user.userId,
+        voteId,
+      });
+      //* 투표를 마감합니다.
+      const closeVote = await this.mongoVoteUpdateService.closeVote(voteId);
+
+      const updatedVote = await Promise.all([checkIsAuthor, closeVote]).then(
+        ([_, updatedVote]) => {
+          return updatedVote;
+        },
+      );
+      return updatedVote;
+    }, voteSession);
   }
 }

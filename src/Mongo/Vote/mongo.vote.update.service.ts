@@ -41,13 +41,18 @@ export class MongoVoteUpdateService {
   }
 
   /**
-   * 스크랩한 유저 _id를 추가합니다.
+   * 스크랩 수를 1 늘리고 스크랩한 유저 _id를 참여 정보에 추가합니다.
+   * @return 업데이트 된 투표 정보
    * @author 현웅
    */
   async updateScrap(userId: string, voteId: string) {
-    const updateVote = await this.Vote.findByIdAndUpdate(voteId, {
-      $inc: { scrapsNum: 1 },
-    }).lean();
+    const updateVote = await this.Vote.findByIdAndUpdate(
+      voteId,
+      {
+        $inc: { scrapsNum: 1 },
+      },
+      { returnOriginal: false },
+    ).lean();
     const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
       voteId,
       {
@@ -55,18 +60,28 @@ export class MongoVoteUpdateService {
       },
     );
 
-    await Promise.all([updateVote, updateParticipation]);
-    return;
+    const updatedVote = await Promise.all([
+      updateVote,
+      updateParticipation,
+    ]).then(([updatedVote, _]) => {
+      return updatedVote;
+    });
+    return updatedVote;
   }
 
   /**
-   * 스크랩 취소한 유저 _id를 제거합니다.
+   * 스크랩 수를 1 줄이고 스크랩을 취소한 유저 _id를 참여 정보에서 제거합니다.
+   * @return 업데이트 된 투표 정보
    * @author 현웅
    */
   async updateUnscrap(userId: string, voteId: string) {
-    const updateVote = await this.Vote.findByIdAndUpdate(voteId, {
-      $inc: { scrapsNum: -1 },
-    });
+    const updateVote = await this.Vote.findByIdAndUpdate(
+      voteId,
+      {
+        $inc: { scrapsNum: -1 },
+      },
+      { returnOriginal: false },
+    ).lean();
     const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
       voteId,
       {
@@ -74,8 +89,13 @@ export class MongoVoteUpdateService {
       },
     );
 
-    await Promise.all([updateVote, updateParticipation]);
-    return;
+    const updatedVote = await Promise.all([
+      updateVote,
+      updateParticipation,
+    ]).then(([updatedVote, _]) => {
+      return updatedVote;
+    });
+    return updatedVote;
   }
 
   /**
@@ -115,5 +135,21 @@ export class MongoVoteUpdateService {
     );
 
     return updatedVote;
+  }
+
+  /**
+   * @Transaction
+   * 투표를 마갑합니다.
+   * @return 업데이트된 투표 정보
+   * @author 현웅
+   */
+  async closeVote(voteId: string, session?: ClientSession) {
+    return await this.Vote.findByIdAndUpdate(
+      voteId,
+      {
+        $set: { closed: true },
+      },
+      { session, returnOriginal: false },
+    ).lean();
   }
 }
