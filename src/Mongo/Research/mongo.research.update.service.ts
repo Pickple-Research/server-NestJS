@@ -45,40 +45,63 @@ export class MongoResearchUpdateService {
   }
 
   /**
-   * 스크랩한 유저 _id를 추가합니다.
+   * 스크랩 수를 1 늘리고 유저 _id를 추가합니다.
+   * @return 업데이트된 리서치 정보
    * @author 현웅
    */
   async updateScrap(userId: string, researchId: string) {
-    const updateResearch = await this.Research.findByIdAndUpdate(researchId, {
-      $inc: { scrapsNum: 1 },
-    });
+    const updateResearch = await this.Research.findByIdAndUpdate(
+      researchId,
+      {
+        $inc: { scrapsNum: 1 },
+      },
+      { returnOriginal: false },
+    ).lean();
+
     const updateParticipation =
       await this.ResearchParticipation.findByIdAndUpdate(researchId, {
         $addToSet: { scrappedUserIds: userId },
       });
 
-    await Promise.all([updateResearch, updateParticipation]);
-    return;
+    const updatedResearch = await Promise.all([
+      updateResearch,
+      updateParticipation,
+    ]).then(([updatedResearch, _]) => {
+      return updatedResearch;
+    });
+    return updatedResearch;
   }
 
   /**
-   * 스크랩 취소한 유저 _id를 제거합니다.
+   * 스크랩 수를 1 줄이고 스크랩 유저 _id를 제거합니다.
+   * @return 업데이트된 리서치 정보
    * @author 현웅
    */
   async updateUnscrap(userId: string, researchId: string) {
-    const updateResearch = await this.Research.findByIdAndUpdate(researchId, {
-      $inc: { scrapsNum: -1 },
-    });
+    const updateResearch = await this.Research.findByIdAndUpdate(
+      researchId,
+      {
+        $inc: { scrapsNum: -1 },
+      },
+      { returnOriginal: false },
+    ).lean();
+
     const updateParticipation =
       await this.ResearchParticipation.findByIdAndUpdate(researchId, {
         $pull: { scrappedUserIds: userId },
       });
 
-    await Promise.all([updateResearch, updateParticipation]);
-    return;
+    const updatedResearch = await Promise.all([
+      updateResearch,
+      updateParticipation,
+    ]).then(([updatedResearch, _]) => {
+      return updatedResearch;
+    });
+    return updatedResearch;
   }
 
   /**
+   * @Transaction
    * 참여한 유저 정보를 추가합니다.
    * @return 참여 정보가 반영된 최신 리서치 정보
    * @author 현웅
@@ -99,14 +122,15 @@ export class MongoResearchUpdateService {
       { $push: { participantInfos: userInfo } },
       { session },
     );
+
     return updatedResearch;
   }
 
   /**
-   * 리서치를 연장합니다.
+   * 리서치를 끌올합니다.
    * @author 현웅
    */
-  async extendResearch(researchId: string) {
+  async pullupResearch(researchId: string) {
     const research = await this.Research.findById(researchId);
     const updatedDeadline = getFutureDateFromGivenDate(research.deadline, 2);
     research.deadline = updatedDeadline;

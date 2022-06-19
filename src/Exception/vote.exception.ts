@@ -14,6 +14,19 @@ export class SelectedOptionInvalidException extends Status400Exception {
 }
 
 /**
+ * 유저가 투표 작성자가 아닌 경우 사용합니다.
+ * 기본 message: `권한이 없습니다`
+ * @author 현웅
+ */
+export class NotVoteAuthorException extends Status400Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage ? newMessage : "권한이 없습니다",
+    });
+  }
+}
+
+/**
  * 이미 참여한 투표에 참여를 시도하는 경우 사용합니다.
  * 기본 message: `이미 참여한 투표입니다`
  * @author 현웅

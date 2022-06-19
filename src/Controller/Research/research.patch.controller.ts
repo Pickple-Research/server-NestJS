@@ -64,6 +64,7 @@ export class ResearchPatchController {
 
   /**
    * 리서치를 스크랩합니다.
+   * @return 업데이트된 리서치 정보
    * @author 현웅
    */
   @Patch("scrap/:researchId")
@@ -79,12 +80,18 @@ export class ResearchPatchController {
       req.user.userId,
       param.researchId,
     );
-    await Promise.all([updateUser, updateResearch]);
-    return;
+    const updatedResearch = await Promise.all([
+      updateUser,
+      updateResearch,
+    ]).then(([_, updatedResearch]) => {
+      return updatedResearch;
+    });
+    return updatedResearch;
   }
 
   /**
    * 리서치 스크랩을 취소합니다.
+   * @return 업데이트된 리서치 정보
    * @author 현웅
    */
   @Patch("unscrap/:researchId")
@@ -101,14 +108,20 @@ export class ResearchPatchController {
       req.user.userId,
       param.researchId,
     );
-    await Promise.all([updateUser, updateResearch]);
-    return;
+    const updatedResearch = await Promise.all([
+      updateUser,
+      updateResearch,
+    ]).then(([_, updatedResearch]) => {
+      return updatedResearch;
+    });
+    return updatedResearch;
   }
 
   /**
    * @Transaction
    * 리서치에 참여합니다.
    * 조회, 스크랩과 다르게 데이터 정합성이 필요하므로 Transaction을 활용해야합니다.
+   * @return 리서치 참여 정보, 업데이트 된 리서치 정보
    * @author 현웅
    */
   @Patch("participate/:researchId")
@@ -176,12 +189,13 @@ export class ResearchPatchController {
   }
 
   /**
-   * 리서치를 연장합니다.
+   * 리서치를 끌올합니다.
+   * @return 업데이트된 리서치 정보
    * @author 현웅
    */
-  @Patch("extend/:researchId")
-  async extendResearch(@Param() param: { researchId: string }) {
-    return await this.mongoResearchUpdateService.extendResearch(
+  @Patch("pullup/:researchId")
+  async pullupResearch(@Param() param: { researchId: string }) {
+    return await this.mongoResearchUpdateService.pullupResearch(
       param.researchId,
     );
   }

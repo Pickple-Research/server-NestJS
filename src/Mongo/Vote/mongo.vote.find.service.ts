@@ -12,6 +12,7 @@ import {
   VoteReplyDocument,
 } from "src/Schema";
 import {
+  NotVoteAuthorException,
   SelectedOptionInvalidException,
   VoteNotFoundException,
 } from "src/Exception";
@@ -27,6 +28,21 @@ export class MongoVoteFindService {
     @InjectModel(VoteReply.name)
     private readonly VoteReply: Model<VoteReplyDocument>,
   ) {}
+
+  /**
+   * 인자로 받은 유저 _id 가 투표 작성자 _id 와 일치하는지 확인합니다.
+   * 일치하지 않는 경우, 에러를 발생시킵니다.
+   * @author 현웅
+   */
+  async isVoteAuthor(param: { userId: string; voteId: string }) {
+    const vote = await this.Vote.findById(param.voteId)
+      .select({ authorId: 1 })
+      .lean();
+    if (vote.authorId !== param.userId) {
+      throw new NotVoteAuthorException();
+    }
+    return;
+  }
 
   async getVoteById(voteId: string) {
     return await this.Vote.findById(voteId).lean();

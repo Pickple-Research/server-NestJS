@@ -52,9 +52,11 @@ export class ResearchPostController {
 
     return await tryTransaction(async () => {
       const newResearch = await this.mongoResearchCreateService.createResearch(
-        req.user.userId,
-        researchCreateBodyDto,
-        {}, // 원래 파일을 넘겨주는 곳이지만, 이미지가 없으므로 아무것도 넘기지 않습니다.
+        {
+          authorId: req.user.userId,
+          research: researchCreateBodyDto,
+          files: {},
+        },
         researchSession,
       );
 
@@ -103,9 +105,11 @@ export class ResearchPostController {
 
     return await tryTransaction(async () => {
       const newResearch = await this.mongoResearchCreateService.createResearch(
-        req.user.userId,
-        researchCreateBodyDto,
-        files,
+        {
+          authorId: req.user.userId,
+          research: researchCreateBodyDto,
+          files: files,
+        },
         researchSession,
       );
 
@@ -137,8 +141,7 @@ export class ResearchPostController {
         await this.mongoResearchCreateService.createResearchComment(
           {
             researchId: body.researchId,
-            // authorId: req.user.userId,
-            authorId: "req.user.userId",
+            authorId: req.user.userId,
             authorNickname: "req.user.userNickname",
             content: body.content,
           },
@@ -168,8 +171,7 @@ export class ResearchPostController {
           {
             researchId: body.researchId,
             commentId: body.commentId,
-            // authorId: req.user.userId,
-            authorId: "req.user.userId",
+            authorId: req.user.userId,
             authorNickname: "req.user.userNickname",
             content: body.content,
           },
