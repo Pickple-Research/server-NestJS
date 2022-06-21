@@ -37,7 +37,7 @@ export class MongoUserFindService {
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
     private readonly UserProperty: Model<UserPropertyDocument>,
-  ) {}
+  ) { }
 
   async testMongoUserRouter() {
     return "test MongoUserFindRouter";
@@ -259,5 +259,26 @@ export class MongoUserFindService {
     }
 
     return false;
+  }
+
+
+
+  /** 
+   *  
+   * 
+   * @author 승원
+   * @param userId 유저 _id
+   * @param num 요청한 자료 개수
+   * @param page 페이지 번호
+   * 
+   */
+
+  async getUsers(userId: string = undefined, num: number = 5, page: number = 0): Promise<User[]> {
+
+
+    const users = await this.User.find().sort({ createdAt: -1 }).skip(num * page).limit(num).lean();
+    return users;
+
+
   }
 }

@@ -1,4 +1,4 @@
-import { Controller, Inject, Get, Request } from "@nestjs/common";
+import { Controller, Inject, Get, Request, Body } from "@nestjs/common";
 import { UserFindService } from "src/Service";
 import { MongoUserFindService } from "src/Mongo";
 import { Public } from "src/Security/Metadata";
@@ -6,7 +6,7 @@ import { JwtUserInfo } from "src/Object/Type";
 
 @Controller("users")
 export class UserGetController {
-  constructor(private readonly userFindService: UserFindService) {}
+  constructor(private readonly userFindService: UserFindService) { }
 
   @Inject() private readonly mongoUserFindService: MongoUserFindService;
 
@@ -19,4 +19,12 @@ export class UserGetController {
   async testUserRouter(@Request() req: { user: JwtUserInfo }) {
     return req.user;
   }
+
+  @Public()
+  @Get("users")
+  async getUsers(@Body() userId: string, num: number, page: number) {
+    return this.mongoUserFindService.getUsers(userId, num, page);
+  }
+
+
 }
