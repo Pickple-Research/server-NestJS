@@ -23,7 +23,7 @@ import {
   MONGODB_USER_CONNECTION,
   MONGODB_RESEARCH_CONNECTION,
 } from "src/Constant";
-import { getDummyResearches } from "src/Dummy";
+// import { getDummyResearches } from "src/Dummy";
 
 @Controller("researches")
 export class ResearchPostController {
@@ -207,19 +207,19 @@ export class ResearchPostController {
    */
   @Post("dummy")
   async createDummyResearches() {
-    const dummyResearches = getDummyResearches(50);
-    const researchSession = await this.researchConnection.startSession();
+    // const dummyResearches = getDummyResearches(50);
+    // const researchSession = await this.researchConnection.startSession();
 
-    for (const research of dummyResearches) {
-      await this.mongoResearchCreateService.createResearch(
-        {
-          authorId: research.authorId,
-          research,
-          files: {},
-        },
-        researchSession,
-      );
-    }
+    // for (const research of dummyResearches) {
+    //   await this.mongoResearchCreateService.createResearch(
+    //     {
+    //       authorId: research.authorId,
+    //       research,
+    //       files: {},
+    //     },
+    //     researchSession,
+    //   );
+    // }
 
     return;
   }
