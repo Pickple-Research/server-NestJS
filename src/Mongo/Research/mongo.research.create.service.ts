@@ -17,6 +17,11 @@ import {
   ResearchParticipationDocument,
   ResearchReply,
   ResearchReplyDocument,
+  ResearchReport,
+  ResearchReportDocument,
+  ResearchUser,
+  ResearchUserDocument,
+  User,
 } from "src/Schema";
 import { BUCKET_NAME } from "src/Constant";
 
@@ -31,9 +36,21 @@ export class MongoResearchCreateService {
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
     @InjectModel(ResearchReply.name)
     private readonly ResearchReply: Model<ResearchReplyDocument>,
+    @InjectModel(ResearchReport.name)
+    private readonly ResearchReport: Model<ResearchReportDocument>,
+    @InjectModel(ResearchUser.name)
+    private readonly ResearchUser: Model<ResearchUserDocument>,
 
     private readonly awsS3Service: AwsS3Service,
   ) {}
+
+  /**
+   * @Transaction
+   * 유저가 생성될 때, ResearchUser 정보도 함께 생성합니다.
+   * 리서치 작성자, 리서치 (대)댓글 작성자 정보를 populate 해서 가져올 때 사용하게 됩니다.
+   * @author 현웅
+   */
+  async createResearchUser(param: { user: User }, session: ClientSession) {}
 
   /**
    * @Transaction
@@ -177,5 +194,33 @@ export class MongoResearchCreateService {
       { session },
     );
     return { updatedReserach, newReply: newReplies[0].toObject() };
+  }
+
+  /**
+   * 리서치 신고 정보를 생성합니다.
+   * @author 현웅
+   */
+  async createResearchReport(param: {
+    userId: string;
+    userNickname: string;
+    researchId: string;
+    content: string;
+  }) {
+    const research = await this.Research.findById(param.researchId)
+      .select({
+        title: 1,
+      })
+      .lean();
+
+    await this.ResearchReport.create([
+      {
+        userId: param.userId,
+        userNickname: param.userNickname,
+        researchId: param.researchId,
+        researchTitle: research.title,
+        content: param.content,
+      },
+    ]);
+    return;
   }
 }

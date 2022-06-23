@@ -72,3 +72,15 @@ export class VoteReplyCreateBodyDto {
   @IsString()
   content: string;
 }
+
+/**
+ * 투표 신고시 Body에 포함되어야 하는 정보들
+ * @author 현웅
+ */
+export class VoteReportBodyDto {
+  @IsString()
+  voteId: string;
+
+  @IsString()
+  content: string;
+}

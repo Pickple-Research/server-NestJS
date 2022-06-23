@@ -16,12 +16,14 @@ import {
   ResearchCreateBodyDto,
   ResearchCommentCreateBodyDto,
   ResearchReplyCreateBodyDto,
+  ResearchReportBodyDto,
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
 import {
   MONGODB_USER_CONNECTION,
   MONGODB_RESEARCH_CONNECTION,
 } from "src/Constant";
+// import { getDummyResearches } from "src/Dummy";
 
 @Controller("researches")
 export class ResearchPostController {
@@ -180,5 +182,45 @@ export class ResearchPostController {
 
       return newReply;
     }, researchSession);
+  }
+
+  /**
+   * 리서치를 신고합니다.
+   * @author 현웅
+   */
+  @Post("report")
+  async reportResearch(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: ResearchReportBodyDto,
+  ) {
+    return await this.mongoResearchCreateService.createResearchReport({
+      userId: req.user.userId,
+      userNickname: req.user.userNickname,
+      researchId: body.researchId,
+      content: body.content,
+    });
+  }
+
+  /**
+   * 더미 리서치를 생성합니다.
+   * @author 현웅
+   */
+  @Post("dummy")
+  async createDummyResearches() {
+    // const dummyResearches = getDummyResearches(50);
+    // const researchSession = await this.researchConnection.startSession();
+
+    // for (const research of dummyResearches) {
+    //   await this.mongoResearchCreateService.createResearch(
+    //     {
+    //       authorId: research.authorId,
+    //       research,
+    //       files: {},
+    //     },
+    //     researchSession,
+    //   );
+    // }
+
+    return;
   }
 }

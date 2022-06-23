@@ -1,17 +1,42 @@
 import { Controller, Inject, Request, Body, Get, Post } from "@nestjs/common";
+import { InjectConnection } from "@nestjs/mongoose";
+import { Connection } from "mongoose";
 import { AuthService } from "src/Service";
-import { MongoUserFindService, MongoUserCreateService } from "src/Mongo";
+import {
+  MongoUserFindService,
+  MongoUserCreateService,
+  MongoResearchCreateService,
+  MongoVoteCreateService,
+} from "src/Mongo";
 import { Public } from "src/Security/Metadata";
 import { LoginBodyDto, AuthCodeVerificationBodyDto } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
+import { tryMultiTransaction } from "src/Util";
+import {
+  MONGODB_USER_CONNECTION,
+  MONGODB_RESEARCH_CONNECTION,
+  MONGODB_VOTE_CONNECTION,
+} from "src/Constant";
 import { WrongAuthorizationCodeException } from "src/Exception";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+
+    @InjectConnection(MONGODB_USER_CONNECTION)
+    private readonly userConnection: Connection,
+    @InjectConnection(MONGODB_RESEARCH_CONNECTION)
+    private readonly researchConnection: Connection,
+    @InjectConnection(MONGODB_VOTE_CONNECTION)
+    private readonly voteConnection: Connection,
+  ) {}
 
   @Inject() private readonly mongoUserFindService: MongoUserFindService;
   @Inject() private readonly mongoUserCreateService: MongoUserCreateService;
+  @Inject()
+  private readonly mongoResearchCreateService: MongoResearchCreateService;
+  @Inject() private readonly mongoVoteCreateService: MongoVoteCreateService;
 
   /**
    * 테스트 라우터
@@ -61,6 +86,7 @@ export class AuthController {
 
     const jwt = await this.authService.issueJWT({
       userId: userInfo.user._id,
+      userNickname: userInfo.user.nickname,
       userEmail: userInfo.user.email,
     });
 
@@ -86,8 +112,31 @@ export class AuthController {
     }
 
     //* 인증번호가 일치하는 경우 정규유저로 전환합니다.
-    await this.mongoUserCreateService.authorizeEmailUser(body.email);
-    return true;
+    //* 이 때, ResearchUser와 VoteUser도 같이 만들어야 하므로 세션을 열고 한꺼번에 처리합니다.
+    const userSession = await this.userConnection.startSession();
+    const researchSession = await this.researchConnection.startSession();
+    const voteSession = await this.voteConnection.startSession();
+
+    await tryMultiTransaction(async () => {
+      const newUser = await this.mongoUserCreateService.authorizeEmailUser(
+        { email: body.email },
+        userSession,
+      );
+
+      const createResearchUser =
+        await this.mongoResearchCreateService.createResearchUser(
+          { user: newUser },
+          researchSession,
+        );
+      const createVoteUser = await this.mongoVoteCreateService.createVoteUser(
+        { user: newUser },
+        voteSession,
+      );
+
+      await Promise.all([createResearchUser, createVoteUser]);
+    }, [userSession, researchSession, voteSession]);
+
+    return;
   }
 
   /**

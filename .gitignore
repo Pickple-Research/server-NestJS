@@ -3,6 +3,9 @@
 
 coderules.md
 
+# dummy data
+src/Dummy/*
+
 # compiled output
 /dist
 /node_modules

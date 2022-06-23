@@ -183,17 +183,55 @@ export class MongoUserUpdateService {
     return;
   }
 
+  /**
+   * @Transaction
+   * 본인이 업로드한 리서치를 삭제합니다.
+   * 유저 활동 정보에서 uploadedResearchIds를 찾고, 인자로 받은 researchId를 제거합니다.
+   * @author 현웅
+   */
+  async deleteUploadedResearch(
+    param: { userId: string; researchId: string },
+    session: ClientSession,
+  ) {
+    await this.UserActivity.findByIdAndUpdate(
+      param.userId,
+      {
+        $pull: { uploadedResearchIds: param.researchId },
+      },
+      { session },
+    );
+    return;
+  }
+
+  /**
+   * @Transaction
+   * 본인이 업로드한 투표를 삭제합니다.
+   * 유저 활동 정보에서 uploadedVoteIds를 찾고, 인자로 받은 voteId를 제거합니다.
+   * @author 현웅
+   */
+  async deleteUploadedVote(
+    param: { userId: string; voteId: string },
+    session: ClientSession,
+  ) {
+    await this.UserActivity.findByIdAndUpdate(
+      param.userId,
+      {
+        $pull: { uploadedVoteIds: param.voteId },
+      },
+      { session },
+    );
+    return;
+  }
+
   async followPartner(
-    userId: string,
-    partnerId: string,
+    param: { userId: string; partnerId: string },
     session?: ClientSession,
   ) {
     return "follow";
   }
 
   async unfollowPartner(
-    userId: string,
-    partnerId: string,
+    param: { userId: string; partnerId: string },
     session?: ClientSession,
   ) {
     return "unfollow";

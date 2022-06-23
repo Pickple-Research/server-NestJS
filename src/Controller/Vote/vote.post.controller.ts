@@ -6,6 +6,7 @@ import {
   VoteCreateBodyDto,
   VoteCommentCreateBodyDto,
   VoteReplyCreateBodyDto,
+  VoteReportBodyDto,
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
 import { tryTransaction } from "src/Util";
@@ -64,8 +65,7 @@ export class VotePostController {
   @Post("comments")
   async uploadVoteComment(
     @Request() req: { user: JwtUserInfo },
-    // @Body() body: VoteCommentCreateBodyDto,
-    @Body() body: any,
+    @Body() body: VoteCommentCreateBodyDto,
   ) {
     const voteSession = await this.voteConnection.startSession();
 
@@ -74,9 +74,8 @@ export class VotePostController {
         await this.mongoVoteCreateService.createVoteComment(
           {
             voteId: body.voteId,
-            // authorId: req.user.userId,
-            authorId: "req.user.userId",
-            authorNickname: "req.user.userNickname",
+            authorId: req.user.userId,
+            authorNickname: "// req.user.userNickname",
             content: body.content,
           },
           voteSession,
@@ -104,14 +103,30 @@ export class VotePostController {
           {
             voteId: body.voteId,
             commentId: body.commentId,
-            // authorId: req.user.userId,
-            authorId: "req.user.userId",
-            authorNickname: "req.user.userNickname",
+            authorId: req.user.userId,
+            authorNickname: "// req.user.userNickname",
             content: body.content,
           },
           voteSession,
         );
       return { updatedVote, newReply };
     }, voteSession);
+  }
+
+  /**
+   * 투표를 신고합니다.
+   * @author 현웅
+   */
+  @Post("report")
+  async reportVote(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteReportBodyDto,
+  ) {
+    return await this.mongoVoteCreateService.createVoteReport({
+      userId: req.user.userId,
+      userNickname: req.user.userNickname,
+      voteId: body.voteId,
+      content: body.content,
+    });
   }
 }

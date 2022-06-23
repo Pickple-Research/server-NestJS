@@ -10,6 +10,11 @@ import {
   VoteParticipationDocument,
   VoteReply,
   VoteReplyDocument,
+  VoteReport,
+  VoteReportDocument,
+  VoteUser,
+  VoteUserDocument,
+  User,
 } from "src/Schema";
 import { getCurrentISOTime } from "src/Util";
 
@@ -23,7 +28,19 @@ export class MongoVoteCreateService {
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
     @InjectModel(VoteReply.name)
     private readonly VoteReply: Model<VoteReplyDocument>,
+    @InjectModel(VoteReport.name)
+    private readonly VoteReport: Model<VoteReportDocument>,
+    @InjectModel(VoteUser.name)
+    private readonly VoteUser: Model<VoteUserDocument>,
   ) {}
+
+  /**
+   * @Transaction
+   * 유저가 생성될 때, VoteUser도 함께 만듭니다.
+   * 투표 작성자, 투표 (대)댓글 작성자 정보를 populate 해서 가져올 때 사용하게 됩니다.
+   * @author 현웅
+   */
+  async createVoteUser(param: { user: User }, session: ClientSession) {}
 
   /**
    * @Transaction
@@ -47,7 +64,6 @@ export class MongoVoteCreateService {
     );
 
     const newVote = newVotes[0];
-    // await this.VoteComment.create([{ _id: newVote._id }], { session });
     await this.VoteParticipation.create([{ _id: newVote._id }], { session });
 
     return newVote;
@@ -105,5 +121,34 @@ export class MongoVoteCreateService {
       { session },
     );
     return { updatedVote, newReply: newReplies[0].toObject() };
+  }
+
+  /**
+   * 투표 신고 정보를 생성합니다.
+   * @author 현웅
+   */
+  async createVoteReport(param: {
+    userId: string;
+    userNickname: string;
+    voteId: string;
+    content: string;
+  }) {
+    const vote = await this.Vote.findById(param.voteId)
+      .select({
+        title: 1,
+      })
+      .lean();
+
+    await this.VoteReport.create([
+      {
+        userId: param.userId,
+        userNickname: param.userNickname,
+        voteId: param.voteId,
+        voteTitle: vote.title,
+        content: param.content,
+      },
+    ]);
+
+    return;
   }
 }

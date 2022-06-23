@@ -8,6 +8,6 @@
  */
 export type JwtUserInfo = {
   userId: string;
-  userNickname?: string;
+  userNickname: string;
   userEmail?: string;
 };

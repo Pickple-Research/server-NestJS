@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Schema as MongooseSchema } from "mongoose";
+import { UserCreditHistory } from "./userCreditHistory.schema";
 import {
   ParticipatedResearchInfo,
   ParticipatedResearchInfoSchema,
@@ -36,6 +37,15 @@ export class UserActivity {
 
   @Prop({ type: [String], default: [] }) // 작성한 투표들 _id
   uploadedVoteIds: string[];
+
+  @Prop({ default: 0 }) // 크레딧
+  credit: number;
+
+  @Prop({
+    type: [{ type: [MongooseSchema.Types.ObjectId], ref: "UserCreditHistory" }],
+    default: [],
+  }) // 크레딧 변동 사유 _id
+  creditHistoryIds: UserCreditHistory[];
 }
 
 export const UserActivitySchema = SchemaFactory.createForClass(UserActivity);

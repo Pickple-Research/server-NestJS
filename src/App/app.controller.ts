@@ -11,6 +11,16 @@ export class AppController {
   @Inject() private readonly mongoVoteFindService: MongoVoteFindService;
 
   /**
+   * 배포 시 테스트 URL입니다.
+   * @author 현웅
+   */
+  @Public()
+  @Get("test")
+  async test() {
+    return "2022-06-23 1354 release";
+  }
+
+  /**
    * 서버 헬스체크용 경로입니다.
    * @author 현웅
    */

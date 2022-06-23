@@ -10,16 +10,6 @@ export class ResearchGetController {
   @Inject() private readonly mongoResearchFindService: MongoResearchFindService;
 
   /**
-   * 테스트 라우터
-   * @author 현웅
-   */
-  @Public()
-  @Get("test")
-  async testResearchRouter() {
-    return "test Research Router()";
-  }
-
-  /**
    * pulledupAt을 기준으로 최신 리서치를 원하는만큼 찾고 반환합니다.
    * get 인자가 주어지지 않은 경우 기본적으로 20개를 반환합니다.
    * @author 현웅
