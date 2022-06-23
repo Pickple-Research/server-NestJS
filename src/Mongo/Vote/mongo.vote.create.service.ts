@@ -87,16 +87,11 @@ export class MongoVoteCreateService {
     );
     await this.VoteParticipation.findByIdAndUpdate(
       voteComment.voteId,
-      { $push: { commentIds: newComments[0]._id } },
+      { $push: { comments: newComments[0]._id } },
       { session },
     );
 
-    //* 반환하기 전에 새로운 댓글의 replyId는 replies로 이름을 바꿔줍니다.
-    const newComment = newComments[0].toObject();
-    newComment["replies"] = newComment["replyIds"];
-    delete newComment["replyIds"];
-
-    return { updatedVote, newComment };
+    return { updatedVote, newComment: newComments[0].toObject() };
   }
 
   /**
@@ -117,7 +112,7 @@ export class MongoVoteCreateService {
     );
     await this.VoteComment.findByIdAndUpdate(
       voteReply.commentId,
-      { $push: { replyIds: newReplies[0]._id } },
+      { $push: { replies: newReplies[0]._id } },
       { session },
     );
     return { updatedVote, newReply: newReplies[0].toObject() };

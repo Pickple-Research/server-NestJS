@@ -25,7 +25,7 @@ export class ResearchParticipation {
     type: [{ type: [MongooseSchema.Types.ObjectId], ref: "ResearchComment" }],
     default: [],
   }) // 댓글 _id
-  commentIds: ResearchComment[];
+  comments: ResearchComment[];
 }
 
 export const ResearchParticipationSchema = SchemaFactory.createForClass(

@@ -103,11 +103,14 @@ export class MongoResearchFindService {
    */
   async getResearchComments(researchId: string) {
     return await this.ResearchParticipation.findById(researchId)
-      .select({ commentIds: 1 })
+      .select({ comments: 1 })
       .populate({
-        path: "commentIds",
+        path: "comments",
         model: this.ResearchComment,
-        populate: { path: "replyIds", model: this.ResearchReply },
+        populate: {
+          path: "replies",
+          model: this.ResearchReply,
+        },
       })
       .lean();
   }

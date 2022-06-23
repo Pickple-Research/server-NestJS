@@ -11,7 +11,11 @@ import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { MongoUserUpdateService, MongoResearchCreateService } from "src/Mongo";
-import { getMulterOptions, tryTransaction } from "src/Util";
+import {
+  getMulterOptions,
+  tryTransaction,
+  tryMultiTransaction,
+} from "src/Util";
 import {
   ResearchCreateBodyDto,
   ResearchCommentCreateBodyDto,
@@ -52,7 +56,7 @@ export class ResearchPostController {
     const userSession = await this.userConnection.startSession();
     const researchSession = await this.researchConnection.startSession();
 
-    return await tryTransaction(async () => {
+    return await tryMultiTransaction(async () => {
       const newResearch = await this.mongoResearchCreateService.createResearch(
         {
           authorId: req.user.userId,
@@ -69,7 +73,7 @@ export class ResearchPostController {
       );
 
       return newResearch;
-    }, researchSession);
+    }, [userSession, researchSession]);
   }
 
   /**
@@ -105,7 +109,7 @@ export class ResearchPostController {
     const userSession = await this.userConnection.startSession();
     const researchSession = await this.researchConnection.startSession();
 
-    return await tryTransaction(async () => {
+    return await tryMultiTransaction(async () => {
       const newResearch = await this.mongoResearchCreateService.createResearch(
         {
           authorId: req.user.userId,
@@ -122,7 +126,7 @@ export class ResearchPostController {
       );
 
       return newResearch;
-    }, researchSession);
+    }, [userSession, researchSession]);
   }
 
   /**

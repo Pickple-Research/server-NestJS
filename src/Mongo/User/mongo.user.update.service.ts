@@ -148,13 +148,14 @@ export class MongoUserUpdateService {
   }
 
   /**
+   * @Transaction
    * 투표에 참여합니다. UserActivity를 업데이트합니다.
    * @author 현웅
    */
   async participateVote(
     userId: string,
     participatedVoteInfo: ParticipatedVoteInfo,
-    session?: ClientSession,
+    session: ClientSession,
   ) {
     await this.UserActivity.findByIdAndUpdate(
       userId,
@@ -172,14 +173,22 @@ export class MongoUserUpdateService {
   }
 
   /**
+   * @Transaction
    * 투표를 업로드합니다.
    * UserActivity의 uploadedVoteIds에 투표 _id를 추가합니다.
    * @author 현웅
    */
-  async uploadVote(userId: string, voteId: string) {
-    await this.UserActivity.findByIdAndUpdate(userId, {
-      $push: { uploadedVoteIds: { $each: [voteId], $position: 0 } },
-    });
+  async uploadVote(
+    param: { userId: string; voteId: string },
+    session: ClientSession,
+  ) {
+    await this.UserActivity.findByIdAndUpdate(
+      param.userId,
+      {
+        $push: { uploadedVoteIds: { $each: [param.voteId], $position: 0 } },
+      },
+      { session },
+    );
     return;
   }
 

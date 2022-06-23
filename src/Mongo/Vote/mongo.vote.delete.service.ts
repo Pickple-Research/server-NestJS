@@ -42,22 +42,22 @@ export class MongoVoteDeleteService {
       param.voteId,
       { session },
     )
-      .select({ commentIds: 1 })
+      .select({ comments: 1 })
       .populate({
-        path: "commentIds",
+        path: "comments",
         model: this.VoteComment,
-        select: "replyIds",
+        select: "replies",
       })
       .lean();
 
     //* 모든 댓글 _id와 대댓글 _id를 추출
-    const commentIds = voteParticipation.commentIds.map((commentId) => {
-      return commentId["_id"];
+    const commentIds = voteParticipation.comments.map((comment) => {
+      return comment["_id"];
     });
-    const replyIds = voteParticipation.commentIds
-      .map((commentId) => {
-        return commentId.replyIds.map((replyId) => {
-          return replyId["_id"];
+    const replyIds = voteParticipation.comments
+      .map((comment) => {
+        return comment.replies.map((replyId) => {
+          return replyId;
         });
       })
       .flat();

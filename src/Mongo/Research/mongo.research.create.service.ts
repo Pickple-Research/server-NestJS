@@ -158,15 +158,11 @@ export class MongoResearchCreateService {
     );
     await this.ResearchParticipation.findByIdAndUpdate(
       researchComment.researchId,
-      { $push: { commentIds: newComments[0]._id } },
+      { $push: { comments: newComments[0]._id } },
       { session },
     );
 
-    const newComment = newComments[0].toObject();
-    newComment["replies"] = newComment["replyIds"];
-    delete newComment["replyIds"];
-
-    return { updatedResearch, newComment };
+    return { updatedResearch, newComment: newComments[0].toObject() };
   }
 
   /**
@@ -190,7 +186,7 @@ export class MongoResearchCreateService {
     );
     await this.ResearchComment.findByIdAndUpdate(
       researchReply.commentId,
-      { $push: { replyIds: newReplies[0]._id } },
+      { $push: { replies: newReplies[0]._id } },
       { session },
     );
     return { updatedReserach, newReply: newReplies[0].toObject() };

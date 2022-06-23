@@ -22,7 +22,7 @@ export class VoteParticipation {
     type: [{ type: [MongooseSchema.Types.ObjectId], ref: "VoteComment" }],
     default: [],
   }) // 댓글 _id
-  commentIds: VoteComment[];
+  comments: VoteComment[];
 }
 
 export const VoteParticipationSchema =
