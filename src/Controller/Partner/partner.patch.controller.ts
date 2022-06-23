@@ -40,20 +40,19 @@ export class PartnerPatchController {
   @Patch("follow/:partnerId")
   async followPartner(
     @Request() req: { user: JwtUserInfo },
-    @Param() param: { partnerId: string },
+    @Param("partnerId") partnerId: string,
   ) {
     //* User DB, Partner DB에 대한 Session을 시작하고
     const userSession = await this.userConnection.startSession();
     const partnerSession = await this.partnerConnection.startSession();
     return await tryMultiTransaction(async () => {
       const updateUser = await this.mongoUserUpdateService.followPartner(
-        req.user.userId,
-        param.partnerId,
+        { userId: req.user.userId, partnerId: partnerId },
         userSession,
       );
       const updatePartner = await this.mongoPartnerUpdateService.updateFollower(
         req.user.userId,
-        param.partnerId,
+        partnerId,
         partnerSession,
       );
       //* Promise.all 을 이용해 두 작업을 동시에 수행합니다.
@@ -70,21 +69,20 @@ export class PartnerPatchController {
   @Patch("unfollow/:partnerId")
   async unfollowPartner(
     @Request() req: { user: JwtUserInfo },
-    @Param() param: { partnerId: string },
+    @Param("partnerId") partnerId: string,
   ) {
     //* User DB, Partner DB에 대한 Session을 시작하고
     const userSession = await this.userConnection.startSession();
     const partnerSession = await this.partnerConnection.startSession();
     return await tryMultiTransaction(async () => {
       const updateUser = await this.mongoUserUpdateService.unfollowPartner(
-        req.user.userId,
-        param.partnerId,
+        { userId: req.user.userId, partnerId },
         userSession,
       );
       const updatePartner =
         await this.mongoPartnerUpdateService.updateUnfollower(
           req.user.userId,
-          param.partnerId,
+          partnerId,
           partnerSession,
         );
       //* Promise.all 을 이용해 두 작업을 동시에 수행합니다.

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection } from "mongoose";
+import { Model, Connection, ClientSession } from "mongoose";
 import { AwsS3Service } from "src/AWS";
 import {
   Research,
@@ -13,7 +13,6 @@ import {
   ResearchReplyDocument,
 } from "src/Schema";
 import { MONGODB_RESEARCH_CONNECTION, BUCKET_NAME } from "src/Constant";
-import { tryTransaction } from "src/Util";
 
 @Injectable()
 export class MongoResearchDeleteService {
@@ -39,21 +38,15 @@ export class MongoResearchDeleteService {
    * @author 현웅
    */
   //TODO: AWS S3 오브젝트도 함께 지워야 합니다.
-  async deleteResearchById(researchId: string) {
-    const session = await this.connection.startSession();
+  async deleteResearchById(researchId: string, session: ClientSession) {
+    //* 리서치 기본 데이터를 삭제합니다.
+    await this.Research.findByIdAndDelete(researchId, { session });
 
-    return await tryTransaction(async () => {
-      //* 리서치 기본 데이터는 삭제하지 않고 deleted만 수정한 채 남겨둡니다.
-      await this.Research.findByIdAndUpdate(
-        researchId,
-        { $set: { deleted: true } },
-        { session },
-      );
-
-      //* 리서치 참여자 정보를 가져옵니다.
-      const researchParticipation = await this.ResearchParticipation.findById(
-        researchId,
-      )
+    //* 리서치 참여자 정보를 삭제하며 가져옵니다.
+    const researchParticipation =
+      await this.ResearchParticipation.findByIdAndDelete(researchId, {
+        session,
+      })
         .select({ commentIds: 1 })
         .populate({
           path: "commentIds",
@@ -62,29 +55,28 @@ export class MongoResearchDeleteService {
         })
         .lean();
 
-      //* 모든 댓글 _id와 대댓글 _id를 추출
-      const commentIds = researchParticipation.commentIds.map((commentId) => {
-        return commentId["_id"];
-      });
-      const replyIds = researchParticipation.commentIds
-        .map((commentId) => {
-          return commentId.replyIds.map((replyId) => {
-            return replyId["_id"];
-          });
-        })
-        .flat();
+    //* 모든 댓글 _id와 대댓글 _id를 추출
+    const commentIds = researchParticipation.commentIds.map((commentId) => {
+      return commentId["_id"];
+    });
+    const replyIds = researchParticipation.commentIds
+      .map((commentId) => {
+        return commentId.replyIds.map((replyId) => {
+          return replyId["_id"];
+        });
+      })
+      .flat();
 
-      //* 댓글과 대댓글 모두 삭제
-      await this.ResearchComment.deleteMany(
-        { _id: { $in: commentIds } },
-        { session },
-      );
-      await this.ResearchReply.deleteMany(
-        { _id: { $in: replyIds } },
-        { session },
-      );
+    //* 댓글과 대댓글 모두 삭제
+    await this.ResearchComment.deleteMany(
+      { _id: { $in: commentIds } },
+      { session },
+    );
+    await this.ResearchReply.deleteMany(
+      { _id: { $in: replyIds } },
+      { session },
+    );
 
-      return;
-    }, session);
+    return;
   }
 }

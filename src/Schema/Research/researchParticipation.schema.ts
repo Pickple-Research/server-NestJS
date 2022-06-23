@@ -1,10 +1,10 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
+import { ResearchComment } from "./researchComment.schema";
 import {
   ResearchParticipantInfo,
   ResearchParticipantInfoSchema,
 } from "./Embedded";
-import { ResearchComment } from "./researchComment.schema";
 
 /**
  * 리서치 참여 정보 스키마입니다. 리서치 기본 정보의 _id를 공유합니다.

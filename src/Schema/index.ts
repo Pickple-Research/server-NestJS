@@ -13,6 +13,8 @@ export * from "./Research/research.schema";
 export * from "./Research/researchComment.schema";
 export * from "./Research/researchParticipation.schema";
 export * from "./Research/researchReply.schema";
+export * from "./Research/researchReport.schema";
+export * from "./Research/researchUser.schema";
 export * from "./Research/Embedded";
 
 // 유저 관련 정보 스키마
@@ -29,3 +31,5 @@ export * from "./Vote/vote.schema";
 export * from "./Vote/voteComment.schema";
 export * from "./Vote/voteParticipation.schema";
 export * from "./Vote/voteReply.schema";
+export * from "./Vote/voteReport.schema";
+export * from "./Vote/voteUser.schema";

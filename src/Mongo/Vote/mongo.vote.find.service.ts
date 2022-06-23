@@ -53,6 +53,35 @@ export class MongoVoteFindService {
   }
 
   /**
+   * 주어진 투표 _id을 기준으로 하여 더 최근의 투표를 모두 찾고 반환합니다.
+   * @author 현웅
+   */
+  async getNewerVotes(voteId: string) {
+    return await this.Vote.find({
+      hidden: false, // 숨겼거나
+      blocked: false, // 차단되지 않은 투표 중
+      _id: { $gt: voteId }, // 주어진 voteId 보다 더 나중에 업로드된 투표 중에서
+    })
+      .sort({ _id: -1 }) // 최신순 정렬 후
+      .lean(); // data만 뽑아서 반환
+  }
+
+  /**
+   * 주어진 투표 _id을 기준으로 하여 과거의 투표 10개를 찾고 반환합니다.
+   * @author 현웅
+   */
+  async getOlderVotes(voteId: string, limit: number = 10) {
+    return await this.Vote.find({
+      hidden: false, // 숨겼거나
+      blocked: false, // 차단되지 않은 투표 중
+      _id: { $lt: voteId }, // 주어진 voteId 보다 먼저 업로드된 투표 중에서
+    })
+      .sort({ _id: -1 }) // 최신순 정렬 후
+      .limit(limit) // 10개를 가져오고
+      .lean(); // data만 뽑아서 반환
+  }
+
+  /**
    * 투표 댓글을 모두 가져옵니다.
    * 이 때, 댓글의 'replyIds' 이름을 'replies' 로 변환한 후 반환합니다.
    * @author 현웅

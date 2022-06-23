@@ -20,6 +20,26 @@ export class VoteGetController {
   }
 
   /**
+   * 주어진 투표 _id을 기준으로 하여 더 최근의 투표를 모두 찾고 반환합니다.
+   * @author 현웅
+   */
+  @Public()
+  @Get("/newer/:voteId")
+  async getNewerVotes(@Param("voteId") voteId: string) {
+    return await this.mongoVoteFindService.getNewerVotes(voteId);
+  }
+
+  /**
+   * 주어진 투표 _id을 기준으로 하여 과거의 투표 10개를 찾고 반환합니다.
+   * @author 현웅
+   */
+  @Public()
+  @Get("/older/:voteId")
+  async getOlderVotes(@Param("voteId") voteId: string) {
+    return await this.mongoVoteFindService.getOlderVotes(voteId);
+  }
+
+  /**
    * _id로 특정 투표를 가져옵니다.
    * @author 현웅
    */
