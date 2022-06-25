@@ -21,7 +21,6 @@ import {
   ResearchReportDocument,
   ResearchUser,
   ResearchUserDocument,
-  User,
 } from "src/Schema";
 import { BUCKET_NAME } from "src/Constant";
 
@@ -50,7 +49,13 @@ export class MongoResearchCreateService {
    * 리서치 작성자, 리서치 (대)댓글 작성자 정보를 populate 해서 가져올 때 사용하게 됩니다.
    * @author 현웅
    */
-  async createResearchUser(param: { user: User }, session: ClientSession) {}
+  async createResearchUser(
+    param: { user: ResearchUser },
+    session: ClientSession,
+  ) {
+    await this.ResearchUser.create([param.user], { session });
+    return;
+  }
 
   /**
    * @Transaction
@@ -158,15 +163,11 @@ export class MongoResearchCreateService {
     );
     await this.ResearchParticipation.findByIdAndUpdate(
       researchComment.researchId,
-      { $push: { commentIds: newComments[0]._id } },
+      { $push: { comments: newComments[0]._id } },
       { session },
     );
 
-    const newComment = newComments[0].toObject();
-    newComment["replies"] = newComment["replyIds"];
-    delete newComment["replyIds"];
-
-    return { updatedResearch, newComment };
+    return { updatedResearch, newComment: newComments[0].toObject() };
   }
 
   /**
@@ -190,7 +191,7 @@ export class MongoResearchCreateService {
     );
     await this.ResearchComment.findByIdAndUpdate(
       researchReply.commentId,
-      { $push: { replyIds: newReplies[0]._id } },
+      { $push: { replies: newReplies[0]._id } },
       { session },
     );
     return { updatedReserach, newReply: newReplies[0].toObject() };

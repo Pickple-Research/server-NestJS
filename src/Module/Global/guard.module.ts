@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { APP_GUARD } from "@nestjs/core";
-import { EmailAuthStrategy, JwtAuthStrategy } from "../../Security/Strategy";
-import { EmailAuthGuard, JwtAuthGuard } from "../../Security/Guard";
+import { EmailAuthStrategy, JwtAuthStrategy } from "src/Security/Strategy";
+import { EmailAuthGuard, JwtAuthGuard } from "src/Security/Guard";
 
 /**
  * 전역으로 적용되는 Guard들을 모듈화한 클래스입니다.

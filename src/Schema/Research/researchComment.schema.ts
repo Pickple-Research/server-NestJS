@@ -27,7 +27,7 @@ export class ResearchComment {
     type: [{ type: MongooseSchema.Types.ObjectId, ref: "ResearchReply" }],
     default: [],
   }) // 대댓글 _id
-  replyIds?: ResearchReply[];
+  replies?: ResearchReply[];
 }
 
 export const ResearchCommentSchema =

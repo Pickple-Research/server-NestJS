@@ -9,12 +9,11 @@ import {
   UserCreateService,
   UserFindService,
   UserDeleteService,
-  ResearchUpdateService,
-  PartnerUpdateService,
 } from "src/Service";
 import {
   MongoUserModule,
   MongoResearchModule,
+  MongoVoteModule,
   MongoPartnerModule,
 } from "src/Mongo";
 
@@ -30,6 +29,11 @@ import {
     UserDeleteController,
   ],
   providers: [UserCreateService, UserFindService, UserDeleteService],
-  imports: [MongoUserModule, MongoResearchModule, MongoPartnerModule],
+  imports: [
+    MongoUserModule,
+    MongoResearchModule,
+    MongoVoteModule,
+    MongoPartnerModule,
+  ],
 })
 export class UserModule {}

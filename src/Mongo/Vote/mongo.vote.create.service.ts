@@ -14,7 +14,6 @@ import {
   VoteReportDocument,
   VoteUser,
   VoteUserDocument,
-  User,
 } from "src/Schema";
 import { getCurrentISOTime } from "src/Util";
 
@@ -40,7 +39,10 @@ export class MongoVoteCreateService {
    * 투표 작성자, 투표 (대)댓글 작성자 정보를 populate 해서 가져올 때 사용하게 됩니다.
    * @author 현웅
    */
-  async createVoteUser(param: { user: User }, session: ClientSession) {}
+  async createVoteUser(param: { user: VoteUser }, session: ClientSession) {
+    await this.VoteUser.create([param.user], { session });
+    return;
+  }
 
   /**
    * @Transaction
@@ -87,16 +89,11 @@ export class MongoVoteCreateService {
     );
     await this.VoteParticipation.findByIdAndUpdate(
       voteComment.voteId,
-      { $push: { commentIds: newComments[0]._id } },
+      { $push: { comments: newComments[0]._id } },
       { session },
     );
 
-    //* 반환하기 전에 새로운 댓글의 replyId는 replies로 이름을 바꿔줍니다.
-    const newComment = newComments[0].toObject();
-    newComment["replies"] = newComment["replyIds"];
-    delete newComment["replyIds"];
-
-    return { updatedVote, newComment };
+    return { updatedVote, newComment: newComments[0].toObject() };
   }
 
   /**
@@ -117,7 +114,7 @@ export class MongoVoteCreateService {
     );
     await this.VoteComment.findByIdAndUpdate(
       voteReply.commentId,
-      { $push: { replyIds: newReplies[0]._id } },
+      { $push: { replies: newReplies[0]._id } },
       { session },
     );
     return { updatedVote, newReply: newReplies[0].toObject() };

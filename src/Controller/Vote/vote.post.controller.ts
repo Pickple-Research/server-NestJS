@@ -9,7 +9,7 @@ import {
   VoteReportBodyDto,
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
-import { tryTransaction } from "src/Util";
+import { tryTransaction, tryMultiTransaction } from "src/Util";
 import { MONGODB_USER_CONNECTION, MONGODB_VOTE_CONNECTION } from "src/Constant";
 
 @Controller("votes")
@@ -38,9 +38,10 @@ export class VotePostController {
     @Request() req: { user: JwtUserInfo },
     @Body() body: VoteCreateBodyDto,
   ) {
+    const userSession = await this.userConnection.startSession();
     const voteSession = await this.voteConnection.startSession();
 
-    return await tryTransaction(async () => {
+    return await tryMultiTransaction(async () => {
       const newVote = await this.mongoVoteCreateService.createVote(
         req.user.userId,
         body,
@@ -48,12 +49,12 @@ export class VotePostController {
       );
 
       await this.mongoUserUpdateService.uploadVote(
-        req.user.userId,
-        newVote._id,
+        { userId: req.user.userId, voteId: newVote._id },
+        userSession,
       );
 
       return newVote;
-    }, voteSession);
+    }, [userSession, voteSession]);
   }
 
   /**

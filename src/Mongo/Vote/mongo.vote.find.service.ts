@@ -83,29 +83,22 @@ export class MongoVoteFindService {
 
   /**
    * 투표 댓글을 모두 가져옵니다.
-   * 이 때, 댓글의 'replyIds' 이름을 'replies' 로 변환한 후 반환합니다.
    * @author 현웅
    */
   async getVoteComments(voteId: string) {
     const voteParticipation = await this.VoteParticipation.findById(voteId)
-      .select({ commentIds: 1 })
+      .select({ comments: 1 })
       .populate({
-        path: "commentIds",
+        path: "comments",
         model: this.VoteComment,
         populate: {
-          path: "replyIds",
+          path: "replies",
           model: this.VoteReply,
         },
       })
       .lean();
 
-    //* 곧바로 반환하지 말고, 'replyIds' 를 'replies' 로 변환하여 반환합니다.
-    //* (로컬에서 쓰이는 key 이름과 맞춰주기 위함입니다)
-    return voteParticipation.commentIds.map((comment) => {
-      comment[`replies`] = comment[`replyIds`];
-      delete comment["replyIds"];
-      return comment;
-    });
+    return voteParticipation.comments;
   }
 
   /**

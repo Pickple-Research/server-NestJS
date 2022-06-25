@@ -27,7 +27,7 @@ export class VoteComment {
     type: [{ type: MongooseSchema.Types.ObjectId, ref: "VoteReply" }],
     default: [],
   }) // 대댓글 _id
-  replyIds?: VoteReply[];
+  replies?: VoteReply[];
 }
 
 export const VoteCommentSchema = SchemaFactory.createForClass(VoteComment);

@@ -2,6 +2,8 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel, InjectConnection } from "@nestjs/mongoose";
 import { Model, Connection, ClientSession } from "mongoose";
 import {
+  UnauthorizedUser,
+  UnauthorizedUserDocument,
   User,
   UserDocument,
   UserActivity,
@@ -9,14 +11,16 @@ import {
   UserCreditHistory,
   UserCreditHistoryDocument,
 } from "src/Schema";
-
 import { ParticipatedResearchInfo, ParticipatedVoteInfo } from "src/Schema";
+import { WrongAuthorizationCodeException } from "src/Exception";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
 import { tryTransaction } from "src/Util";
 
 @Injectable()
 export class MongoUserUpdateService {
   constructor(
+    @InjectModel(UnauthorizedUser.name)
+    private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
     @InjectModel(UserActivity.name)
     private readonly UserActivity: Model<UserActivityDocument>,
@@ -26,6 +30,36 @@ export class MongoUserUpdateService {
     @InjectConnection(MONGODB_USER_CONNECTION)
     private readonly connection: Connection,
   ) {}
+
+  /**
+   * 인자로 받은 이메일을 사용하는 미인증 유저의 인증번호와
+   * 인자로 받은 인증번호가 일치하는지 확인합니다.
+   * 인증번호가 일치하면 인증 여부를 true로 변경하고, 그렇지 않다면 에러를 일으킵니다.
+   * @author 현웅
+   */
+  async checkUnauthorizedUserCode(param: { email: string; code: string }) {
+    const unauthorizedUser = await this.UnauthorizedUser.findOne({
+      email: param.email,
+    })
+      .select({ authorizationCode: 1 })
+      .lean();
+
+    //* 해당 이메일을 사용하는 유저가 없거나, 인증번호가 일치하지 않는 경우
+    if (
+      !unauthorizedUser ||
+      unauthorizedUser.authorizationCode !== param.code
+    ) {
+      throw new WrongAuthorizationCodeException();
+    }
+
+    //TODO: #QUERY-EFFICIENCY 한번의 DB 검색으로 끝낼 수 있는 방법 없나?
+    //* 인증번호가 일치하는 경우
+    await this.UnauthorizedUser.findOneAndUpdate(
+      { email: param.email },
+      { $set: { authorized: true } },
+    );
+    return;
+  }
 
   /**
    * 조회한 리서치 _id를 UserActivity에 추가합니다.
@@ -46,7 +80,7 @@ export class MongoUserUpdateService {
    */
   async scrapResearch(userId: string, researchId: string) {
     await this.UserActivity.findByIdAndUpdate(userId, {
-      $addToSet: { scrappedResearchIds: researchId },
+      $push: { scrappedResearchIds: { $each: [researchId], $position: 0 } },
     });
     return;
   }
@@ -106,7 +140,7 @@ export class MongoUserUpdateService {
         },
         { session },
       );
-      await this.UserCreditHistory.findByIdAndUpdate(userId, { $push: {} });
+      // await this.UserCreditHistory.findByIdAndUpdate(userId, { $push: {} });
       return;
     }, session);
     return;
@@ -126,18 +160,18 @@ export class MongoUserUpdateService {
   }
 
   /**
-   * 리서치를 새로 스크랩합니다.
+   * 투표를 새로 스크랩합니다.
    * @author 현웅
    */
   async scrapVote(userId: string, voteId: string) {
     await this.UserActivity.findByIdAndUpdate(userId, {
-      $addToSet: { scrappedVoteIds: voteId },
+      $push: { scrappedVoteIds: { $each: [voteId], $position: 0 } },
     });
     return;
   }
 
   /**
-   * 스크랩한 리서치를 제거합니다.
+   * 스크랩한 투표를 제거합니다.
    * @author 현웅
    */
   async unscrapVote(userId: string, voteId: string) {
@@ -148,13 +182,14 @@ export class MongoUserUpdateService {
   }
 
   /**
+   * @Transaction
    * 투표에 참여합니다. UserActivity를 업데이트합니다.
    * @author 현웅
    */
   async participateVote(
     userId: string,
     participatedVoteInfo: ParticipatedVoteInfo,
-    session?: ClientSession,
+    session: ClientSession,
   ) {
     await this.UserActivity.findByIdAndUpdate(
       userId,
@@ -172,14 +207,22 @@ export class MongoUserUpdateService {
   }
 
   /**
+   * @Transaction
    * 투표를 업로드합니다.
-   * UserActivity의 uploadedVoteIds에 투표 _id를 추가합니다.
+   * UserActivity 의 uploadedVoteIds 맨 앞에 업로드 된 투표 _id를 추가합니다.
    * @author 현웅
    */
-  async uploadVote(userId: string, voteId: string) {
-    await this.UserActivity.findByIdAndUpdate(userId, {
-      $push: { uploadedVoteIds: { $each: [voteId], $position: 0 } },
-    });
+  async uploadVote(
+    param: { userId: string; voteId: string },
+    session: ClientSession,
+  ) {
+    await this.UserActivity.findByIdAndUpdate(
+      param.userId,
+      {
+        $push: { uploadedVoteIds: { $each: [param.voteId], $position: 0 } },
+      },
+      { session },
+    );
     return;
   }
 
@@ -195,9 +238,7 @@ export class MongoUserUpdateService {
   ) {
     await this.UserActivity.findByIdAndUpdate(
       param.userId,
-      {
-        $pull: { uploadedResearchIds: param.researchId },
-      },
+      { $pull: { uploadedResearchIds: param.researchId } },
       { session },
     );
     return;
@@ -215,9 +256,7 @@ export class MongoUserUpdateService {
   ) {
     await this.UserActivity.findByIdAndUpdate(
       param.userId,
-      {
-        $pull: { uploadedVoteIds: param.voteId },
-      },
+      { $pull: { uploadedVoteIds: param.voteId } },
       { session },
     );
     return;
