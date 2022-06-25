@@ -16,10 +16,11 @@ import {
   UserPropertyDocument,
 } from "src/Schema";
 import {
-  AlreadyParticipatedResearchException,
-  AlreadyParticipatedVoteException,
+  EmailNotAuthorizedException,
   UserNotFoundException,
   WrongPasswordException,
+  AlreadyParticipatedResearchException,
+  AlreadyParticipatedVoteException,
 } from "src/Exception";
 import { getKeccak512Hash } from "src/Util";
 
@@ -39,14 +40,23 @@ export class MongoUserFindService {
     private readonly UserProperty: Model<UserPropertyDocument>,
   ) {}
 
-  async testMongoUserRouter() {
-    return "test MongoUserFindRouter";
+  /**
+   * 정규유저를 만들기 전, 인자로 주어진 이메일이 인증된 상태인지 확인합니다.
+   * 인증되어 있지 않은 경우 에러를 일으킵니다.
+   * @author 현웅
+   */
+  async checkEmailAuthorized(param: { email: string }) {
+    const user = await this.UnauthorizedUser.findOne({ email: param.email })
+      .select({ authorized: 1 })
+      .lean();
+    if (!user || !user.authorized) throw new EmailNotAuthorizedException();
+    return;
   }
 
   /**
    * 주어진 이메일과 비밀번호를 사용해 로그인합니다.
-   * 해당 이메일을 사용하는 유저가 없는 경우
-   * 비밀번호가 다른 경우 오류를 일으킵니다.
+   * 해당 이메일을 사용하는 유저가 없는 경우,
+   * 혹은 비밀번호가 다른 경우 오류를 일으킵니다.
    * @param email
    * @param password
    */
@@ -72,7 +82,8 @@ export class MongoUserFindService {
   }
 
   /**
-   * 로그인 인증에 성공한 유저 데이터를 반환합니다.
+   * TODO: UserPrivacy는 제외하고 반환
+   * 주이진 userId 를 사용하는 유저 데이터를 반환합니다.
    * @author 현웅
    */
   async getUserInfoById(userId: string) {
@@ -160,31 +171,6 @@ export class MongoUserFindService {
 
     if (user) return user;
     return null;
-  }
-
-  /**
-   * 인자로 받은 이메일을 사용하여 회원가입을 시도 중인 유저가 있는지 확인합니다.
-   * @author 현웅
-   */
-  async getUnauthorizedUser(email: string) {
-    const user = await this.UnauthorizedUser.findOne({ email })
-      .select({ email: 1 })
-      .lean();
-
-    if (user) return true;
-    return false;
-  }
-
-  /**
-   * 인자로 받은 이메일을 사용하는 미인증 유저의 인증번호와
-   * 인자로 받은 인증번호가 일치하는지 확인합니다.
-   * @author 현웅
-   */
-  async checkUnauthorizedUserCode(email: string, code: string) {
-    const unauthorizedUser = await this.UnauthorizedUser.findOne({ email })
-      .select({ authorizationCode: 1 })
-      .lean();
-    return unauthorizedUser.authorizationCode === code;
   }
 
   /**

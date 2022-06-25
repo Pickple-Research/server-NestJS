@@ -3,21 +3,25 @@
  * @author 현웅
  */
 export function getCurrentISOTime() {
-  const KOREA_GMT = new Date();
-  KOREA_GMT.setHours(KOREA_GMT.getHours() + 9);
-  return KOREA_GMT.toISOString();
+  // const KOREA_GMT = new Date();
+  // KOREA_GMT.setHours(KOREA_GMT.getHours() + 9);
+  // return KOREA_GMT.toISOString();
+  return new Date().toISOString();
 }
 
 /**
  * 인자로 받은 분 수 만큼의 미래 한국 시간을 ISO 타입으로 반환합니다.
- * 인자가 주어지지 않으면 3일 뒤의 시간을 반환합니다.
+ * 인자가 주어지지 않으면 30분 뒤의 시간을 반환합니다.
  * @author 현웅
  */
 export function getISOTimeAfterGivenMinutes(minutes: number = 30) {
-  const KOREA_GMT = new Date();
-  KOREA_GMT.setHours(KOREA_GMT.getHours() + 9);
-  KOREA_GMT.setDate(KOREA_GMT.getMinutes() + minutes);
-  return KOREA_GMT.toISOString();
+  // const KOREA_GMT = new Date();
+  // KOREA_GMT.setHours(KOREA_GMT.getHours() + 9);
+  // KOREA_GMT.setDate(KOREA_GMT.getMinutes() + minutes);
+  // return KOREA_GMT.toISOString();
+  const now = new Date();
+  now.setMinutes(now.getMinutes() + minutes);
+  return now.toISOString();
 }
 
 /**
@@ -26,10 +30,13 @@ export function getISOTimeAfterGivenMinutes(minutes: number = 30) {
  * @author 현웅
  */
 export function getISOTimeAfterGivenDays(days: number = 3) {
-  const KOREA_GMT = new Date();
-  KOREA_GMT.setHours(KOREA_GMT.getHours() + 9);
-  KOREA_GMT.setDate(KOREA_GMT.getDate() + days);
-  return KOREA_GMT.toISOString();
+  // const KOREA_GMT = new Date();
+  // KOREA_GMT.setHours(KOREA_GMT.getHours() + 9);
+  // KOREA_GMT.setDate(KOREA_GMT.getDate() + days);
+  // return KOREA_GMT.toISOString();
+  const now = new Date();
+  now.setDate(now.getDate() + days);
+  return now.toISOString();
 }
 
 /**

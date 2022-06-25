@@ -14,7 +14,6 @@ import {
   VoteReportDocument,
   VoteUser,
   VoteUserDocument,
-  User,
 } from "src/Schema";
 import { getCurrentISOTime } from "src/Util";
 
@@ -40,7 +39,10 @@ export class MongoVoteCreateService {
    * 투표 작성자, 투표 (대)댓글 작성자 정보를 populate 해서 가져올 때 사용하게 됩니다.
    * @author 현웅
    */
-  async createVoteUser(param: { user: User }, session: ClientSession) {}
+  async createVoteUser(param: { user: VoteUser }, session: ClientSession) {
+    await this.VoteUser.create([param.user], { session });
+    return;
+  }
 
   /**
    * @Transaction

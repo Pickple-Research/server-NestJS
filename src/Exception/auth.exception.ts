@@ -14,6 +14,19 @@ export class WrongAuthorizationCodeException extends Status401Exception {
 }
 
 /**
+ * 이메일 회원가입을 진행하기 전에 해당 이메일이 인증된 상태인지 확인합니다.
+ * 기본 message: `이메일이 인증되지 않았습니다`
+ * @author 현웅
+ */
+export class EmailNotAuthorizedException extends Status401Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage ? newMessage : `이메일이 인증되지 않았습니다`,
+    });
+  }
+}
+
+/**
  * 비밀번호가 일치하지 않는 경우 사용합니다.
  * 기본 message: `비밀번호가 일치하지 않습니다`
  * @author 현웅

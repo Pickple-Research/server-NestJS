@@ -7,7 +7,10 @@ import { Document } from "mongoose";
  */
 @Schema()
 export class UserPrivacy {
-  @Prop() // 실명
+  @Prop() // 성
+  lastName: string;
+
+  @Prop() // 이름
   name: string;
 
   @Prop() // 주소

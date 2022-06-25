@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
+import { UserType } from "src/Object/Enum";
 
 /**
  * 리서치 작성자, 리서치 (대)댓글 작성자 정보를
@@ -9,8 +10,14 @@ import { Document } from "mongoose";
  */
 @Schema()
 export class ResearchUser {
+  @Prop({ enum: UserType }) // 유저 타입: 일반 유저, 테스터, 파트너, 관리자
+  userType: UserType;
+
   @Prop() // 유저 닉네임
   nickname: string;
+
+  @Prop({ default: 1 }) // 등급
+  grade: number;
 }
 
 export const ResearchUserSchema = SchemaFactory.createForClass(ResearchUser);

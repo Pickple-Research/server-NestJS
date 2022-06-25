@@ -11,11 +11,11 @@ export class UnauthorizedUser {
   @Prop() // 이메일
   email: string;
 
-  @Prop() // 비밀번호
-  password: string;
+  @Prop({ default: false }) // 이메일 인증 여부
+  authorized: boolean;
 
-  @Prop() // 비밀번호 해쉬 salt
-  salt: string;
+  @Prop() // 이메일 인증 시간 (인증되고 난 후 일정 시간 이내에 정규회원으로 가입을 마쳐야합니다)
+  authorizedAt?: string;
 
   @Prop() // 인증 코드
   authorizationCode: string;

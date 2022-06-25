@@ -23,7 +23,7 @@ export class User {
   @Prop() // 비밀번호 해쉬 salt
   salt: string;
 
-  @Prop({ unique: true, trim: true }) // 닉네임
+  @Prop({ trim: true }) // 닉네임
   nickname: string;
 
   @Prop({ default: 1 }) // 등급

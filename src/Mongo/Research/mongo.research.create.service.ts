@@ -21,7 +21,6 @@ import {
   ResearchReportDocument,
   ResearchUser,
   ResearchUserDocument,
-  User,
 } from "src/Schema";
 import { BUCKET_NAME } from "src/Constant";
 
@@ -50,7 +49,13 @@ export class MongoResearchCreateService {
    * 리서치 작성자, 리서치 (대)댓글 작성자 정보를 populate 해서 가져올 때 사용하게 됩니다.
    * @author 현웅
    */
-  async createResearchUser(param: { user: User }, session: ClientSession) {}
+  async createResearchUser(
+    param: { user: ResearchUser },
+    session: ClientSession,
+  ) {
+    await this.ResearchUser.create([param.user], { session });
+    return;
+  }
 
   /**
    * @Transaction
