@@ -7,8 +7,10 @@ import {
   ResearchParticipation,
   ResearchParticipationDocument,
   ResearchParticipantInfo,
+  ResearchUser,
+  ResearchUserDocument,
 } from "src/Schema";
-import { getFutureDateFromGivenDate, tryTransaction } from "src/Util";
+import { getFutureDateFromGivenDate } from "src/Util";
 import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
 
 /**
@@ -22,6 +24,8 @@ export class MongoResearchUpdateService {
     private readonly Research: Model<ResearchDocument>,
     @InjectModel(ResearchParticipation.name)
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
+    @InjectModel(ResearchUser.name)
+    private readonly ResearchUser: Model<ResearchUserDocument>,
 
     @InjectConnection(MONGODB_RESEARCH_CONNECTION)
     private readonly connection: Connection,
@@ -56,7 +60,12 @@ export class MongoResearchUpdateService {
         $inc: { scrapsNum: 1 },
       },
       { returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
+      .lean();
 
     const updateParticipation =
       await this.ResearchParticipation.findByIdAndUpdate(researchId, {
@@ -84,7 +93,12 @@ export class MongoResearchUpdateService {
         $inc: { scrapsNum: -1 },
       },
       { returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
+      .lean();
 
     const updateParticipation =
       await this.ResearchParticipation.findByIdAndUpdate(researchId, {
@@ -115,7 +129,12 @@ export class MongoResearchUpdateService {
       researchId,
       { $inc: { participantsNum: 1 } },
       { session, returnOriginal: false },
-    );
+    )
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
+      .lean();
 
     await this.ResearchParticipation.findByIdAndUpdate(
       researchId,

@@ -1,4 +1,5 @@
-import { IsString, IsNumber, IsNumberString } from "class-validator";
+import { IsString, IsNumber, IsEnum, IsNumberString } from "class-validator";
+import { ResearchPurpose } from "src/Object/Enum";
 
 /**
  * 리서치 생성 요청시 Body에 포함되어야 하는 정보들입니다.
@@ -18,8 +19,8 @@ export class ResearchCreateBodyDto {
   @IsString() // 리서치 내용
   content: string;
 
-  // @IsEnum() // 리서치 목적
-  // purpose: string;
+  @IsEnum(ResearchPurpose) // 리서치 목적
+  purpose: ResearchPurpose;
 
   @IsString() // 리서치 진행 단체
   organization: string;
@@ -29,6 +30,12 @@ export class ResearchCreateBodyDto {
 
   @IsNumberString() // 예상 소요시간
   estimatedTime: number;
+
+  @IsString() // 마감일
+  deadline: string;
+
+  @IsString() // 최소 참여조건
+  eligibility: string;
 }
 
 /**

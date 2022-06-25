@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
-import { Category } from "src/Object/Enum";
+import { Document, Schema as MongooseSchema } from "mongoose";
+import { ResearchUser } from "./researchUser.schema";
+import { ResearchPurpose, Category } from "src/Object/Enum";
 
 /**
  * 리서치 기본 정보 스키마입니다.
@@ -8,10 +9,11 @@ import { Category } from "src/Object/Enum";
  */
 @Schema()
 export class Research {
-  //TODO: enum화
-  // @Prop({ required: true }) // 리서치 진행자 타입 (일반 유저 or 파트너)
-  @Prop() // 리서치 진행자 타입 (일반 유저 or 파트너)
-  authorType: string;
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: "ResearchUser",
+  }) // 리서치 업로더 정보 (authorId와는 별개로 populate하여 사용)
+  author?: ResearchUser;
 
   @Prop({ required: true }) // 리서치 업로더 _id
   authorId: string;
@@ -25,9 +27,8 @@ export class Research {
   @Prop({ required: true }) // 리서치 내용
   content: string;
 
-  //TODO: enum화, required
-  @Prop() // 리서치 목적
-  purpose: string;
+  @Prop({ enum: ResearchPurpose, required: true }) // 리서치 목적
+  purpose: ResearchPurpose;
 
   @Prop() // 리서치 진행 단체
   organization: string;
@@ -35,54 +36,53 @@ export class Research {
   @Prop() // 참여 대상 (줄글 작성)
   target: string;
 
-  // @Prop({ required: true }) // 예상 소요시간
-  @Prop() // 예상 소요시간
+  @Prop({ required: true }) // 예상 소요시간
   estimatedTime: number;
 
   @Prop({ required: true }) // 마감일
   deadline: string;
-
-  //! 끌올한 날짜. 리서치는 _id가 아니라 이 일자를 기준으로 노출됩니다.
-  //* 끌올하기 전에는 생성일과 같습니다.
-  @Prop({ index: true, required: true })
-  pulledupAt: string;
-
-  @Prop() // 생성일
-  createdAt: string;
 
   //TODO: enum화
   // @Prop({ required: true }) // 최소 참여조건
   @Prop() // 최소 참여조건
   eligibility: string;
 
+  //! 끌올한 날짜. 리서치는 _id가 아니라 이 일자를 기준으로 노출됩니다.
+  //* 끌올하기 전에는 생성일과 같습니다.
+  @Prop({ index: true, required: true })
+  pulledupAt?: string;
+
+  @Prop() // 생성일
+  createdAt?: string;
+
   @Prop({ type: [String], enum: Category }) // 리서치 카테고리
-  categories: Category[];
+  categories?: Category[];
 
   //? 앱단에 정보를 넘겨줄 때는 유저 _id를 넘겨줄 필요가 없고 숫자만 넘기면 되는데,
   //? 그 때마다 .length를 사용하여 넘겨주면 (아마도) 좋지 않기에 숫자만 따로 관리합니다.
   @Prop({ default: 0 }) // 조회 수
-  viewsNum: number;
+  viewsNum?: number;
 
   @Prop({ default: 0 }) // 스크랩 수
-  scrapsNum: number;
+  scrapsNum?: number;
 
   @Prop({ default: 0 }) // 참여자 수
-  participantsNum: number;
+  participantsNum?: number;
 
   @Prop({ default: 0 }) // 댓글 수
-  commentsNum: number;
+  commentsNum?: number;
 
   @Prop({ default: false }) // 종료 여부. deadline이 지나기 전일지라도 사용자가 종료 가능.
-  closed: boolean;
+  closed?: boolean;
 
   @Prop({ default: false }) // 숨김 여부
-  hidden: boolean;
+  hidden?: boolean;
 
   @Prop({ default: false }) // 삭제 여부
-  deleted: boolean;
+  deleted?: boolean;
 
   @Prop({ default: false }) // (신고 등으로 인한) 블락 여부
-  blocked: boolean;
+  blocked?: boolean;
 }
 
 export const ResearchSchema = SchemaFactory.createForClass(Research);

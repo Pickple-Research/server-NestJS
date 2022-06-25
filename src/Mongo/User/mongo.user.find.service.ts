@@ -82,8 +82,8 @@ export class MongoUserFindService {
   }
 
   /**
-   * TODO: UserPrivacy는 제외하고 반환
    * 주이진 userId 를 사용하는 유저 데이터를 반환합니다.
+   * (UserPrivacy는 제외하고 반환)
    * @author 현웅
    */
   async getUserInfoById(userId: string) {
@@ -100,23 +100,20 @@ export class MongoUserFindService {
     const userCreditHistory = await this.UserCreditHistory.findById(
       userId,
     ).lean();
-    const userPrivacy = await this.UserPrivacy.findById(userId).lean();
     const userProperty = await this.UserProperty.findById(userId).lean();
 
     return await Promise.all([
       user,
       userActivity,
       userCreditHistory,
-      userPrivacy,
       userProperty,
     ]).then(
       //* [user, userActivity, ...] 형태였던 반환값을 {user, userActivity, ...} 형태로 바꿔줍니다.
-      ([user, userActivity, userCreditHistory, userPrivacy, userProperty]) => {
+      ([user, userActivity, userCreditHistory, userProperty]) => {
         return {
           user,
           userActivity,
           userCreditHistory,
-          userPrivacy,
           userProperty,
         };
       },

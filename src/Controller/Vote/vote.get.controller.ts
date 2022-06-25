@@ -10,13 +10,13 @@ export class VoteGetController {
   @Inject() private readonly mongoVoteFindService: MongoVoteFindService;
 
   /**
-   * 모든 투표를 가져옵니다.
+   * 최신 투표를 가져옵니다.
    * @author 현웅
    */
   @Public()
   @Get("")
-  async getVotes() {
-    return await this.mongoVoteFindService.getVotes();
+  async getRecentVotes() {
+    return await this.mongoVoteFindService.getRecentVotes();
   }
 
   /**

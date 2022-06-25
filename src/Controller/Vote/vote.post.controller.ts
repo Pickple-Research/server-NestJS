@@ -43,8 +43,7 @@ export class VotePostController {
 
     return await tryMultiTransaction(async () => {
       const newVote = await this.mongoVoteCreateService.createVote(
-        req.user.userId,
-        body,
+        { vote: { authorId: req.user.userId, ...body } },
         voteSession,
       );
 
@@ -74,10 +73,11 @@ export class VotePostController {
       const { updatedVote, newComment } =
         await this.mongoVoteCreateService.createVoteComment(
           {
-            voteId: body.voteId,
-            authorId: req.user.userId,
-            authorNickname: "// req.user.userNickname",
-            content: body.content,
+            comment: {
+              voteId: body.voteId,
+              authorId: req.user.userId,
+              content: body.content,
+            },
           },
           voteSession,
         );
@@ -102,11 +102,12 @@ export class VotePostController {
       const { updatedVote, newReply } =
         await this.mongoVoteCreateService.createVoteReply(
           {
-            voteId: body.voteId,
-            commentId: body.commentId,
-            authorId: req.user.userId,
-            authorNickname: "// req.user.userNickname",
-            content: body.content,
+            reply: {
+              voteId: body.voteId,
+              commentId: body.commentId,
+              authorId: req.user.userId,
+              content: body.content,
+            },
           },
           voteSession,
         );

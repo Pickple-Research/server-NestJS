@@ -118,8 +118,7 @@ export class MongoUserCreateService {
     const newUserId = newUsers[0]._id;
 
     //* 새로운 유저 활동정보, 크레딧 사용내역, 개인정보, 특성정보 데이터를 만들되
-    //* 새로운 유저 데이터의 _id를 공유하도록 설정
-    //TODO: #QUERY-EFFICIENCY #CREATE/DELETE-MANY (해당 해쉬태그로 모두 찾아서 바꿀 것)
+    //* 새로운 유저 데이터의 _id를 공유하도록 설정합니다.
     await this.UserActivity.create([{ _id: newUserId }], { session });
     //* 유저 실명을 UserPrivacy에 저장
     await this.UserPrivacy.create(
