@@ -56,19 +56,29 @@ export class MongoVoteCreateService {
    * @author 현웅
    */
   async createVote(
-    authorId: string,
-    vote: Partial<Vote>,
+    param: {
+      vote: Vote;
+    },
     session: ClientSession,
   ) {
     const newVotes = await this.Vote.create(
-      [{ ...vote, authorId, result: Array(vote.options?.length).fill(0) }],
+      [
+        {
+          ...param.vote,
+          author: param.vote.authorId,
+          result: Array(param.vote.options.length).fill(0),
+        },
+      ],
       { session },
     );
 
-    const newVote = newVotes[0];
+    const newVote = await newVotes[0].populate({
+      path: "author",
+      model: this.VoteUser,
+    });
     await this.VoteParticipation.create([{ _id: newVote._id }], { session });
 
-    return newVote;
+    return newVote.toObject();
   }
 
   /**
@@ -77,23 +87,42 @@ export class MongoVoteCreateService {
    * @return 업데이트 된 투표 정보와 생성된 투표 댓글
    * @author 현웅
    */
-  async createVoteComment(voteComment: VoteComment, session?: ClientSession) {
+  async createVoteComment(
+    param: { comment: VoteComment },
+    session?: ClientSession,
+  ) {
     const updatedVote = await this.Vote.findByIdAndUpdate(
-      voteComment.voteId,
+      param.comment.voteId,
       { $inc: { commentsNum: 1 } },
       { session, returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
+      .lean();
     const newComments = await this.VoteComment.create(
-      [{ ...voteComment, createdAt: getCurrentISOTime() }],
+      [
+        {
+          ...param.comment,
+          author: param.comment.authorId,
+          createdAt: getCurrentISOTime(),
+        },
+      ],
       { session },
     );
     await this.VoteParticipation.findByIdAndUpdate(
-      voteComment.voteId,
+      param.comment.voteId,
       { $push: { comments: newComments[0]._id } },
       { session },
     );
 
-    return { updatedVote, newComment: newComments[0].toObject() };
+    const newComment = await newComments[0].populate({
+      path: "author",
+      model: this.VoteUser,
+    });
+
+    return { updatedVote, newComment: newComment.toObject() };
   }
 
   /**
@@ -102,22 +131,39 @@ export class MongoVoteCreateService {
    * @return 업데이트 된 투표 정보와 생성된 투표 대댓글
    * @author 현웅
    */
-  async createVoteReply(voteReply: VoteReply, session?: ClientSession) {
+  async createVoteReply(param: { reply: VoteReply }, session?: ClientSession) {
     const updatedVote = await this.Vote.findByIdAndUpdate(
-      voteReply.voteId,
+      param.reply.voteId,
       { $inc: { commentsNum: 1 } },
       { session, returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
+      .lean();
     const newReplies = await this.VoteReply.create(
-      [{ ...voteReply, createdAt: getCurrentISOTime() }],
+      [
+        {
+          ...param.reply,
+          author: param.reply.authorId,
+          createdAt: getCurrentISOTime(),
+        },
+      ],
       { session },
     );
     await this.VoteComment.findByIdAndUpdate(
-      voteReply.commentId,
+      param.reply.commentId,
       { $push: { replies: newReplies[0]._id } },
       { session },
     );
-    return { updatedVote, newReply: newReplies[0].toObject() };
+
+    const newReply = await newReplies[0].populate({
+      path: "author",
+      model: this.VoteUser,
+    });
+
+    return { updatedVote, newReply: newReply.toObject() };
   }
 
   /**

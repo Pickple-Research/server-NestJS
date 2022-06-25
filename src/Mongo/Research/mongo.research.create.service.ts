@@ -70,11 +70,9 @@ export class MongoResearchCreateService {
    * @return 생성된 리서치 정보
    * @author 현웅
    */
-  //TODO: files 타입 잡아줘야함
   async createResearch(
     param: {
-      authorId: string;
-      research: Partial<Research>;
+      research: Research;
       files: {
         // thumbnail?: Express.Multer.File[];
         images?: Express.Multer.File[];
@@ -93,17 +91,18 @@ export class MongoResearchCreateService {
       [
         {
           ...param.research,
-          authorId: param.authorId,
+          author: param.research.authorId,
           pulledupAt: currentTime,
           createdAt: currentTime,
-          deadline: getISOTimeAfterGivenDays(3),
         },
       ],
       { session },
     );
 
-    //TODO: #QUERY-EFFICIENCY #CREATE/DELETE-MANY (해당 해쉬태그로 모두 찾아서 바꿀 것)
-    const newResearch = newResearches[0];
+    const newResearch = await newResearches[0].populate({
+      path: "author",
+      model: this.ResearchUser,
+    });
     await this.ResearchParticipation.create([{ _id: newResearch._id }], {
       session,
     });
@@ -123,7 +122,7 @@ export class MongoResearchCreateService {
           BucketName: BUCKET_NAME.RESEARCH,
           file: image,
           ACL: "public-read",
-          Key: `image${index}.jpg`,
+          Key: `${newResearch._id}/image${index}.jpg`,
         }),
       );
     });
@@ -139,7 +138,7 @@ export class MongoResearchCreateService {
       );
     }
 
-    return newResearch;
+    return newResearch.toObject();
   }
 
   /**
@@ -149,25 +148,41 @@ export class MongoResearchCreateService {
    * @author 현웅
    */
   async createResearchComment(
-    researchComment: ResearchComment,
+    param: { comment: ResearchComment },
     session?: ClientSession,
   ) {
     const updatedResearch = await this.Research.findByIdAndUpdate(
-      researchComment.researchId,
+      param.comment.researchId,
       { $inc: { commentsNum: 1 } },
       { session, returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
+      .lean();
     const newComments = await this.ResearchComment.create(
-      [{ ...researchComment, createdAt: getCurrentISOTime() }],
+      [
+        {
+          ...param.comment,
+          author: param.comment.authorId,
+          createdAt: getCurrentISOTime(),
+        },
+      ],
       { session },
     );
     await this.ResearchParticipation.findByIdAndUpdate(
-      researchComment.researchId,
+      param.comment.researchId,
       { $push: { comments: newComments[0]._id } },
       { session },
     );
 
-    return { updatedResearch, newComment: newComments[0].toObject() };
+    const newComment = await newComments[0].populate({
+      path: "author",
+      model: this.ResearchUser,
+    });
+
+    return { updatedResearch, newComment: newComment.toObject() };
   }
 
   /**
@@ -177,24 +192,41 @@ export class MongoResearchCreateService {
    * @author 현웅
    */
   async createResearchReply(
-    researchReply: ResearchReply,
+    param: { reply: ResearchReply },
     session?: ClientSession,
   ) {
     const updatedReserach = await this.Research.findByIdAndUpdate(
-      researchReply.researchId,
+      param.reply.researchId,
       { $inc: { commentsNum: 1 } },
       { session, returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
+      .lean();
     const newReplies = await this.ResearchReply.create(
-      [{ ...researchReply, createdAt: getCurrentISOTime() }],
+      [
+        {
+          ...param.reply,
+          author: param.reply.authorId,
+          createdAt: getCurrentISOTime(),
+        },
+      ],
       { session },
     );
     await this.ResearchComment.findByIdAndUpdate(
-      researchReply.commentId,
+      param.reply.commentId,
       { $push: { replies: newReplies[0]._id } },
       { session },
     );
-    return { updatedReserach, newReply: newReplies[0].toObject() };
+
+    const newReply = await newReplies[0].populate({
+      path: "author",
+      model: this.ResearchUser,
+    });
+
+    return { updatedReserach, newReply: newReply.toObject() };
   }
 
   /**

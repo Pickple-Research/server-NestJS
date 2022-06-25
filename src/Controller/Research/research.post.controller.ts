@@ -51,7 +51,7 @@ export class ResearchPostController {
   @Post("")
   async createResearch(
     @Request() req: { user: JwtUserInfo },
-    @Body() researchCreateBodyDto: ResearchCreateBodyDto,
+    @Body() body: ResearchCreateBodyDto,
   ) {
     const userSession = await this.userConnection.startSession();
     const researchSession = await this.researchConnection.startSession();
@@ -59,8 +59,7 @@ export class ResearchPostController {
     return await tryMultiTransaction(async () => {
       const newResearch = await this.mongoResearchCreateService.createResearch(
         {
-          authorId: req.user.userId,
-          research: researchCreateBodyDto,
+          research: { authorId: req.user.userId, ...body },
           files: {},
         },
         researchSession,
@@ -99,7 +98,7 @@ export class ResearchPostController {
   )
   async createResearchWithImages(
     @Request() req: { user: JwtUserInfo },
-    @Body() researchCreateBodyDto: ResearchCreateBodyDto,
+    @Body() body: ResearchCreateBodyDto,
     @UploadedFiles()
     files: {
       thumbnail?: Express.Multer.File[];
@@ -112,8 +111,7 @@ export class ResearchPostController {
     return await tryMultiTransaction(async () => {
       const newResearch = await this.mongoResearchCreateService.createResearch(
         {
-          authorId: req.user.userId,
-          research: researchCreateBodyDto,
+          research: { authorId: req.user.userId, ...body },
           files: files,
         },
         researchSession,
@@ -146,10 +144,11 @@ export class ResearchPostController {
       const newComment =
         await this.mongoResearchCreateService.createResearchComment(
           {
-            researchId: body.researchId,
-            authorId: req.user.userId,
-            authorNickname: "req.user.userNickname",
-            content: body.content,
+            comment: {
+              researchId: body.researchId,
+              authorId: req.user.userId,
+              content: body.content,
+            },
           },
           researchSession,
         );
@@ -175,11 +174,12 @@ export class ResearchPostController {
       const newReply =
         await this.mongoResearchCreateService.createResearchReply(
           {
-            researchId: body.researchId,
-            commentId: body.commentId,
-            authorId: req.user.userId,
-            authorNickname: "req.user.userNickname",
-            content: body.content,
+            reply: {
+              researchId: body.researchId,
+              commentId: body.commentId,
+              authorId: req.user.userId,
+              content: body.content,
+            },
           },
           researchSession,
         );

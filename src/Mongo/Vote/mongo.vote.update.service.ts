@@ -6,6 +6,8 @@ import {
   VoteDocument,
   VoteParticipation,
   VoteParticipationDocument,
+  VoteUser,
+  VoteUserDocument,
 } from "src/Schema";
 import { MONGODB_VOTE_CONNECTION } from "src/Constant";
 import { VoteParticipantInfo } from "src/Schema/Vote/Embedded";
@@ -16,6 +18,8 @@ export class MongoVoteUpdateService {
     @InjectModel(Vote.name) private readonly Vote: Model<VoteDocument>,
     @InjectModel(VoteParticipation.name)
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
+    @InjectModel(VoteUser.name)
+    private readonly VoteUser: Model<VoteUserDocument>,
 
     @InjectConnection(MONGODB_VOTE_CONNECTION)
     private readonly connection: Connection,
@@ -52,7 +56,12 @@ export class MongoVoteUpdateService {
         $inc: { scrapsNum: 1 },
       },
       { returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
+      .lean();
     const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
       voteId,
       {
@@ -81,7 +90,12 @@ export class MongoVoteUpdateService {
         $inc: { scrapsNum: -1 },
       },
       { returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
+      .lean();
     const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
       voteId,
       {
@@ -124,7 +138,12 @@ export class MongoVoteUpdateService {
       voteId,
       { $inc: { participantsNum: 1, ...incQuery } },
       { session, returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
+      .lean();
 
     await this.VoteParticipation.findByIdAndUpdate(
       voteId,
@@ -150,6 +169,11 @@ export class MongoVoteUpdateService {
         $set: { closed: true },
       },
       { session, returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
+      .lean();
   }
 }

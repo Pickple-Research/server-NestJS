@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
+import { ResearchUser } from "./researchUser.schema";
 import { ResearchReply } from "./researchReply.schema";
 
 /**
@@ -11,11 +12,14 @@ export class ResearchComment {
   @Prop({ required: true }) // 리서치 _id
   researchId: string;
 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: "ResearchUser",
+  }) // 리서치 댓글 작성사 정보 (authorId와는 별개로 populate하여 사용)
+  author?: ResearchUser;
+
   @Prop({ required: true }) // 작성자 _id
   authorId: string;
-
-  @Prop({}) // 작성자 닉네임
-  authorNickname?: string;
 
   @Prop({ required: true }) // 댓글 내용
   content: string;

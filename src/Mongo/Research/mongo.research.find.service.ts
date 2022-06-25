@@ -10,6 +10,8 @@ import {
   ResearchParticipationDocument,
   ResearchReply,
   ResearchReplyDocument,
+  ResearchUser,
+  ResearchUserDocument,
 } from "src/Schema";
 import {
   NotResearchAuthorException,
@@ -27,6 +29,8 @@ export class MongoResearchFindService {
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
     @InjectModel(ResearchReply.name)
     private readonly ResearchReply: Model<ResearchReplyDocument>,
+    @InjectModel(ResearchUser.name)
+    private readonly ResearchUser: Model<ResearchUserDocument>,
   ) {}
 
   async testMongoResearchRouter() {
@@ -56,6 +60,10 @@ export class MongoResearchFindService {
     return await this.Research.find()
       .sort({ pulledupAt: -1 }) // 최신순 정렬 후
       .limit(get) // 원하는 수만큼
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
       // .select({})  //TODO: 원하는 property만
       .lean(); // data만 뽑아서 반환
   }
@@ -71,6 +79,10 @@ export class MongoResearchFindService {
       pulledupAt: { $gt: pulledupAt }, // 주어진 pulledupAt 시기보다 더 나중에 끌올된 리서치 중에서
     })
       .sort({ pulledupAt: -1 }) // 최신순 정렬 후
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
       .lean(); // data만 뽑아서 반환
   }
 
@@ -86,6 +98,10 @@ export class MongoResearchFindService {
     })
       .sort({ pulledupAt: -1 }) // 최신순 정렬 후
       .limit(limit) // 10개를 가져오고
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
       .lean(); // data만 뽑아서 반환
   }
 
@@ -94,7 +110,12 @@ export class MongoResearchFindService {
    * @author 현웅
    */
   async getResearchById(researchId: string, handleAsException?: boolean) {
-    return await this.Research.findById(researchId).lean();
+    return await this.Research.findById(researchId)
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
+      .lean();
   }
 
   /**
@@ -107,10 +128,20 @@ export class MongoResearchFindService {
       .populate({
         path: "comments",
         model: this.ResearchComment,
-        populate: {
-          path: "replies",
-          model: this.ResearchReply,
-        },
+        populate: [
+          {
+            path: "author",
+            model: this.ResearchUser,
+          },
+          {
+            path: "replies",
+            model: this.ResearchReply,
+            populate: {
+              path: "author",
+              model: this.ResearchUser,
+            },
+          },
+        ],
       })
       .lean();
   }

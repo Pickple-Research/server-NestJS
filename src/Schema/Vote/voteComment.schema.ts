@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Schema as MongooseSchema } from "mongoose";
+import { VoteUser } from "./voteUser.schema";
 import { VoteReply } from "./voteReply.schema";
 
 /**
@@ -11,11 +12,14 @@ export class VoteComment {
   @Prop({ required: true }) // 투표 _id
   voteId: string;
 
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: "VoteUser",
+  }) // 투표 댓글 작성자 정보 (authorId와는 별개로 populate하여 사용)
+  author?: VoteUser;
+
   @Prop({ required: true }) // 작성자 _id
   authorId: string;
-
-  @Prop({}) // 작성자 닉네임
-  authorNickname?: string;
 
   @Prop({ required: true }) // 댓글 내용
   content: string;

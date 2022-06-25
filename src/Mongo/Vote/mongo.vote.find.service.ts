@@ -10,6 +10,8 @@ import {
   VoteParticipationDocument,
   VoteReply,
   VoteReplyDocument,
+  VoteUser,
+  VoteUserDocument,
 } from "src/Schema";
 import {
   NotVoteAuthorException,
@@ -27,6 +29,8 @@ export class MongoVoteFindService {
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
     @InjectModel(VoteReply.name)
     private readonly VoteReply: Model<VoteReplyDocument>,
+    @InjectModel(VoteUser.name)
+    private readonly VoteUser: Model<VoteUserDocument>,
   ) {}
 
   /**
@@ -45,11 +49,24 @@ export class MongoVoteFindService {
   }
 
   async getVoteById(voteId: string) {
-    return await this.Vote.findById(voteId).lean();
+    return await this.Vote.findById(voteId)
+      .populate({ path: "author", model: this.VoteUser })
+      .lean();
   }
 
-  async getVotes() {
-    return await this.Vote.find().sort({ _id: -1 }).lean();
+  /**
+   * 최신 투표를 가져옵니다. 인자가 주어지지 않으면 20개를 가져옵니다.
+   * @author 현웅
+   */
+  async getRecentVotes(limit: number = 20) {
+    return await this.Vote.find()
+      .sort({ _id: -1 })
+      .limit(limit)
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
+      .lean();
   }
 
   /**
@@ -63,6 +80,7 @@ export class MongoVoteFindService {
       _id: { $gt: voteId }, // 주어진 voteId 보다 더 나중에 업로드된 투표 중에서
     })
       .sort({ _id: -1 }) // 최신순 정렬 후
+      .populate({ path: "author", model: this.VoteUser })
       .lean(); // data만 뽑아서 반환
   }
 
@@ -78,6 +96,7 @@ export class MongoVoteFindService {
     })
       .sort({ _id: -1 }) // 최신순 정렬 후
       .limit(limit) // 10개를 가져오고
+      .populate({ path: "author", model: this.VoteUser })
       .lean(); // data만 뽑아서 반환
   }
 
@@ -91,10 +110,20 @@ export class MongoVoteFindService {
       .populate({
         path: "comments",
         model: this.VoteComment,
-        populate: {
-          path: "replies",
-          model: this.VoteReply,
-        },
+        populate: [
+          {
+            path: "author",
+            model: this.VoteUser,
+          },
+          {
+            path: "replies",
+            model: this.VoteReply,
+            populate: {
+              path: "author",
+              model: this.VoteUser,
+            },
+          },
+        ],
       })
       .lean();
 
