@@ -7,18 +7,22 @@ import {
   MongoUserUpdateService,
 } from "src/Mongo";
 import {
+  CreditHistory,
+  CreditHistorySchema,
   UnauthorizedUser,
   UnauthorizedUserSchema,
   User,
   UserSchema,
-  UserActivity,
-  UserActivitySchema,
-  UserCreditHistory,
-  UserCreditHistorySchema,
+  UserCredit,
+  UserCreditSchema,
   UserPrivacy,
   UserPrivacySchema,
   UserProperty,
   UserPropertySchema,
+  UserResearch,
+  UserResearchSchema,
+  UserVote,
+  UserVoteSchema,
 } from "src/Schema";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
 
@@ -36,12 +40,14 @@ import { MONGODB_USER_CONNECTION } from "src/Constant";
     //?   아래 코드를, 해당 서비스를 import한 모듈마다 새로 정의해야 하므로 번거로워지고 복잡해집니다.
     MongooseModule.forFeature(
       [
+        { name: CreditHistory.name, schema: CreditHistorySchema },
         { name: UnauthorizedUser.name, schema: UnauthorizedUserSchema },
         { name: User.name, schema: UserSchema },
-        { name: UserActivity.name, schema: UserActivitySchema },
-        { name: UserCreditHistory.name, schema: UserCreditHistorySchema },
+        { name: UserCredit.name, schema: UserCreditSchema },
         { name: UserPrivacy.name, schema: UserPrivacySchema },
         { name: UserProperty.name, schema: UserPropertySchema },
+        { name: UserResearch.name, schema: UserResearchSchema },
+        { name: UserVote.name, schema: UserVoteSchema },
       ],
       MONGODB_USER_CONNECTION,
     ),

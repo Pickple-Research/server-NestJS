@@ -146,7 +146,7 @@ export class ResearchPatchController {
           true,
         );
 
-      //* UserActivity에 리서치 참여 정보 추가
+      //* UserResearch에 리서치 참여 정보 추가
       const participatedResearchInfo: ParticipatedResearchInfo = {
         researchId: param.researchId,
         participatedAt: currentISOTime,

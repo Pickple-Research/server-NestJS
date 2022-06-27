@@ -94,7 +94,7 @@ export class UserPostController {
   /**
    * 이메일 인증이 완료된 정규 유저를 생성합니다.
    * 인자로 받은 이메일을 사용하는 미인증 유저 데이터를 삭제하고
-   * User, UserProperty, UserActivity, UserPrivacy 데이터를 생성합니다.
+   * User, UserCredit, UserProperty, UserPrivacy, UserResearch, UserVote 데이터를 생성합니다.
    * 또한 ResearchUser, VoteUser 데이터를 생성합니다.
    * @author 현웅
    */

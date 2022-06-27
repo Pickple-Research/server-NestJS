@@ -38,8 +38,8 @@ export class VoteDeleteController {
         voteId,
       });
 
-      //* 유저 활동 정보 중 업로드한 투표 _id 를 제거합니다.
-      const updateUserActivity =
+      //* 유저 투표 정보 중 업로드한 투표 _id 를 제거합니다.
+      const updateUserVote =
         await this.mongoUserUpdateService.deleteUploadedVote(
           { userId: req.user.userId, voteId },
           userSession,
@@ -52,7 +52,7 @@ export class VoteDeleteController {
       );
 
       //* 위 세 개 작업을 동시에 수행합니다.
-      await Promise.all([checkIsAuthor, updateUserActivity, deleteVote]);
+      await Promise.all([checkIsAuthor, updateUserVote, deleteVote]);
     }, [userSession, voteSession]);
     return;
   }

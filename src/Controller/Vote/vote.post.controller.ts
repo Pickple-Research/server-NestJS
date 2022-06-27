@@ -30,7 +30,7 @@ export class VotePostController {
   /**
    * @Transaction
    * 새로운 투표를 업로드합니다.
-   * 먼저 투표를 생성하고, 해당 투표 _id를 유저 활동 정보에 추가합니다.
+   * 먼저 투표를 생성하고, 해당 투표 _id를 유저 투표 정보에 추가합니다.
    * @return 생성된 투표 정보
    * @author 현웅
    */
