@@ -2,18 +2,22 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel, InjectConnection } from "@nestjs/mongoose";
 import { Model, Connection, ClientSession } from "mongoose";
 import {
+  CreditHistory,
+  CreditHistoryDocument,
   UnauthorizedUser,
   UnauthorizedUserDocument,
   User,
   UserDocument,
-  UserActivity,
-  UserActivityDocument,
-  UserCreditHistory,
-  UserCreditHistoryDocument,
+  UserCredit,
+  UserCreditDocument,
   UserPrivacy,
   UserPrivacyDocument,
   UserProperty,
   UserPropertyDocument,
+  UserResearch,
+  UserResearchDocument,
+  UserVote,
+  UserVoteDocument,
 } from "src/Schema";
 import { AccountType, UserType } from "src/Object/Enum";
 import { getSalt, getKeccak512Hash, getCurrentISOTime } from "src/Util";
@@ -26,18 +30,21 @@ import { MONGODB_USER_CONNECTION } from "src/Constant";
 @Injectable()
 export class MongoUserCreateService {
   constructor(
-    // 서비스에서 사용할 스키마
+    @InjectModel(CreditHistory.name)
+    private readonly UserCreditHistory: Model<CreditHistoryDocument>,
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
-    @InjectModel(UserActivity.name)
-    private readonly UserActivity: Model<UserActivityDocument>,
-    @InjectModel(UserCreditHistory.name)
-    private readonly UserCreditHistory: Model<UserCreditHistoryDocument>,
+    @InjectModel(UserCredit.name)
+    private readonly UserCredit: Model<UserCreditDocument>,
     @InjectModel(UserPrivacy.name)
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
     private readonly UserProperty: Model<UserPropertyDocument>,
+    @InjectModel(UserResearch.name)
+    private readonly UserResearch: Model<UserResearchDocument>,
+    @InjectModel(UserVote.name)
+    private readonly UserVote: Model<UserVoteDocument>,
 
     // 사용하는 DB 연결 인스턴스 (session 만드는 용도)
     @InjectConnection(MONGODB_USER_CONNECTION)
@@ -72,7 +79,8 @@ export class MongoUserCreateService {
 
   /**
    * @Transaction
-   * 미인증 유저를 정규 유저로 전환합니다. UserProperty, UserActivity, UserPrivacy Document도 함께 만들고,
+   * 메일 인증이 완료된 미인증 유저를 정규 유저로 전환합니다.
+   * UserCredit, UserProperty, UserPrivacy, UserResearch, UserVote Document도 함께 만들고,
    * 해당 email을 사용하는 미인증 유저 데이터를 삭제합니다.
    * @return 새로운 정규 유저 정보 중 ResearchUser 및 VoteUser 에 저장할 유저 정보 Object
    * @author 현웅
@@ -117,9 +125,9 @@ export class MongoUserCreateService {
     //*   배열 형태의 결과를 반환하기 때문에 [0]으로 인덱싱 해줘야 함)
     const newUserId = newUsers[0]._id;
 
-    //* 새로운 유저 활동정보, 크레딧 사용내역, 개인정보, 특성정보 데이터를 만들되
+    //* 새로운 유저 크레딧 사용내역, 개인정보, 특성정보, 리서치 활동정보, 투표 활동정보 데이터를 만들되
     //* 새로운 유저 데이터의 _id를 공유하도록 설정합니다.
-    await this.UserActivity.create([{ _id: newUserId }], { session });
+    await this.UserCredit.create([{ _id: newUserId }], { session });
     //* 유저 실명을 UserPrivacy에 저장
     await this.UserPrivacy.create(
       [
@@ -131,10 +139,11 @@ export class MongoUserCreateService {
       { session },
     );
     await this.UserProperty.create([{ _id: newUserId }], { session });
+    await this.UserResearch.create([{ _id: newUserId }], { session });
+    await this.UserVote.create([{ _id: newUserId }], { session });
 
     //* ResearchUser와 VoteUser에 저장할, 민감하지 않은 유저 정보를 추출해 반환합니다.
     const newUser = newUsers[0].toObject();
-
     return {
       _id: newUser._id,
       userType: newUser.userType,

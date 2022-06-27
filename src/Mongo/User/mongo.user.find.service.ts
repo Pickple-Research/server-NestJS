@@ -2,18 +2,22 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import {
+  CreditHistory,
+  CreditHistoryDocument,
   UnauthorizedUser,
   UnauthorizedUserDocument,
   User,
   UserDocument,
-  UserActivity,
-  UserActivityDocument,
-  UserCreditHistory,
-  UserCreditHistoryDocument,
+  UserCredit,
+  UserCreditDocument,
   UserPrivacy,
   UserPrivacyDocument,
   UserProperty,
   UserPropertyDocument,
+  UserResearch,
+  UserResearchDocument,
+  UserVote,
+  UserVoteDocument,
 } from "src/Schema";
 import {
   EmailNotAuthorizedException,
@@ -27,17 +31,21 @@ import { getKeccak512Hash } from "src/Util";
 @Injectable()
 export class MongoUserFindService {
   constructor(
+    @InjectModel(CreditHistory.name)
+    private readonly CreditHistory: Model<CreditHistoryDocument>,
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
-    @InjectModel(UserActivity.name)
-    private readonly UserActivity: Model<UserActivityDocument>,
-    @InjectModel(UserCreditHistory.name)
-    private readonly UserCreditHistory: Model<UserCreditHistoryDocument>,
+    @InjectModel(UserCredit.name)
+    private readonly UserCredit: Model<UserCreditDocument>,
     @InjectModel(UserPrivacy.name)
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
     private readonly UserProperty: Model<UserPropertyDocument>,
+    @InjectModel(UserResearch.name)
+    private readonly UserResearch: Model<UserResearchDocument>,
+    @InjectModel(UserVote.name)
+    private readonly UserVote: Model<UserVoteDocument>,
   ) {}
 
   /**
@@ -96,25 +104,26 @@ export class MongoUserFindService {
       })
       .lean();
 
-    const userActivity = await this.UserActivity.findById(userId).lean();
-    const userCreditHistory = await this.UserCreditHistory.findById(
-      userId,
-    ).lean();
+    const userCredit = await this.UserCredit.findById(userId).lean();
     const userProperty = await this.UserProperty.findById(userId).lean();
 
+    const userResearch = await this.UserResearch.findById(userId).lean();
+    const userVote = await this.UserVote.findById(userId).lean();
     return await Promise.all([
       user,
-      userActivity,
-      userCreditHistory,
+      userCredit,
       userProperty,
+      userResearch,
+      userVote,
     ]).then(
-      //* [user, userActivity, ...] 형태였던 반환값을 {user, userActivity, ...} 형태로 바꿔줍니다.
-      ([user, userActivity, userCreditHistory, userProperty]) => {
+      //* [user, userCredit, ...] 형태였던 반환값을 {user, userCredit, ...} 형태로 바꿔줍니다.
+      ([user, userCredit, userProperty, userResearch, userVote]) => {
         return {
           user,
-          userActivity,
-          userCreditHistory,
+          userCredit,
           userProperty,
+          userResearch,
+          userVote,
         };
       },
     );
@@ -185,21 +194,21 @@ export class MongoUserFindService {
     researchId: string,
     handleAsException: boolean = false,
   ) {
-    const userActivity = await this.UserActivity.findOne({
+    const userResearch = await this.UserResearch.findOne({
       _id: userId,
     })
       .select({ participatedResearchInfos: 1 })
       .lean();
 
     //* 유저 정보가 존재하지 않는 경우
-    if (!userActivity) {
+    if (!userResearch) {
       if (handleAsException) throw new UserNotFoundException();
       return true;
     }
 
     //* 참여한 리서치 목록에 researchId가 포함되어 있는 경우
     if (
-      userActivity.participatedResearchInfos.some((researchInfo) => {
+      userResearch.participatedResearchInfos.some((researchInfo) => {
         return researchInfo.researchId === researchId;
       })
     ) {
@@ -219,21 +228,21 @@ export class MongoUserFindService {
     voteId: string,
     handleAsException: boolean = false,
   ) {
-    const userActivity = await this.UserActivity.findOne({
+    const userVote = await this.UserVote.findOne({
       _id: userId,
     })
       .select({ participatedVoteInfos: 1 })
       .lean();
 
     //* 유저 정보가 존재하지 않는 경우
-    if (!userActivity) {
+    if (!userVote) {
       if (handleAsException) throw new UserNotFoundException();
       return true;
     }
 
     //* 참여한 투표 정보 목록에 voteId를 포함한 데이터가 있는 경우
     if (
-      userActivity.participatedVoteInfos.some((voteInfo) => {
+      userVote.participatedVoteInfos.some((voteInfo) => {
         return voteInfo.voteId === voteId;
       })
     ) {

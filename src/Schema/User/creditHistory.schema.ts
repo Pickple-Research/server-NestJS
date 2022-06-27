@@ -6,7 +6,7 @@ import { Document } from "mongoose";
  * @author 현웅
  */
 @Schema()
-export class UserCreditHistory {
+export class CreditHistory {
   @Prop() // 변동 사유 (줄글)
   reason: string;
 
@@ -23,7 +23,6 @@ export class UserCreditHistory {
   balance: number;
 }
 
-export const UserCreditHistorySchema =
-  SchemaFactory.createForClass(UserCreditHistory);
+export const CreditHistorySchema = SchemaFactory.createForClass(CreditHistory);
 
-export type UserCreditHistoryDocument = UserCreditHistory & Document;
+export type CreditHistoryDocument = CreditHistory & Document;

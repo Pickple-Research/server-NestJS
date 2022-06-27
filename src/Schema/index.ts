@@ -21,12 +21,14 @@ export * from "./Research/Embedded";
 export * from "./SurBay/surbayUser.schema";
 
 // 유저 관련 정보 스키마
+export * from "./User/creditHistory.schema";
 export * from "./User/unauthorizedUser.schema";
 export * from "./User/user.schema";
-export * from "./User/userActivity.schema";
-export * from "./User/userCreditHistory.schema";
+export * from "./User/userCredit.schema";
 export * from "./User/userPrivacy.schema";
 export * from "./User/userProperty.schema";
+export * from "./User/userResearch.schema";
+export * from "./User/userVote.schema";
 export * from "./User/Embedded";
 
 // 투표 관련 정보 스키마

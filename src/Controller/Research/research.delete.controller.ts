@@ -49,8 +49,8 @@ export class ResearchDeleteController {
           researchId,
         });
 
-      //* 유저 활동 정보 중 업로드한 리서치 _id 를 제거합니다.
-      const updateUserActivity =
+      //* 유저 리서치 정보 중 업로드한 리서치 _id 를 제거합니다.
+      const updateUserResearch =
         await this.mongoUserUpdateService.deleteUploadedResearch(
           {
             userId: req.user.userId,
@@ -67,7 +67,7 @@ export class ResearchDeleteController {
         );
 
       //* 위 세 개 작업을 동시에 수행합니다.
-      await Promise.all([checkIsAuthor, updateUserActivity, deleteResearch]);
+      await Promise.all([checkIsAuthor, updateUserResearch, deleteResearch]);
     }, [userSession, researchSession]);
 
     return;

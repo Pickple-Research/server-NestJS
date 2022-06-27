@@ -2,14 +2,22 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel, InjectConnection } from "@nestjs/mongoose";
 import { Model, Connection, ClientSession } from "mongoose";
 import {
+  CreditHistory,
+  CreditHistoryDocument,
   UnauthorizedUser,
   UnauthorizedUserDocument,
   User,
   UserDocument,
-  UserActivity,
-  UserActivityDocument,
-  UserCreditHistory,
-  UserCreditHistoryDocument,
+  UserCredit,
+  UserCreditDocument,
+  UserPrivacy,
+  UserPrivacyDocument,
+  UserProperty,
+  UserPropertyDocument,
+  UserResearch,
+  UserResearchDocument,
+  UserVote,
+  UserVoteDocument,
 } from "src/Schema";
 import { ParticipatedResearchInfo, ParticipatedVoteInfo } from "src/Schema";
 import { WrongAuthorizationCodeException } from "src/Exception";
@@ -19,13 +27,21 @@ import { tryTransaction } from "src/Util";
 @Injectable()
 export class MongoUserUpdateService {
   constructor(
+    @InjectModel(CreditHistory.name)
+    private readonly CreditHistory: Model<CreditHistoryDocument>,
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
-    @InjectModel(UserActivity.name)
-    private readonly UserActivity: Model<UserActivityDocument>,
-    @InjectModel(UserCreditHistory.name)
-    private readonly UserCreditHistory: Model<UserCreditHistoryDocument>,
+    @InjectModel(UserCredit.name)
+    private readonly UserCredit: Model<UserCreditDocument>,
+    @InjectModel(UserPrivacy.name)
+    private readonly UserPrivacy: Model<UserPrivacyDocument>,
+    @InjectModel(UserProperty.name)
+    private readonly UserProperty: Model<UserPropertyDocument>,
+    @InjectModel(UserResearch.name)
+    private readonly UserResearch: Model<UserResearchDocument>,
+    @InjectModel(UserVote.name)
+    private readonly UserVote: Model<UserVoteDocument>,
 
     @InjectConnection(MONGODB_USER_CONNECTION)
     private readonly connection: Connection,
@@ -62,11 +78,11 @@ export class MongoUserUpdateService {
   }
 
   /**
-   * 조회한 리서치 _id를 UserActivity에 추가합니다.
+   * 조회한 리서치 _id를 UserResearch 에 추가합니다.
    * @author 현웅
    */
   async viewResearch(userId: string, researchId: string) {
-    await this.UserActivity.findOneAndUpdate(
+    await this.UserResearch.findOneAndUpdate(
       { _id: userId },
       //? $addToSet: 추가하려는 원소가 이미 존재하면 push하지 않습니다.
       { $addToSet: { viewedResearchIds: researchId } },
@@ -79,7 +95,7 @@ export class MongoUserUpdateService {
    * @author 현웅
    */
   async scrapResearch(userId: string, researchId: string) {
-    await this.UserActivity.findByIdAndUpdate(userId, {
+    await this.UserResearch.findByIdAndUpdate(userId, {
       $push: { scrappedResearchIds: { $each: [researchId], $position: 0 } },
     });
     return;
@@ -90,14 +106,14 @@ export class MongoUserUpdateService {
    * @author 현웅
    */
   async unscrapResearch(userId: string, researchId: string) {
-    await this.UserActivity.findByIdAndUpdate(userId, {
+    await this.UserResearch.findByIdAndUpdate(userId, {
       $pull: { scrappedResearchIds: researchId },
     });
     return;
   }
 
   /**
-   * 리서치에 참여합니다. UserActivity를 업데이트하고
+   * 리서치에 참여합니다. UserResearch 를 업데이트하고
    * TODO: 크레딧을 증가시킵니다.
    * @author 현웅
    */
@@ -106,7 +122,7 @@ export class MongoUserUpdateService {
     participatedResearchInfo: ParticipatedResearchInfo,
     session?: ClientSession,
   ) {
-    await this.UserActivity.findByIdAndUpdate(
+    await this.UserResearch.findByIdAndUpdate(
       userId,
       {
         $push: {
@@ -124,7 +140,8 @@ export class MongoUserUpdateService {
   /**
    * @Transaction
    * 리서치를 업로드합니다.
-   * UserActivity의 uploadedResearchIds에 리서치 _id를 추가하고 유저 크레딧을 감소시킵니다.
+   * UserResearch 의 uploadedResearchIds에 리서치 _id를 추가하고 유저 크레딧을 감소시킵니다.
+   * TODO: #CREDIT-HISTORY
    * @author 현웅
    */
   async uploadResearch(
@@ -133,7 +150,7 @@ export class MongoUserUpdateService {
     session: ClientSession,
   ) {
     await tryTransaction(async () => {
-      await this.UserActivity.findByIdAndUpdate(
+      await this.UserResearch.findByIdAndUpdate(
         userId,
         {
           $push: { uploadedResearchIds: { $each: [researchId], $position: 0 } },
@@ -147,11 +164,29 @@ export class MongoUserUpdateService {
   }
 
   /**
-   * 조회한 리서치 _id를 UserActivity에 추가합니다.
+   * @Transaction
+   * 본인이 업로드한 리서치를 삭제합니다.
+   * 유저 리서치 활동 정보에서 uploadedResearchIds를 찾고, 인자로 받은 researchId를 제거합니다.
+   * @author 현웅
+   */
+  async deleteUploadedResearch(
+    param: { userId: string; researchId: string },
+    session: ClientSession,
+  ) {
+    await this.UserResearch.findByIdAndUpdate(
+      param.userId,
+      { $pull: { uploadedResearchIds: param.researchId } },
+      { session },
+    );
+    return;
+  }
+
+  /**
+   * 조회한 투표 _id를 UserVote 에 추가합니다.
    * @author 현웅
    */
   async viewVote(userId: string, voteId: string) {
-    await this.UserActivity.findOneAndUpdate(
+    await this.UserVote.findOneAndUpdate(
       { _id: userId },
       //? $addToSet: 추가하려는 원소가 이미 존재하면 push하지 않습니다.
       { $addToSet: { viewedVoteIds: voteId } },
@@ -164,7 +199,7 @@ export class MongoUserUpdateService {
    * @author 현웅
    */
   async scrapVote(userId: string, voteId: string) {
-    await this.UserActivity.findByIdAndUpdate(userId, {
+    await this.UserVote.findByIdAndUpdate(userId, {
       $push: { scrappedVoteIds: { $each: [voteId], $position: 0 } },
     });
     return;
@@ -175,7 +210,7 @@ export class MongoUserUpdateService {
    * @author 현웅
    */
   async unscrapVote(userId: string, voteId: string) {
-    await this.UserActivity.findByIdAndUpdate(userId, {
+    await this.UserVote.findByIdAndUpdate(userId, {
       $pull: { scrappedVoteIds: voteId },
     });
     return;
@@ -183,7 +218,7 @@ export class MongoUserUpdateService {
 
   /**
    * @Transaction
-   * 투표에 참여합니다. UserActivity를 업데이트합니다.
+   * 투표에 참여합니다. UserVote를 업데이트합니다.
    * @author 현웅
    */
   async participateVote(
@@ -191,7 +226,7 @@ export class MongoUserUpdateService {
     participatedVoteInfo: ParticipatedVoteInfo,
     session: ClientSession,
   ) {
-    await this.UserActivity.findByIdAndUpdate(
+    await this.UserVote.findByIdAndUpdate(
       userId,
       {
         $push: {
@@ -209,14 +244,14 @@ export class MongoUserUpdateService {
   /**
    * @Transaction
    * 투표를 업로드합니다.
-   * UserActivity 의 uploadedVoteIds 맨 앞에 업로드 된 투표 _id를 추가합니다.
+   * UserVote 의 uploadedVoteIds 맨 앞에 업로드 된 투표 _id를 추가합니다.
    * @author 현웅
    */
   async uploadVote(
     param: { userId: string; voteId: string },
     session: ClientSession,
   ) {
-    await this.UserActivity.findByIdAndUpdate(
+    await this.UserVote.findByIdAndUpdate(
       param.userId,
       {
         $push: { uploadedVoteIds: { $each: [param.voteId], $position: 0 } },
@@ -228,33 +263,15 @@ export class MongoUserUpdateService {
 
   /**
    * @Transaction
-   * 본인이 업로드한 리서치를 삭제합니다.
-   * 유저 활동 정보에서 uploadedResearchIds를 찾고, 인자로 받은 researchId를 제거합니다.
-   * @author 현웅
-   */
-  async deleteUploadedResearch(
-    param: { userId: string; researchId: string },
-    session: ClientSession,
-  ) {
-    await this.UserActivity.findByIdAndUpdate(
-      param.userId,
-      { $pull: { uploadedResearchIds: param.researchId } },
-      { session },
-    );
-    return;
-  }
-
-  /**
-   * @Transaction
    * 본인이 업로드한 투표를 삭제합니다.
-   * 유저 활동 정보에서 uploadedVoteIds를 찾고, 인자로 받은 voteId를 제거합니다.
+   * 유저 투표 활동 정보에서 uploadedVoteIds를 찾고, 인자로 받은 voteId를 제거합니다.
    * @author 현웅
    */
   async deleteUploadedVote(
     param: { userId: string; voteId: string },
     session: ClientSession,
   ) {
-    await this.UserActivity.findByIdAndUpdate(
+    await this.UserVote.findByIdAndUpdate(
       param.userId,
       { $pull: { uploadedVoteIds: param.voteId } },
       { session },

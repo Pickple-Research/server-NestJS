@@ -17,7 +17,7 @@ export class UserProperty {
   birthYear?: number;
 
   @Prop() // 출생일 (ISO String 타입)
-  birthDate?: string | Date;
+  birthDate?: string;
 
   @Prop() // 수입
   income?: number;
