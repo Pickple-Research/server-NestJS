@@ -80,7 +80,7 @@ export class MongoUserCreateService {
   async createEmailUser(
     param: {
       user: { email: string; password: string };
-      userPrivacy: { lastName: string; name: string };
+      userPrivacy: UserPrivacy;
     },
     session: ClientSession,
   ) {
@@ -125,8 +125,7 @@ export class MongoUserCreateService {
       [
         {
           _id: newUserId,
-          lastName: param.userPrivacy.lastName,
-          name: param.userPrivacy.name,
+          ...param.userPrivacy,
         },
       ],
       { session },

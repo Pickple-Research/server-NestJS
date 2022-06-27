@@ -205,26 +205,37 @@ export class ResearchPostController {
     });
   }
 
-  /**
-   * 더미 리서치를 생성합니다.
-   * @author 현웅
-   */
-  @Post("dummy")
-  async createDummyResearches() {
-    // const dummyResearches = getDummyResearches(50);
-    // const researchSession = await this.researchConnection.startSession();
+  // /**
+  //  * 더미 리서치를 생성합니다.
+  //  * @author 현웅
+  //  */
+  // @Post("dummy")
+  // async createDummyResearches(@Request() req: { user: JwtUserInfo }) {
+  //   const dummyResearches = getDummyResearches({
+  //     authorId: req.user.userId,
+  //     num: 56,
+  //   });
 
-    // for (const research of dummyResearches) {
-    //   await this.mongoResearchCreateService.createResearch(
-    //     {
-    //       authorId: research.authorId,
-    //       research,
-    //       files: {},
-    //     },
-    //     researchSession,
-    //   );
-    // }
+  //   for (const research of dummyResearches) {
+  //     const authorId =
+  //       Math.random() < 0.5
+  //         ? "62b6e1915b92dc6cf2789351"
+  //         : "62b6e1a75b92dc6cf2789360";
 
-    return;
-  }
+  //     const newResearch = await this.mongoResearchCreateService.createResearch({
+  //       research: {
+  //         ...research,
+  //         authorId,
+  //       },
+  //       files: {},
+  //     });
+
+  //     await this.mongoUserUpdateService.uploadResearch(
+  //       req.user.userId,
+  //       newResearch._id,
+  //     );
+  //   }
+
+  //   return;
+  // }
 }

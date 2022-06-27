@@ -17,6 +17,9 @@ export * from "./Research/researchReport.schema";
 export * from "./Research/researchUser.schema";
 export * from "./Research/Embedded";
 
+// SurBay 유저 정보 스키마
+export * from "./SurBay/surbayUser.schema";
+
 // 유저 관련 정보 스키마
 export * from "./User/unauthorizedUser.schema";
 export * from "./User/user.schema";

@@ -8,13 +8,16 @@ import { Document } from "mongoose";
 @Schema()
 export class UserPrivacy {
   @Prop() // 성
-  lastName: string;
+  lastName?: string;
 
   @Prop() // 이름
-  name: string;
+  name?: string;
 
   @Prop() // 주소
-  address: string;
+  address?: string;
+
+  @Prop() // 전화번호
+  phoneNumber?: string;
 }
 
 export const UserPrivacySchema = SchemaFactory.createForClass(UserPrivacy);
