@@ -1,8 +1,6 @@
 import { Controller, Inject, Request, Body, Post } from "@nestjs/common";
 import { AuthService } from "src/Service";
 import { MongoUserFindService, MongoUserUpdateService } from "src/Mongo";
-// SurBay
-import { MongoSurBayService } from "src/Mongo";
 import { Public } from "src/Security/Metadata";
 import { LoginBodyDto, AuthCodeVerificationBodyDto } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
@@ -13,8 +11,6 @@ export class AuthController {
 
   @Inject() private readonly mongoUserFindService: MongoUserFindService;
   @Inject() private readonly mongoUserUpdateService: MongoUserUpdateService;
-  // SurBay
-  @Inject() private readonly mongoSurBayService: MongoSurBayService;
 
   /**
    * 이메일, 비밀번호를 받아 로그인합니다.
@@ -59,19 +55,6 @@ export class AuthController {
     });
 
     return { jwt, ...userInfo };
-  }
-
-  /**
-   * SurBay DB 데이터를 통해 로그인합니다.
-   * @author 현웅
-   */
-  @Public()
-  @Post("login/surbay")
-  async surBayLogin(@Body() body: LoginBodyDto) {
-    return await this.mongoSurBayService.surBayLogin({
-      email: body.email,
-      password: body.password,
-    });
   }
 
   /**

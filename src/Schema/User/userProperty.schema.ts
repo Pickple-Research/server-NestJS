@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { Gender, Category } from "src/Object/Enum";
+import { Gender, Category } from "../../Object/Enum";
 
 /**
  * 유저 특성 정보 스키마입니다.
@@ -11,25 +11,22 @@ import { Gender, Category } from "src/Object/Enum";
 @Schema()
 export class UserProperty {
   @Prop({ enum: Gender }) // 성별
-  gender?: Gender;
+  gender: Gender;
 
   @Prop() // 출생년도
-  birthYear?: number;
-
-  @Prop() // 출생일 (ISO String 타입)
-  birthDate?: string | Date;
+  birthYear: number;
 
   @Prop() // 수입
-  income?: number;
+  income: number;
 
   @Prop() // 거주지
-  residence?: string;
+  residence: string;
 
   @Prop({ type: [String], enum: Category }) // (유저가 선택한) 관심사 카테고리
-  interest?: Category[];
+  interest: Category[];
 
   @Prop({ type: [String], enum: Category }) // (활동 정보를 바탕으로 추론한) 관심사 카테고리
-  tendency?: Category[];
+  tendency: Category[];
 }
 
 export const UserPropertySchema = SchemaFactory.createForClass(UserProperty);

@@ -14,6 +14,8 @@ import {
 import { Public } from "src/Security/Metadata";
 import {
   tryMultiTransaction,
+  getSalt,
+  getKeccak512Hash,
   getCurrentISOTime,
   getISOTimeAfterGivenMinutes,
 } from "src/Util";

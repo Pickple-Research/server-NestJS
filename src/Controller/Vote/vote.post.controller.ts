@@ -11,7 +11,6 @@ import {
 import { JwtUserInfo } from "src/Object/Type";
 import { tryTransaction, tryMultiTransaction } from "src/Util";
 import { MONGODB_USER_CONNECTION, MONGODB_VOTE_CONNECTION } from "src/Constant";
-// import { getDummyVotes } from "src/Dummy";
 
 @Controller("votes")
 export class VotePostController {
@@ -132,26 +131,4 @@ export class VotePostController {
       content: body.content,
     });
   }
-
-  // /**
-  //  * 더미 투표를 생성합니다.
-  //  * @author 현웅
-  //  */
-  // @Post("dummy")
-  // async crateDummyVotes(@Request() req: { user: JwtUserInfo }) {
-  //   const dummyVotes = getDummyVotes({
-  //     authorId: req.user.userId,
-  //     num: 56,
-  //   });
-
-  //   for (const vote of dummyVotes) {
-  //     const newVote = await this.mongoVoteCreateService.createVote({ vote });
-  //     await this.mongoUserUpdateService.uploadVote({
-  //       userId: req.user.userId,
-  //       voteId: newVote._id,
-  //     });
-  //   }
-
-  //   return;
-  // }
 }
