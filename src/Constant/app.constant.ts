@@ -17,6 +17,8 @@ export const MONGODB_PARTNER_CONNECTION = "MONGODB_PARTNER_CONNECTION";
 export const MONGODB_RESEARCH_CONNECTION = "MONGODB_RESEARCH_CONNECTION";
 export const MONGODB_USER_CONNECTION = "MONGODB_USER_CONNETION";
 export const MONGODB_VOTE_CONNECTION = "MONGODB_VOTE_CONNECTION";
+/** SurBay가 사용하는 DB 연결 */
+export const MONGODB_SURBAY_CONNECTION = "MONGODB_SURBAY_CONNECTION";
 
 /**
  * EC2 인스턴스 health check 경로
@@ -41,7 +43,7 @@ export const WINSTON_LOG_CONSOLE_OPTION: winston.transports.ConsoleTransportOpti
   };
 
 /**
- * 파일에 남기는 winston log 형태를 지정
+ * 파일에 남기는 winston log 형태를 지정 (일반 로그)
  * @author 현웅
  */
 export const WINSTON_COMMON_LOG_FILE_OPTION: winston.transports.FileTransportOptions =
@@ -59,7 +61,7 @@ export const WINSTON_COMMON_LOG_FILE_OPTION: winston.transports.FileTransportOpt
   };
 
 /**
- * 파일에 남기는 winston log 형태를 지정
+ * 파일에 남기는 winston log 형태를 지정 (에러 로그)
  * @author 현웅
  */
 export const WINSTON_ERROR_LOG_FILE_OPTION: winston.transports.FileTransportOptions =

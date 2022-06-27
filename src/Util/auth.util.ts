@@ -28,10 +28,10 @@ export const getKeccak512Hash = (original: string, pepper: number) => {
   let hashRound = pepper;
 
   function hash(text: string) {
-    hashRound -= 1;
     if (hashRound === 0) return text;
+    hashRound -= 1;
     return hash(createKeccakHash("keccak512").update(text).digest("hex"));
   }
 
-  return hash(createKeccakHash("keccak512").update(original).digest("hex"));
+  return hash(original);
 };
