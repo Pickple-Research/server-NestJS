@@ -50,10 +50,10 @@ export class Research {
   //! 끌올한 날짜. 리서치는 _id가 아니라 이 일자를 기준으로 노출됩니다.
   //* 끌올하기 전에는 생성일과 같습니다.
   @Prop({ index: true, required: true })
-  pulledupAt?: string;
+  pulledupAt: string;
 
   @Prop() // 생성일
-  createdAt?: string;
+  createdAt: string;
 
   @Prop({ type: [String], enum: Category }) // 리서치 카테고리
   categories?: Category[];

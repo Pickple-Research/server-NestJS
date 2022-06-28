@@ -11,6 +11,8 @@ import {
   ResearchParticipationDocument,
   ResearchReply,
   ResearchReplyDocument,
+  ResearchUser,
+  ResearchUserDocument,
 } from "src/Schema";
 import { BUCKET_NAME } from "src/Constant";
 
@@ -25,9 +27,21 @@ export class MongoResearchDeleteService {
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
     @InjectModel(ResearchReply.name)
     private readonly ResearchReply: Model<ResearchReplyDocument>,
+    @InjectModel(ResearchUser.name)
+    private readonly ResearchUser: Model<ResearchUserDocument>,
 
     private readonly awsS3Service: AwsS3Service,
   ) {}
+
+  /**
+   * @Transaction
+   * 유저 탈퇴시, ResearchUser 정보를 함께 삭제합니다.
+   * @author 현웅
+   */
+  async deleteResearchUser(param: { userId: string }, session: ClientSession) {
+    await this.ResearchUser.findByIdAndDelete(param.userId, { session });
+    return;
+  }
 
   /**
    * @Transaction
