@@ -58,6 +58,15 @@ export class Research {
   @Prop({ type: [String], enum: Category }) // 리서치 카테고리
   categories?: Category[];
 
+  @Prop() // 참여시 제공 크레딧
+  credit: number;
+
+  @Prop() // 참여시 추가 제공 크레딧 (추첨자에게만 제공)
+  extraCredit?: number;
+
+  @Prop() // 추가 제공 크레딧 추첨 수령자 수
+  extraCreditRecieverNum?: number;
+
   //? 앱단에 정보를 넘겨줄 때는 유저 _id를 넘겨줄 필요가 없고 숫자만 넘기면 되는데,
   //? 그 때마다 .length를 사용하여 넘겨주면 (아마도) 좋지 않기에 숫자만 따로 관리합니다.
   @Prop({ default: 0 }) // 조회 수

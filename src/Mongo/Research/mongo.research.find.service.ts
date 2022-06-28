@@ -33,10 +33,6 @@ export class MongoResearchFindService {
     private readonly ResearchUser: Model<ResearchUserDocument>,
   ) {}
 
-  async testMongoResearchRouter() {
-    return `mongoResearchFindRouter@PORT:${process.env.PORT}`;
-  }
-
   /**
    * 인자로 받은 유저 _id 가 리서치 작성자 _id 와 일치하는지 확인합니다.
    * 일치하지 않는 경우, 에러를 발생시킵니다.
@@ -50,6 +46,17 @@ export class MongoResearchFindService {
       throw new NotResearchAuthorException();
     }
     return;
+  }
+
+  /**
+   * 리서치 참여시 제공 크레딧을 반환합니다.
+   * @author 현웅
+   */
+  async getResearchCredit(researchId: string) {
+    const research = await this.Research.findById(researchId)
+      .select({ credit: 1 })
+      .lean();
+    return research.credit;
   }
 
   /**

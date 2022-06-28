@@ -50,7 +50,7 @@ export class CronService {
     // weekPassedUnauthorizedUsers.forEach(user=>{
     //   this.mongoUserDeleteService.deleteUnauthorizedUser(user.email);
     // })
-    await this.mongoUserDeleteService.deleteUnauthorizedUser("");
+    // await this.mongoUserDeleteService.deleteUnauthorizedUser({""});
     return;
   }
 }

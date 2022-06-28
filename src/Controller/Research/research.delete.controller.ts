@@ -1,11 +1,8 @@
 import { Controller, Inject, Request, Headers, Delete } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import {
-  MongoUserUpdateService,
-  MongoResearchFindService,
-  MongoResearchDeleteService,
-} from "src/Mongo";
+import { ResearchDeleteService } from "src/Service";
+import { MongoUserUpdateService } from "src/Mongo";
 import { JwtUserInfo } from "src/Object/Type";
 import { tryMultiTransaction } from "src/Util";
 import {
@@ -16,6 +13,8 @@ import {
 @Controller("researches")
 export class ResearchDeleteController {
   constructor(
+    private readonly researchDeleteService: ResearchDeleteService,
+
     @InjectConnection(MONGODB_USER_CONNECTION)
     private readonly userConnection: Connection,
     @InjectConnection(MONGODB_RESEARCH_CONNECTION)
@@ -24,10 +23,6 @@ export class ResearchDeleteController {
 
   @Inject()
   private readonly mongoUserUpdateService: MongoUserUpdateService;
-  @Inject()
-  private readonly mongoResearchFindService: MongoResearchFindService;
-  @Inject()
-  private readonly mongoResearchDeleteService: MongoResearchDeleteService;
 
   /**
    * 리서치를 삭제합니다.
@@ -42,13 +37,6 @@ export class ResearchDeleteController {
     const researchSession = await this.researchConnection.startSession();
 
     await tryMultiTransaction(async () => {
-      //* 리서치 삭제를 요청한 유저가 리서치 작성자인지 여부를 확인합니다.
-      const checkIsAuthor =
-        await this.mongoResearchFindService.isResearchAuthor({
-          userId: req.user.userId,
-          researchId,
-        });
-
       //* 유저 리서치 정보 중 업로드한 리서치 _id 를 제거합니다.
       const updateUserResearch =
         await this.mongoUserUpdateService.deleteUploadedResearch(
@@ -59,15 +47,17 @@ export class ResearchDeleteController {
           userSession,
         );
 
-      //* 리서치와 관련된 모든 정보를 삭제합니다.
-      const deleteResearch =
-        await this.mongoResearchDeleteService.deleteResearchById(
+      //* 리서치 정보를 삭제합니다.
+      const deleteResearch = await this.researchDeleteService.deleteResearch(
+        {
+          userId: req.user.userId,
           researchId,
-          researchSession,
-        );
+        },
+        researchSession,
+      );
 
-      //* 위 세 개 작업을 동시에 수행합니다.
-      await Promise.all([checkIsAuthor, updateUserResearch, deleteResearch]);
+      //* 위 두 개 작업을 동시에 수행합니다.
+      await Promise.all([updateUserResearch, deleteResearch]);
     }, [userSession, researchSession]);
 
     return;

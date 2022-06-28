@@ -17,10 +17,10 @@ export class CreditHistory {
   scale: number;
 
   @Prop() // 변동 일시
-  changedAt: string;
+  createdAt?: string;
 
-  @Prop() // 잔여 크레딧
-  balance: number;
+  @Prop() // 변동 이후 잔여 크레딧
+  balance?: number;
 }
 
 export const CreditHistorySchema = SchemaFactory.createForClass(CreditHistory);

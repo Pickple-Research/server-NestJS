@@ -6,6 +6,7 @@ import {
   ResearchPostController,
 } from "src/Controller";
 import {
+  UserUpdateService,
   ResearchDeleteService,
   ResearchFindService,
   ResearchCreateService,
@@ -23,6 +24,7 @@ import { MongoUserModule, MongoResearchModule } from "src/Mongo";
   ],
   providers: [
     AwsS3Service,
+    UserUpdateService,
     ResearchDeleteService,
     ResearchCreateService,
     ResearchFindService,

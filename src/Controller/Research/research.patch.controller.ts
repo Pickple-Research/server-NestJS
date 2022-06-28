@@ -8,11 +8,15 @@ import {
 } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
+import { UserUpdateService, ResearchUpdateService } from "src/Service";
 import {
+  MongoUserCreateService,
   MongoUserFindService,
   MongoUserUpdateService,
+  MongoResearchFindService,
   MongoResearchUpdateService,
 } from "src/Mongo";
+import { CreditHistory } from "src/Schema";
 import { ParticipatedResearchInfo } from "src/Schema/User/Embedded";
 import { ResearchParticipantInfo } from "src/Schema/Research/Embedded";
 import { JwtUserInfo } from "src/Object/Type";
@@ -30,14 +34,19 @@ import {
 @Controller("researches")
 export class ResearchPatchController {
   constructor(
+    private readonly userUpdateService: UserUpdateService,
+
     @InjectConnection(MONGODB_USER_CONNECTION)
     private readonly userConnection: Connection,
     @InjectConnection(MONGODB_RESEARCH_CONNECTION)
     private readonly researchConnection: Connection,
   ) {}
 
+  @Inject() private readonly mongoUserCreateService: MongoUserCreateService;
   @Inject() private readonly mongoUserFindService: MongoUserFindService;
   @Inject() private readonly mongoUserUpdateService: MongoUserUpdateService;
+  @Inject()
+  private readonly mongoResearchFindService: MongoResearchFindService;
   @Inject()
   private readonly mongoResearchUpdateService: MongoResearchUpdateService;
 
@@ -130,66 +139,92 @@ export class ResearchPatchController {
     @Param() param: { researchId: string },
     @Body() body: ResearchParticiateBodyDto,
   ) {
+    //* 유저가 가진 credit, 리서치 참여시 제공 credit 을 가져옵니다
+    const getUserCredit = this.mongoUserFindService.getUserCredit(
+      req.user.userId,
+    );
+    const getResearchCredit = this.mongoResearchFindService.getResearchCredit(
+      param.researchId,
+    );
+
+    const { userCredit, researchCredit } = await Promise.all([
+      getUserCredit,
+      getResearchCredit,
+    ]).then(([userCredit, researchCredit]) => {
+      return { userCredit, researchCredit };
+    });
+
+    //* 필요한 데이터 형태를 미리 만들어둡니다.
     const currentISOTime = getCurrentISOTime();
-    //* User DB, Research DB에 대한 Session을 시작하고
-    const userSession = await this.userConnection.startSession();
-    const researchSession = await this.researchConnection.startSession();
+    //* 리서치 참여 정보
+    const participatedResearchInfo: ParticipatedResearchInfo = {
+      researchId: param.researchId,
+      participatedAt: currentISOTime,
+    };
+    //* CreditHistory 정보
+    const creditHistory: CreditHistory = {
+      reason: body.researchTitle,
+      type: "리서치 참여",
+      scale: researchCredit,
+      balance: userCredit + researchCredit,
+      createdAt: currentISOTime,
+    };
+    //* 리서치 참여자 정보
+    const researchParticipationInfo: ResearchParticipantInfo = {
+      userId: req.user.userId,
+      consumedTime: body.consummedTime,
+      participatedAt: currentISOTime,
+    };
+
+    //* User DB, Research DB에 대한 Session을 시작합니다.
+    const startUserSession = this.userConnection.startSession();
+    const startResearchSession = this.researchConnection.startSession();
+
+    const { userSession, researchSession } = await Promise.all([
+      startUserSession,
+      startResearchSession,
+    ]).then(([userSession, researchSession]) => {
+      return { userSession, researchSession };
+    });
 
     return await tryMultiTransaction(async () => {
-      //* 유저가 이미 리서치에 참여했었는지 확인합니다.
-      //* 유저 정보가 존재하지 않거나 이미 참여한 경우 에러가 발생하며,
-      //* 아래의 updateUser와 updateResearch를 통한 변화가 무시됩니다.
-      const checkAlreadyParticipated =
-        await this.mongoUserFindService.didUserParticipatedResearch(
-          req.user.userId,
-          param.researchId,
-          true,
-        );
-
-      //* UserResearch에 리서치 참여 정보 추가
-      const participatedResearchInfo: ParticipatedResearchInfo = {
-        researchId: param.researchId,
-        participatedAt: currentISOTime,
-      };
-
-      const updateUser = await this.mongoUserUpdateService.participateResearch(
-        req.user.userId,
-        participatedResearchInfo,
+      //* 유저의 리서치 참여 정보에 리서치 참여 정보 추가,
+      //* CreditHistory 생성 및 추가
+      const updateUser = this.userUpdateService.participateResearch(
+        {
+          userId: req.user.userId,
+          participatedResearchInfo,
+          creditHistory,
+        },
         userSession,
       );
 
-      //* ResearchParticipation에 참여자 정보 추가
-      const researchParticipationInfo: ResearchParticipantInfo = {
-        userId: req.user.userId,
-        consumedTime: body.consummedTime,
-        participatedAt: currentISOTime,
-      };
+      //* ResearchParticipation 에 참여자 정보 추가
+      const updateResearch = this.mongoResearchUpdateService.updateParticipant(
+        researchParticipationInfo,
+        param.researchId,
+        researchSession,
+      );
 
-      const updateResearch =
-        await this.mongoResearchUpdateService.updateParticipant(
-          researchParticipationInfo,
-          param.researchId,
-          researchSession,
-        );
-
-      //* 위 세 개의 함수를 한꺼번에 실행합니다.
-      //* 셋 중 하나라도 에러가 발생하면 변경사항이 반영되지 않습니다.
-      const updatedResearch = await Promise.all([
-        checkAlreadyParticipated,
+      //* 위 두 함수를 동시에 실행하고,
+      //* 새로운 CreditHistory와 업데이트 된 리서치 정보를 가져옵니다.
+      const { newCreditHitory, updatedResearch } = await Promise.all([
         updateUser,
         updateResearch,
-      ]).then(([_, __, updatedResearch]) => {
-        //* 이 때, 참여 정보가 반영된 최신 리서치 정보는 따로 빼내어 반환합니다.
-        return updatedResearch;
+      ]).then(([newCreditHitory, updatedResearch]) => {
+        return { newCreditHitory, updatedResearch };
       });
 
-      //* 리서치 참여 정보와 최신 리서치 정보를 반환합니다.
-      return { participatedResearchInfo, updatedResearch };
+      throw new Error("something wrong");
+
+      //* 최종적으로 리서치 참여 정보, 새로 생성된 CreditHistory, 최신 리서치 정보를 반환합니다.
+      return { participatedResearchInfo, newCreditHitory, updatedResearch };
     }, [userSession, researchSession]);
   }
 
   /**
    * 리서치를 끌올합니다.
+   * TODO: CreditHistory 생성 및 추가
    * @return 업데이트된 리서치 정보
    * @author 현웅
    */

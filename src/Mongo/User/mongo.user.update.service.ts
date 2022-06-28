@@ -1,15 +1,13 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection, ClientSession } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, ClientSession } from "mongoose";
 import {
   CreditHistory,
-  CreditHistoryDocument,
+  // CreditHistoryDocument,
   UnauthorizedUser,
   UnauthorizedUserDocument,
   User,
   UserDocument,
-  UserCredit,
-  UserCreditDocument,
   UserPrivacy,
   UserPrivacyDocument,
   UserProperty,
@@ -18,22 +16,18 @@ import {
   UserResearchDocument,
   UserVote,
   UserVoteDocument,
+  // Embedded
+  ParticipatedResearchInfo,
+  ParticipatedVoteInfo,
 } from "src/Schema";
-import { ParticipatedResearchInfo, ParticipatedVoteInfo } from "src/Schema";
 import { WrongAuthorizationCodeException } from "src/Exception";
-import { MONGODB_USER_CONNECTION } from "src/Constant";
-import { tryTransaction } from "src/Util";
 
 @Injectable()
 export class MongoUserUpdateService {
   constructor(
-    @InjectModel(CreditHistory.name)
-    private readonly CreditHistory: Model<CreditHistoryDocument>,
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
-    @InjectModel(UserCredit.name)
-    private readonly UserCredit: Model<UserCreditDocument>,
     @InjectModel(UserPrivacy.name)
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
@@ -42,9 +36,6 @@ export class MongoUserUpdateService {
     private readonly UserResearch: Model<UserResearchDocument>,
     @InjectModel(UserVote.name)
     private readonly UserVote: Model<UserVoteDocument>,
-
-    @InjectConnection(MONGODB_USER_CONNECTION)
-    private readonly connection: Connection,
   ) {}
 
   /**
@@ -113,21 +104,23 @@ export class MongoUserUpdateService {
   }
 
   /**
-   * 리서치에 참여합니다. UserResearch 를 업데이트하고
-   * TODO: 크레딧을 증가시킵니다.
+   * 리서치에 참여합니다. UserResearch 와 UserCredit 정보를 업데이트 합니다.
+   * @return 새로 만들어진 CreditHistory 정보
    * @author 현웅
    */
   async participateResearch(
-    userId: string,
-    participatedResearchInfo: ParticipatedResearchInfo,
+    param: {
+      userId: string;
+      participatedResearchInfo: ParticipatedResearchInfo;
+    },
     session?: ClientSession,
   ) {
     await this.UserResearch.findByIdAndUpdate(
-      userId,
+      param.userId,
       {
         $push: {
           participatedResearchInfos: {
-            $each: [participatedResearchInfo],
+            $each: [param.participatedResearchInfo],
             $position: 0,
           },
         },
@@ -139,27 +132,23 @@ export class MongoUserUpdateService {
 
   /**
    * @Transaction
-   * 리서치를 업로드합니다.
-   * UserResearch 의 uploadedResearchIds에 리서치 _id를 추가하고 유저 크레딧을 감소시킵니다.
-   * TODO: #CREDIT-HISTORY
+   * UserResearch 의 uploadedResearchIds에 리서치 _id를 추가합니다.
    * @author 현웅
    */
   async uploadResearch(
-    userId: string,
-    researchId: string,
+    param: { userId: string; researchId: string },
     session: ClientSession,
   ) {
-    await tryTransaction(async () => {
-      await this.UserResearch.findByIdAndUpdate(
-        userId,
-        {
-          $push: { uploadedResearchIds: { $each: [researchId], $position: 0 } },
+    await this.UserResearch.findByIdAndUpdate(
+      param.userId,
+      {
+        $push: {
+          uploadedResearchIds: { $each: [param.researchId], $position: 0 },
         },
-        { session },
-      );
-      // await this.UserCreditHistory.findByIdAndUpdate(userId, { $push: {} });
-      return;
-    }, session);
+      },
+      { session },
+    );
+
     return;
   }
 

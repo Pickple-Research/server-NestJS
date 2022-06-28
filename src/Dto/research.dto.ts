@@ -6,7 +6,13 @@ import { ResearchPurpose } from "src/Object/Enum";
  * @param title 리서치 제목
  * @param link 폼 링크 url
  * @param content 리서치 내용
+ * @param purpose 리서치 목적
+ * @param organization 리서치 진행 단체
  * @param target 타겟
+ * @param target 참여 대상 (줄글 작성)
+ * @param estimatedTime 예상 소요시간
+ * @param deadline 마감일
+ * @param eligibility 최소 참여조건
  * @author 현웅
  */
 export class ResearchCreateBodyDto {
@@ -40,10 +46,14 @@ export class ResearchCreateBodyDto {
 
 /**
  * 리서치 참여시 Body에 포함되어야 하는 정보들입니다.
+ * @param researchTitle 리서치 제목
  * @param consummedTime 리서치 참여 소요시간
  * @author 현웅
  */
 export class ResearchParticiateBodyDto {
+  @IsString()
+  researchTitle: string;
+
   @IsNumber()
   consummedTime: number;
 }
