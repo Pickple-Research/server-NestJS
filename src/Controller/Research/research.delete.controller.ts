@@ -33,26 +33,27 @@ export class ResearchDeleteController {
     @Request() req: { user: JwtUserInfo },
     @Headers("research_id") researchId: string,
   ) {
-    const userSession = await this.userConnection.startSession();
-    const researchSession = await this.researchConnection.startSession();
+    const startUserSession = await this.userConnection.startSession();
+    const startResearchSession = await this.researchConnection.startSession();
+
+    const { userSession, researchSession } = await Promise.all([
+      startUserSession,
+      startResearchSession,
+    ]).then(([userSession, researchSession]) => {
+      return { userSession, researchSession };
+    });
 
     await tryMultiTransaction(async () => {
       //* 유저 리서치 정보 중 업로드한 리서치 _id 를 제거합니다.
       const updateUserResearch =
-        await this.mongoUserUpdateService.deleteUploadedResearch(
-          {
-            userId: req.user.userId,
-            researchId,
-          },
+        this.mongoUserUpdateService.deleteUploadedResearch(
+          { userId: req.user.userId, researchId },
           userSession,
         );
 
       //* 리서치 정보를 삭제합니다.
-      const deleteResearch = await this.researchDeleteService.deleteResearch(
-        {
-          userId: req.user.userId,
-          researchId,
-        },
+      const deleteResearch = this.researchDeleteService.deleteResearch(
+        { userId: req.user.userId, researchId },
         researchSession,
       );
 

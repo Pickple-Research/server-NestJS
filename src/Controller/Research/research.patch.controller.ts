@@ -59,11 +59,11 @@ export class ResearchPatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
   ) {
-    const updateUser = await this.mongoUserUpdateService.viewResearch(
+    const updateUser = this.mongoUserUpdateService.viewResearch(
       req.user.userId,
       param.researchId,
     );
-    const updateResearch = await this.mongoResearchUpdateService.updateView(
+    const updateResearch = this.mongoResearchUpdateService.updateView(
       req.user.userId,
       param.researchId,
     );
@@ -81,14 +81,15 @@ export class ResearchPatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
   ) {
-    const updateUser = await this.mongoUserUpdateService.scrapResearch(
+    const updateUser = this.mongoUserUpdateService.scrapResearch(
       req.user.userId,
       param.researchId,
     );
-    const updateResearch = await this.mongoResearchUpdateService.updateScrap(
+    const updateResearch = this.mongoResearchUpdateService.updateScrap(
       req.user.userId,
       param.researchId,
     );
+
     const updatedResearch = await Promise.all([
       updateUser,
       updateResearch,
@@ -108,15 +109,15 @@ export class ResearchPatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
   ) {
-    const updateUser = await this.mongoUserUpdateService.unscrapResearch(
+    const updateUser = this.mongoUserUpdateService.unscrapResearch(
+      req.user.userId,
+      param.researchId,
+    );
+    const updateResearch = this.mongoResearchUpdateService.updateUnscrap(
       req.user.userId,
       param.researchId,
     );
 
-    const updateResearch = await this.mongoResearchUpdateService.updateUnscrap(
-      req.user.userId,
-      param.researchId,
-    );
     const updatedResearch = await Promise.all([
       updateUser,
       updateResearch,
@@ -214,8 +215,6 @@ export class ResearchPatchController {
       ]).then(([newCreditHitory, updatedResearch]) => {
         return { newCreditHitory, updatedResearch };
       });
-
-      throw new Error("something wrong");
 
       //* 최종적으로 리서치 참여 정보, 새로 생성된 CreditHistory, 최신 리서치 정보를 반환합니다.
       return { participatedResearchInfo, newCreditHitory, updatedResearch };

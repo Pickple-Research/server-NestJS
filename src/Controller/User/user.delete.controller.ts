@@ -46,17 +46,25 @@ export class UserDeleteController {
   @Delete("")
   async deleteUserById(@Headers("user_id") userId: string) {
     //TODO: ResearchUser, VoteUser 도 같이 삭제해야 함
-    const userSession = await this.userConnection.startSession();
-    const researchSession = await this.researchConnection.startSession();
-    const voteSession = await this.voteConnection.startSession();
+    const startUserSession = this.userConnection.startSession();
+    const startResearchSession = this.researchConnection.startSession();
+    const startVoteSession = this.voteConnection.startSession();
+
+    const { userSession, researchSession, voteSession } = await Promise.all([
+      startUserSession,
+      startResearchSession,
+      startVoteSession,
+    ]).then(([userSession, researchSession, voteSession]) => {
+      return { userSession, researchSession, voteSession };
+    });
 
     await tryMultiTransaction(async () => {
-      const deleteUser = await this.mongoUserDeleteService.deleteUserById(
+      const deleteUser = this.mongoUserDeleteService.deleteUserById(
         { userId },
         userSession,
       );
-      // const deleteResearchUser = await this.mongoResearchDeleteService.deleteResearchUser({userId}, researchSession)
-      // const deleteVoteUser = await this.mongoVoteDeleteService.deleteVoteUser({userId}, voteSession)
+      // const deleteResearchUser = this.mongoResearchDeleteService.deleteResearchUser({userId}, researchSession)
+      // const deleteVoteUser = this.mongoVoteDeleteService.deleteVoteUser({userId}, voteSession)
 
       await Promise.all([
         deleteUser,

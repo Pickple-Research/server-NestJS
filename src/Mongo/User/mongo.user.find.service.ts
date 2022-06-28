@@ -108,7 +108,7 @@ export class MongoUserFindService {
    * @author 현웅
    */
   async getUserInfoById(userId: string) {
-    const user = await this.User.findById(userId)
+    const user = this.User.findById(userId)
       .select({
         email: 1,
         nickname: 1,
@@ -116,11 +116,11 @@ export class MongoUserFindService {
         createdAt: 1,
       })
       .lean();
+    const userCredit = this.UserCredit.findById(userId).lean();
+    const userProperty = this.UserProperty.findById(userId).lean();
+    const userResearch = this.UserResearch.findById(userId).lean();
+    const userVote = this.UserVote.findById(userId).lean();
 
-    const userCredit = await this.UserCredit.findById(userId).lean();
-    const userProperty = await this.UserProperty.findById(userId).lean();
-    const userResearch = await this.UserResearch.findById(userId).lean();
-    const userVote = await this.UserVote.findById(userId).lean();
     return await Promise.all([
       user,
       userCredit,
