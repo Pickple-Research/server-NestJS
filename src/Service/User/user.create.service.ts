@@ -62,13 +62,13 @@ export class UserCreateService {
 
     //* 기존의 미인증 유저 데이터를 삭제합니다.
     const deleteUnauthorizedUser =
-      this.mongoUserDeleteService.deleteUnauthorizedUser(
+      await this.mongoUserDeleteService.deleteUnauthorizedUser(
         { email: param.user.email },
         session,
       );
 
     //* 새로운 유저를 생성합니다.
-    const createNewUser = this.mongoUserCreateService.createEmailUser(
+    const createNewUser = await this.mongoUserCreateService.createEmailUser(
       { user: param.user, userPrivacy: param.userPrivacy },
       session,
     );

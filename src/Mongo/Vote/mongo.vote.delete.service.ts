@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection, ClientSession } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, ClientSession } from "mongoose";
 import {
   Vote,
   VoteDocument,
@@ -10,8 +10,9 @@ import {
   VoteParticipationDocument,
   VoteReply,
   VoteReplyDocument,
+  VoteUser,
+  VoteUserDocument,
 } from "src/Schema";
-import { MONGODB_VOTE_CONNECTION } from "src/Constant";
 
 @Injectable()
 export class MongoVoteDeleteService {
@@ -23,10 +24,19 @@ export class MongoVoteDeleteService {
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
     @InjectModel(VoteReply.name)
     private readonly VoteReply: Model<VoteReplyDocument>,
-
-    @InjectConnection(MONGODB_VOTE_CONNECTION)
-    private readonly connection: Connection,
+    @InjectModel(VoteUser.name)
+    private readonly VoteUser: Model<VoteUserDocument>,
   ) {}
+
+  /**
+   * @Transaction
+   * 유저 탈퇴시, VoteUser 정보를 함께 삭제합니다.
+   * @author 현웅
+   */
+  async deleteVoteUser(param: { userId: string }, session: ClientSession) {
+    await this.VoteUser.findByIdAndDelete(param.userId, { session });
+    return;
+  }
 
   /**
    * @Transaction

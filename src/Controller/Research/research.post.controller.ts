@@ -286,24 +286,37 @@ export class ResearchPostController {
   //     num: 56,
   //   });
 
-  //   for (const research of dummyResearches) {
-  //     const authorId =
-  //       Math.random() < 0.5
-  //         ? "62b6e1915b92dc6cf2789351"
-  //         : "62b6e1a75b92dc6cf2789360";
+  //   for (const dummyResearch of dummyResearches) {
+  //     const userCredit = await this.mongoUserFindService.getUserCredit(
+  //       req.user.userId,
+  //     );
+  //     const requiredCredit = CREDIT_PER_MINUTE * dummyResearch.estimatedTime;
+  //     const currentTime = getCurrentISOTime();
+
+  //     const research: Research = {
+  //       ...dummyResearch,
+  //       createdAt: currentTime,
+  //       pulledupAt: currentTime,
+  //     };
+
+  //     const creditHistory: CreditHistory = {
+  //       reason: dummyResearch.title,
+  //       type: "리서치 작성",
+  //       scale: -1 * requiredCredit,
+  //       balance: userCredit + -1 * requiredCredit,
+  //       createdAt: currentTime,
+  //     };
 
   //     const newResearch = await this.mongoResearchCreateService.createResearch({
-  //       research: {
-  //         ...research,
-  //         authorId,
-  //       },
+  //       research,
   //       files: {},
   //     });
 
-  //     await this.mongoUserUpdateService.uploadResearch(
-  //       req.user.userId,
-  //       newResearch._id,
-  //     );
+  //     await this.userUpdateService.uploadResearch({
+  //       userId: req.user.userId,
+  //       creditHistory,
+  //       researchId: newResearch._id,
+  //     });
   //   }
 
   //   return;

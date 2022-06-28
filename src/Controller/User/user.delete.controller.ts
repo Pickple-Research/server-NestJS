@@ -1,4 +1,4 @@
-import { Controller, Headers, Delete, Inject } from "@nestjs/common";
+import { Controller, Request, Headers, Delete, Inject } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { UserDeleteService } from "src/Service";
@@ -13,6 +13,8 @@ import {
   MONGODB_RESEARCH_CONNECTION,
   MONGODB_VOTE_CONNECTION,
 } from "src/Constant";
+import { JwtUserInfo } from "src/Object/Type";
+import { NotSelfRequestException } from "src/Exception";
 
 /**
  * User 데이터에 대한 delete method 요청들을 처리하는 Controller입니다.
@@ -44,8 +46,13 @@ export class UserDeleteController {
    * @author 현웅
    */
   @Delete("")
-  async deleteUserById(@Headers("user_id") userId: string) {
-    //TODO: ResearchUser, VoteUser 도 같이 삭제해야 함
+  async deleteUserById(
+    @Request() req: { user: JwtUserInfo },
+    @Headers("user_id") userId: string,
+  ) {
+    //* 다른 사람이 회원탈퇴를 요청하는 경우
+    if (req.user.userId !== userId) throw new NotSelfRequestException();
+
     const startUserSession = this.userConnection.startSession();
     const startResearchSession = this.researchConnection.startSession();
     const startVoteSession = this.voteConnection.startSession();
@@ -63,14 +70,17 @@ export class UserDeleteController {
         { userId },
         userSession,
       );
-      // const deleteResearchUser = this.mongoResearchDeleteService.deleteResearchUser({userId}, researchSession)
-      // const deleteVoteUser = this.mongoVoteDeleteService.deleteVoteUser({userId}, voteSession)
+      const deleteResearchUser =
+        this.mongoResearchDeleteService.deleteResearchUser(
+          { userId },
+          researchSession,
+        );
+      const deleteVoteUser = this.mongoVoteDeleteService.deleteVoteUser(
+        { userId },
+        voteSession,
+      );
 
-      await Promise.all([
-        deleteUser,
-        // deleteResearchUser,
-        // deleteVoteUser
-      ]);
+      await Promise.all([deleteUser, deleteResearchUser, deleteVoteUser]);
     }, [userSession, researchSession, voteSession]);
     return;
   }
