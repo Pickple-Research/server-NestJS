@@ -99,7 +99,7 @@ export class MongoVoteUpdateService {
   }
 
   /**
-   * 투표에 참여한 유저 정보를 추가하고 결과값을 증가시킵니다.
+   * 투표에 참여한 유저 정보를 추가하고 투표 참여자 값을 1 증가시킵니다.
    *
    * @see https://stackoverflow.com/questions/21035603/mongo-node-syntax-for-inc-when-number-is-associated-with-dynamic-field-name
    * @return 업데이트된 투표 정보
@@ -151,9 +151,7 @@ export class MongoVoteUpdateService {
   async closeVote(voteId: string, session?: ClientSession) {
     return await this.Vote.findByIdAndUpdate(
       voteId,
-      {
-        $set: { closed: true },
-      },
+      { $set: { closed: true } },
       { session, returnOriginal: false },
     )
       .populate({

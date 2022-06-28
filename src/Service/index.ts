@@ -32,4 +32,6 @@ export * from "./User/user.find.service";
 export * from "./User/user.update.service";
 
 // Vote
+export * from "./Vote/vote.delete.service";
 export * from "./Vote/vote.find.service";
+export * from "./Vote/vote.update.service";

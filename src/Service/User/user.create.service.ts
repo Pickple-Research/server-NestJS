@@ -27,7 +27,6 @@ export class UserCreateService {
     const checkEmailDuplicated = this.mongoUserFindService.checkEmailDuplicated(
       param.userInfo.email,
     );
-
     //* 새로운 미인증 유저 데이터를 생성합니다.
     //* 이미 존재하는 경우, 데이터를 업데이트 합니다.
     const createUnauthorizedUser =

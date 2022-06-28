@@ -5,7 +5,12 @@ import {
   VotePatchController,
   VoteDeleteController,
 } from "src/Controller";
-import { VoteFindService } from "src/Service";
+import {
+  UserUpdateService,
+  VoteFindService,
+  VoteDeleteService,
+  VoteUpdateService,
+} from "src/Service";
 import { MongoUserModule, MongoVoteModule } from "src/Mongo";
 
 @Module({
@@ -15,7 +20,12 @@ import { MongoUserModule, MongoVoteModule } from "src/Mongo";
     VotePatchController,
     VoteDeleteController,
   ],
-  providers: [VoteFindService],
+  providers: [
+    UserUpdateService,
+    VoteFindService,
+    VoteDeleteService,
+    VoteUpdateService,
+  ],
   imports: [MongoUserModule, MongoVoteModule],
 })
 export class VoteModule {}

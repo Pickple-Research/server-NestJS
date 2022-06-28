@@ -38,3 +38,4 @@ export * from "./Vote/voteParticipation.schema";
 export * from "./Vote/voteReply.schema";
 export * from "./Vote/voteReport.schema";
 export * from "./Vote/voteUser.schema";
+export * from "./Vote/Embedded";

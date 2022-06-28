@@ -8,26 +8,21 @@ import {
 } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import {
-  MongoUserFindService,
-  MongoUserUpdateService,
-  MongoVoteFindService,
-  MongoVoteUpdateService,
-} from "src/Mongo";
+import { UserUpdateService, VoteUpdateService } from "src/Service";
+import { MongoUserUpdateService, MongoVoteUpdateService } from "src/Mongo";
 import { ParticipatedVoteInfo } from "src/Schema/User/Embedded";
 import { VoteParticipantInfo } from "src/Schema/Vote/Embedded";
 import { VoteParticipateBodyDto } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
-import {
-  getCurrentISOTime,
-  tryTransaction,
-  tryMultiTransaction,
-} from "src/Util";
+import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import { MONGODB_USER_CONNECTION, MONGODB_VOTE_CONNECTION } from "src/Constant";
 
 @Controller("votes")
 export class VotePatchController {
   constructor(
+    private readonly userUpdateService: UserUpdateService,
+    private readonly voteUpdateService: VoteUpdateService,
+
     @InjectConnection(MONGODB_USER_CONNECTION)
     private readonly userConnection: Connection,
     @InjectConnection(MONGODB_VOTE_CONNECTION)
@@ -35,11 +30,7 @@ export class VotePatchController {
   ) {}
 
   @Inject()
-  private readonly mongoUserFindService: MongoUserFindService;
-  @Inject()
   private readonly mongoUserUpdateService: MongoUserUpdateService;
-  @Inject()
-  private readonly mongoVoteFindService: MongoVoteFindService;
   @Inject()
   private readonly mongoVoteUpdateService: MongoVoteUpdateService;
 
@@ -157,44 +148,28 @@ export class VotePatchController {
     };
 
     return await tryMultiTransaction(async () => {
-      //* 선택지 index가 유효한 범위 내에 있는지 확인
-      const checkIndexesValid = this.mongoVoteFindService.isOptionIndexesValid(
-        voteId,
-        body.selectedOptionIndexes,
-      );
-
-      //* 유저가 이미 투표에 참여했는지 확인
-      const checkAlreadyParticipated =
-        this.mongoUserFindService.didUserParticipatedVote(
-          req.user.userId,
+      const updateUser = this.userUpdateService.participateVote(
+        {
+          userId: req.user.userId,
           voteId,
-          true,
-        );
-
-      const updateUser = this.mongoUserUpdateService.participateVote(
-        req.user.userId,
-        participatedVoteInfo,
+          participatedVoteInfo,
+        },
         userSession,
       );
 
-      const updateVote = this.mongoVoteUpdateService.updateParticipant(
-        voteId,
-        voteParticipantInfo,
+      const updateVote = this.voteUpdateService.updateParticipant(
+        { voteId, voteParticipantInfo },
         voteSession,
       );
 
-      //* 위 네 개의 함수를 한꺼번에 실행.
-      //* 넷 중 하나라도 에러가 발생하면 모든 변경사항이 취소됨.
-      const updatedVote = await Promise.all([
-        checkIndexesValid,
-        checkAlreadyParticipated,
-        updateUser,
-        updateVote,
-      ]).then(([_, __, ___, updatedVote]) => {
-        //* 이 때, 업데이트 된 투표 정보는 따로 빼서 반환해줍니다.
-        //* (로컬에서 재활용합니다)
-        return updatedVote;
-      });
+      //* 위 두 개의 함수를 한꺼번에 실행.
+      const updatedVote = await Promise.all([updateUser, updateVote]).then(
+        ([_, updatedVote]) => {
+          //* 이 때, 업데이트 된 투표 정보는 따로 빼서 반환해줍니다.
+          //* (로컬에서 재활용합니다)
+          return updatedVote;
+        },
+      );
 
       return { participatedVoteInfo, updatedVote };
     }, [userSession, voteSession]);
@@ -203,7 +178,7 @@ export class VotePatchController {
   /**
    * @Transaction
    * 투표를 마감합니다.
-   * @return 업데이트된 투표 정보
+   * @return 마감된 투표 정보
    * @author 현웅
    */
   @Patch("close/:voteId")
@@ -213,21 +188,12 @@ export class VotePatchController {
   ) {
     const voteSession = await this.voteConnection.startSession();
 
-    return await tryTransaction(async () => {
-      //* 투표 마감을 요청한 유저가 투표 작성자인지 여부를 확인합니다.
-      const checkIsAuthor = this.mongoVoteFindService.isVoteAuthor({
-        userId: req.user.userId,
-        voteId,
-      });
-      //* 투표를 마감합니다.
-      const closeVote = this.mongoVoteUpdateService.closeVote(voteId);
-
-      const updatedVote = await Promise.all([checkIsAuthor, closeVote]).then(
-        ([_, updatedVote]) => {
-          return updatedVote;
-        },
+    return await tryMultiTransaction(async () => {
+      const updatedVote = await this.voteUpdateService.closeVote(
+        { userId: req.user.userId, voteId },
+        voteSession,
       );
       return updatedVote;
-    }, voteSession);
+    }, [voteSession]);
   }
 }

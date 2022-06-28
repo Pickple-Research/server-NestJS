@@ -39,8 +39,15 @@ export class VotePostController {
     @Request() req: { user: JwtUserInfo },
     @Body() body: VoteCreateBodyDto,
   ) {
-    const userSession = await this.userConnection.startSession();
-    const voteSession = await this.voteConnection.startSession();
+    const startUserSession = this.userConnection.startSession();
+    const startVoteSession = this.voteConnection.startSession();
+
+    const { userSession, voteSession } = await Promise.all([
+      startUserSession,
+      startVoteSession,
+    ]).then(([userSession, voteSession]) => {
+      return { userSession, voteSession };
+    });
 
     return await tryMultiTransaction(async () => {
       const newVote = await this.mongoVoteCreateService.createVote(

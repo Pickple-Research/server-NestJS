@@ -42,7 +42,7 @@ export class MongoResearchDeleteService {
     //* 리서치 기본 데이터를 삭제합니다.
     await this.Research.findByIdAndDelete(researchId, { session });
 
-    //* 리서치 참여자 정보를 삭제하며 가져옵니다.
+    //* 리서치 참여자 정보를 삭제하며 댓글 및 대댓글 정보를 모두 가져옵니다.
     const researchParticipation =
       await this.ResearchParticipation.findByIdAndDelete(researchId, {
         session,
