@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection, ClientSession } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, ClientSession } from "mongoose";
 import { AwsS3Service } from "src/AWS";
 import {
   Research,
@@ -12,7 +12,7 @@ import {
   ResearchReply,
   ResearchReplyDocument,
 } from "src/Schema";
-import { MONGODB_RESEARCH_CONNECTION, BUCKET_NAME } from "src/Constant";
+import { BUCKET_NAME } from "src/Constant";
 
 @Injectable()
 export class MongoResearchDeleteService {
@@ -27,9 +27,6 @@ export class MongoResearchDeleteService {
     private readonly ResearchReply: Model<ResearchReplyDocument>,
 
     private readonly awsS3Service: AwsS3Service,
-
-    @InjectConnection(MONGODB_RESEARCH_CONNECTION)
-    private readonly connection: Connection,
   ) {}
 
   /**
@@ -38,13 +35,16 @@ export class MongoResearchDeleteService {
    * @author 현웅
    */
   //TODO: AWS S3 오브젝트도 함께 지워야 합니다.
-  async deleteResearchById(researchId: string, session: ClientSession) {
+  async deleteResearchById(
+    param: { researchId: string },
+    session: ClientSession,
+  ) {
     //* 리서치 기본 데이터를 삭제합니다.
-    await this.Research.findByIdAndDelete(researchId, { session });
+    await this.Research.findByIdAndDelete(param.researchId, { session });
 
-    //* 리서치 참여자 정보를 삭제하며 가져옵니다.
+    //* 리서치 참여자 정보를 삭제하며 댓글 및 대댓글 정보를 모두 가져옵니다.
     const researchParticipation =
-      await this.ResearchParticipation.findByIdAndDelete(researchId, {
+      await this.ResearchParticipation.findByIdAndDelete(param.researchId, {
         session,
       })
         .select({ comments: 1 })

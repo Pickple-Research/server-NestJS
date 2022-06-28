@@ -5,7 +5,11 @@ import {
   MongoUserCreateService,
   MongoUserUpdateService,
 } from "src/Mongo";
-import { ParticipatedResearchInfo, CreditHistory } from "src/Schema";
+import {
+  CreditHistory,
+  ParticipatedResearchInfo,
+  ParticipatedVoteInfo,
+} from "src/Schema";
 
 @Injectable()
 export class UserUpdateService {
@@ -110,5 +114,37 @@ export class UserUpdateService {
     });
 
     return newCreditHistory;
+  }
+
+  /**
+   * @Transaction
+   * 투표에 참여합니다.
+   * 유저가 이미 투표에 참여했었는지 확인하고,
+   * 참여하지 않았다면 투표 참여정보를 UserVote에 추가합니다.
+   * @author 현웅
+   */
+  async participateVote(
+    param: {
+      userId: string;
+      voteId: string;
+      participatedVoteInfo: ParticipatedVoteInfo;
+    },
+    session: ClientSession,
+  ) {
+    //* 유저가 이미 투표에 참여했는지 확인
+    const checkAlreadyParticipated =
+      this.mongoUserFindService.didUserParticipatedVote({
+        userId: param.userId,
+        voteId: param.voteId,
+      });
+    //* UserVote 에 투표 참여 정보를 추가
+    const updateUserVote = this.mongoUserUpdateService.participateVote(
+      {
+        userId: param.userId,
+        participatedVoteInfo: param.participatedVoteInfo,
+      },
+      session,
+    );
+    await Promise.all([checkAlreadyParticipated, updateUserVote]);
   }
 }

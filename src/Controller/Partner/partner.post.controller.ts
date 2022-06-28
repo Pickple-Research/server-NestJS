@@ -12,24 +12,22 @@ export class PartnerPostController {
   constructor(private readonly partnerCreateService: PartnerCreateService) {}
 
   @Post("")
-  async uploadPartner(@Body() partnerCreateBodyDto: PartnerCreateBodyDto) {
-    return await this.partnerCreateService.uploadPartner(partnerCreateBodyDto);
+  async uploadPartner(@Body() body: PartnerCreateBodyDto) {
+    return await this.partnerCreateService.uploadPartner(body);
   }
 
   @Post("post")
-  async uploadPost(@Body() partnerPostCreateBodyDto: PartnerPostCreateBodyDto) {
+  async uploadPost(@Body() body: PartnerPostCreateBodyDto) {
     return await this.partnerCreateService.uploadPost({
-      ...partnerPostCreateBodyDto,
+      ...body,
       createdAt: getCurrentISOTime(),
     });
   }
 
   @Post("product")
-  async uploadProduct(
-    @Body() partnerProductCreateBodyDto: PartnerProductCreateBodyDto,
-  ) {
+  async uploadProduct(@Body() body: PartnerProductCreateBodyDto) {
     return await this.partnerCreateService.uploadProduct({
-      ...partnerProductCreateBodyDto,
+      ...body,
     });
   }
 }

@@ -13,7 +13,9 @@ export class UserFindService {
    * @author 현웅
    */
   async loginWithEmail(email: string, password: string) {
+    //* 이메일과 비밀번호가 유효한지 확인합니다.
     const authorize = this.mongoUserFindService.authorize(email, password);
+    //* 유저 정보를 받아옵니다.
     const getUserInfo = this.mongoUserFindService.getUserInfoByEmail(email);
 
     const userInfo = await Promise.all([authorize, getUserInfo]).then(

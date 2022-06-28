@@ -35,13 +35,13 @@ export class MongoResearchUpdateService {
    * 조회자 정보를 추가합니다.
    * @author 현웅
    */
-  async updateView(userId: string, researchId: string) {
-    const updateResearch = this.Research.findByIdAndUpdate(researchId, {
+  async updateView(param: { userId: string; researchId: string }) {
+    const updateResearch = this.Research.findByIdAndUpdate(param.researchId, {
       $inc: { viewsNum: 1 },
     });
     const updateParticipation = this.ResearchParticipation.findByIdAndUpdate(
-      researchId,
-      { $addToSet: { viewedUserIds: userId } },
+      param.researchId,
+      { $addToSet: { viewedUserIds: param.userId } },
     );
 
     await Promise.all([updateResearch, updateParticipation]);
@@ -53,9 +53,9 @@ export class MongoResearchUpdateService {
    * @return 업데이트된 리서치 정보
    * @author 현웅
    */
-  async updateScrap(userId: string, researchId: string) {
+  async updateScrap(param: { userId: string; researchId: string }) {
     const updateResearch = this.Research.findByIdAndUpdate(
-      researchId,
+      param.researchId,
       { $inc: { scrapsNum: 1 } },
       { returnOriginal: false },
     )
@@ -66,8 +66,8 @@ export class MongoResearchUpdateService {
       .lean();
 
     const updateParticipation = this.ResearchParticipation.findByIdAndUpdate(
-      researchId,
-      { $addToSet: { scrappedUserIds: userId } },
+      param.researchId,
+      { $addToSet: { scrappedUserIds: param.userId } },
     );
 
     const updatedResearch = await Promise.all([
@@ -84,9 +84,9 @@ export class MongoResearchUpdateService {
    * @return 업데이트된 리서치 정보
    * @author 현웅
    */
-  async updateUnscrap(userId: string, researchId: string) {
+  async updateUnscrap(param: { userId: string; researchId: string }) {
     const updateResearch = this.Research.findByIdAndUpdate(
-      researchId,
+      param.researchId,
       { $inc: { scrapsNum: -1 } },
       { returnOriginal: false },
     )
@@ -97,8 +97,8 @@ export class MongoResearchUpdateService {
       .lean();
 
     const updateParticipation = this.ResearchParticipation.findByIdAndUpdate(
-      researchId,
-      { $pull: { scrappedUserIds: userId } },
+      param.researchId,
+      { $pull: { scrappedUserIds: param.userId } },
     );
 
     const updatedResearch = await Promise.all([
@@ -117,12 +117,11 @@ export class MongoResearchUpdateService {
    * @author 현웅
    */
   async updateParticipant(
-    userInfo: ResearchParticipantInfo,
-    researchId: string,
+    param: { participantInfo: ResearchParticipantInfo; researchId: string },
     session?: ClientSession,
   ) {
     const updatedResearch = await this.Research.findByIdAndUpdate(
-      researchId,
+      param.researchId,
       { $inc: { participantsNum: 1 } },
       { session, returnOriginal: false },
     )
@@ -133,8 +132,8 @@ export class MongoResearchUpdateService {
       .lean();
 
     await this.ResearchParticipation.findByIdAndUpdate(
-      researchId,
-      { $push: { participantInfos: userInfo } },
+      param.researchId,
+      { $push: { participantInfos: param.participantInfo } },
       { session },
     );
 

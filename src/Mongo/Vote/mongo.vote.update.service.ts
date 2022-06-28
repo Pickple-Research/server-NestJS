@@ -25,13 +25,13 @@ export class MongoVoteUpdateService {
    * 투표 조회자 정보를 추가합니다.
    * @author 현웅
    */
-  async updateView(userId: string, voteId: string) {
-    const updateVote = this.Vote.findByIdAndUpdate(voteId, {
+  async updateView(param: { userId: string; voteId: string }) {
+    const updateVote = this.Vote.findByIdAndUpdate(param.voteId, {
       $inc: { viewsNum: 1 },
     });
     const updateParticipation = this.VoteParticipation.findByIdAndUpdate(
-      voteId,
-      { $addToSet: { viewedUserIds: userId } },
+      param.voteId,
+      { $addToSet: { viewedUserIds: param.userId } },
     );
 
     await Promise.all([updateVote, updateParticipation]);
@@ -43,9 +43,9 @@ export class MongoVoteUpdateService {
    * @return 업데이트 된 투표 정보
    * @author 현웅
    */
-  async updateScrap(userId: string, voteId: string) {
+  async updateScrap(param: { userId: string; voteId: string }) {
     const updateVote = this.Vote.findByIdAndUpdate(
-      voteId,
+      param.voteId,
       { $inc: { scrapsNum: 1 } },
       { returnOriginal: false },
     )
@@ -55,8 +55,8 @@ export class MongoVoteUpdateService {
       })
       .lean();
     const updateParticipation = this.VoteParticipation.findByIdAndUpdate(
-      voteId,
-      { $addToSet: { scrappedUserIds: userId } },
+      param.voteId,
+      { $addToSet: { scrappedUserIds: param.userId } },
     );
 
     const updatedVote = await Promise.all([
@@ -73,9 +73,9 @@ export class MongoVoteUpdateService {
    * @return 업데이트 된 투표 정보
    * @author 현웅
    */
-  async updateUnscrap(userId: string, voteId: string) {
+  async updateUnscrap(param: { userId: string; voteId: string }) {
     const updateVote = this.Vote.findByIdAndUpdate(
-      voteId,
+      param.voteId,
       { $inc: { scrapsNum: -1 } },
       { returnOriginal: false },
     )
@@ -85,8 +85,8 @@ export class MongoVoteUpdateService {
       })
       .lean();
     const updateParticipation = this.VoteParticipation.findByIdAndUpdate(
-      voteId,
-      { $pull: { scrappedUserIds: userId } },
+      param.voteId,
+      { $pull: { scrappedUserIds: param.userId } },
     );
 
     const updatedVote = await Promise.all([
@@ -99,15 +99,14 @@ export class MongoVoteUpdateService {
   }
 
   /**
-   * 투표에 참여한 유저 정보를 추가하고 결과값을 증가시킵니다.
+   * 투표에 참여한 유저 정보를 추가하고 투표 참여자 값을 1 증가시킵니다.
    *
    * @see https://stackoverflow.com/questions/21035603/mongo-node-syntax-for-inc-when-number-is-associated-with-dynamic-field-name
    * @return 업데이트된 투표 정보
    * @author 현웅
    */
   async updateParticipant(
-    voteId: string,
-    participantInfo: VoteParticipantInfo,
+    param: { voteId: string; participantInfo: VoteParticipantInfo },
     session?: ClientSession,
   ) {
     //* $inc 쿼리가 동적으로 생성되어야 하므로, 쿼리문 상수를 만듭니다
@@ -116,12 +115,12 @@ export class MongoVoteUpdateService {
     /**
      * { $inc: { result.0: 1, result.1: 1 ... }}
      */
-    participantInfo.selectedOptionIndexes.forEach((optionIndex) => {
+    param.participantInfo.selectedOptionIndexes.forEach((optionIndex) => {
       incQuery[`result.${optionIndex}`] = 1;
     });
 
     const updatedVote = await this.Vote.findByIdAndUpdate(
-      voteId,
+      param.voteId,
       { $inc: { participantsNum: 1, ...incQuery } },
       { session, returnOriginal: false },
     )
@@ -132,10 +131,8 @@ export class MongoVoteUpdateService {
       .lean();
 
     await this.VoteParticipation.findByIdAndUpdate(
-      voteId,
-      {
-        $addToSet: { participantInfos: participantInfo },
-      },
+      param.voteId,
+      { $addToSet: { participantInfos: param.participantInfo } },
       { session },
     );
 
@@ -148,12 +145,10 @@ export class MongoVoteUpdateService {
    * @return 업데이트된 투표 정보
    * @author 현웅
    */
-  async closeVote(voteId: string, session?: ClientSession) {
+  async closeVote(param: { voteId: string }, session?: ClientSession) {
     return await this.Vote.findByIdAndUpdate(
-      voteId,
-      {
-        $set: { closed: true },
-      },
+      param.voteId,
+      { $set: { closed: true } },
       { session, returnOriginal: false },
     )
       .populate({
