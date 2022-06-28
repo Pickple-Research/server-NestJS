@@ -72,11 +72,11 @@ export class MongoUserUpdateService {
    * 조회한 리서치 _id를 UserResearch 에 추가합니다.
    * @author 현웅
    */
-  async viewResearch(userId: string, researchId: string) {
-    await this.UserResearch.findOneAndUpdate(
-      { _id: userId },
+  async viewResearch(param: { userId: string; researchId: string }) {
+    await this.UserResearch.findByIdAndUpdate(
+      param.userId,
       //? $addToSet: 추가하려는 원소가 이미 존재하면 push하지 않습니다.
-      { $addToSet: { viewedResearchIds: researchId } },
+      { $addToSet: { viewedResearchIds: param.researchId } },
     );
     return;
   }
@@ -85,9 +85,11 @@ export class MongoUserUpdateService {
    * 리서치를 새로 스크랩합니다.
    * @author 현웅
    */
-  async scrapResearch(userId: string, researchId: string) {
-    await this.UserResearch.findByIdAndUpdate(userId, {
-      $push: { scrappedResearchIds: { $each: [researchId], $position: 0 } },
+  async scrapResearch(param: { userId: string; researchId: string }) {
+    await this.UserResearch.findByIdAndUpdate(param.userId, {
+      $push: {
+        scrappedResearchIds: { $each: [param.researchId], $position: 0 },
+      },
     });
     return;
   }
@@ -96,9 +98,9 @@ export class MongoUserUpdateService {
    * 스크랩한 리서치를 제거합니다.
    * @author 현웅
    */
-  async unscrapResearch(userId: string, researchId: string) {
-    await this.UserResearch.findByIdAndUpdate(userId, {
-      $pull: { scrappedResearchIds: researchId },
+  async unscrapResearch(param: { userId: string; researchId: string }) {
+    await this.UserResearch.findByIdAndUpdate(param.userId, {
+      $pull: { scrappedResearchIds: param.researchId },
     });
     return;
   }
@@ -174,11 +176,11 @@ export class MongoUserUpdateService {
    * 조회한 투표 _id를 UserVote 에 추가합니다.
    * @author 현웅
    */
-  async viewVote(userId: string, voteId: string) {
-    await this.UserVote.findOneAndUpdate(
-      { _id: userId },
+  async viewVote(param: { userId: string; voteId: string }) {
+    await this.UserVote.findByIdAndUpdate(
+      param.userId,
       //? $addToSet: 추가하려는 원소가 이미 존재하면 push하지 않습니다.
-      { $addToSet: { viewedVoteIds: voteId } },
+      { $addToSet: { viewedVoteIds: param.voteId } },
     );
     return;
   }
@@ -187,9 +189,9 @@ export class MongoUserUpdateService {
    * 투표를 새로 스크랩합니다.
    * @author 현웅
    */
-  async scrapVote(userId: string, voteId: string) {
-    await this.UserVote.findByIdAndUpdate(userId, {
-      $push: { scrappedVoteIds: { $each: [voteId], $position: 0 } },
+  async scrapVote(param: { userId: string; voteId: string }) {
+    await this.UserVote.findByIdAndUpdate(param.userId, {
+      $push: { scrappedVoteIds: { $each: [param.voteId], $position: 0 } },
     });
     return;
   }
@@ -198,9 +200,9 @@ export class MongoUserUpdateService {
    * 스크랩한 투표를 제거합니다.
    * @author 현웅
    */
-  async unscrapVote(userId: string, voteId: string) {
-    await this.UserVote.findByIdAndUpdate(userId, {
-      $pull: { scrappedVoteIds: voteId },
+  async unscrapVote(param: { userId: string; voteId: string }) {
+    await this.UserVote.findByIdAndUpdate(param.userId, {
+      $pull: { scrappedVoteIds: param.voteId },
     });
     return;
   }
@@ -211,16 +213,15 @@ export class MongoUserUpdateService {
    * @author 현웅
    */
   async participateVote(
-    userId: string,
-    participatedVoteInfo: ParticipatedVoteInfo,
+    param: { userId: string; participatedVoteInfo: ParticipatedVoteInfo },
     session: ClientSession,
   ) {
     await this.UserVote.findByIdAndUpdate(
-      userId,
+      param.userId,
       {
         $push: {
           participatedVoteInfos: {
-            $each: [participatedVoteInfo],
+            $each: [param.participatedVoteInfo],
             $position: 0,
           },
         },

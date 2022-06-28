@@ -48,7 +48,7 @@ export class VoteDeleteController {
         voteSession,
       );
 
-      //* 위 세 개 작업을 동시에 수행합니다.
+      //* 위 두 개 작업을 동시에 수행합니다.
       await Promise.all([updateUserVote, deleteVote]);
     }, [userSession, voteSession]);
     return;

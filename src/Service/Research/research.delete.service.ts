@@ -31,7 +31,7 @@ export class ResearchDeleteService {
 
     //* 리서치와 관련된 모든 정보를 삭제합니다.
     const deleteResearch = this.mongoResearchDeleteService.deleteResearchById(
-      param.researchId,
+      { researchId: param.researchId },
       session,
     );
 

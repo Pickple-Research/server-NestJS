@@ -261,35 +261,28 @@ export class MongoUserFindService {
 
   /**
    * 유저가 투표에 참여한 적이 있는지 확인합니다.
+   * 참여한 적이 있는 경우, 에러를 발생시킵니다.
    * @author 현웅
    */
-  async didUserParticipatedVote(
-    userId: string,
-    voteId: string,
-    handleAsException: boolean = false,
-  ) {
+  async didUserParticipatedVote(param: { userId: string; voteId: string }) {
     const userVote = await this.UserVote.findOne({
-      _id: userId,
+      _id: param.userId,
     })
       .select({ participatedVoteInfos: 1 })
       .lean();
 
     //* 유저 정보가 존재하지 않는 경우
-    if (!userVote) {
-      if (handleAsException) throw new UserNotFoundException();
-      return true;
-    }
+    if (!userVote) throw new UserNotFoundException();
 
     //* 참여한 투표 정보 목록에 voteId를 포함한 데이터가 있는 경우
     if (
       userVote.participatedVoteInfos.some((voteInfo) => {
-        return voteInfo.voteId === voteId;
+        return voteInfo.voteId === param.voteId;
       })
     ) {
-      if (handleAsException) throw new AlreadyParticipatedVoteException();
-      return true;
+      throw new AlreadyParticipatedVoteException();
     }
 
-    return false;
+    return;
   }
 }

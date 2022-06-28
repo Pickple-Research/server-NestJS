@@ -8,9 +8,8 @@ import {
 } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { UserUpdateService, ResearchUpdateService } from "src/Service";
+import { UserUpdateService } from "src/Service";
 import {
-  MongoUserCreateService,
   MongoUserFindService,
   MongoUserUpdateService,
   MongoResearchFindService,
@@ -42,7 +41,6 @@ export class ResearchPatchController {
     private readonly researchConnection: Connection,
   ) {}
 
-  @Inject() private readonly mongoUserCreateService: MongoUserCreateService;
   @Inject() private readonly mongoUserFindService: MongoUserFindService;
   @Inject() private readonly mongoUserUpdateService: MongoUserUpdateService;
   @Inject()
@@ -59,14 +57,14 @@ export class ResearchPatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
   ) {
-    const updateUser = this.mongoUserUpdateService.viewResearch(
-      req.user.userId,
-      param.researchId,
-    );
-    const updateResearch = this.mongoResearchUpdateService.updateView(
-      req.user.userId,
-      param.researchId,
-    );
+    const updateUser = this.mongoUserUpdateService.viewResearch({
+      userId: req.user.userId,
+      researchId: param.researchId,
+    });
+    const updateResearch = this.mongoResearchUpdateService.updateView({
+      userId: req.user.userId,
+      researchId: param.researchId,
+    });
     await Promise.all([updateUser, updateResearch]);
     return;
   }
@@ -81,14 +79,14 @@ export class ResearchPatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
   ) {
-    const updateUser = this.mongoUserUpdateService.scrapResearch(
-      req.user.userId,
-      param.researchId,
-    );
-    const updateResearch = this.mongoResearchUpdateService.updateScrap(
-      req.user.userId,
-      param.researchId,
-    );
+    const updateUser = this.mongoUserUpdateService.scrapResearch({
+      userId: req.user.userId,
+      researchId: param.researchId,
+    });
+    const updateResearch = this.mongoResearchUpdateService.updateScrap({
+      userId: req.user.userId,
+      researchId: param.researchId,
+    });
 
     const updatedResearch = await Promise.all([
       updateUser,
@@ -109,14 +107,14 @@ export class ResearchPatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
   ) {
-    const updateUser = this.mongoUserUpdateService.unscrapResearch(
-      req.user.userId,
-      param.researchId,
-    );
-    const updateResearch = this.mongoResearchUpdateService.updateUnscrap(
-      req.user.userId,
-      param.researchId,
-    );
+    const updateUser = this.mongoUserUpdateService.unscrapResearch({
+      userId: req.user.userId,
+      researchId: param.researchId,
+    });
+    const updateResearch = this.mongoResearchUpdateService.updateUnscrap({
+      userId: req.user.userId,
+      researchId: param.researchId,
+    });
 
     const updatedResearch = await Promise.all([
       updateUser,
@@ -202,8 +200,10 @@ export class ResearchPatchController {
 
       //* ResearchParticipation 에 참여자 정보 추가
       const updateResearch = this.mongoResearchUpdateService.updateParticipant(
-        researchParticipationInfo,
-        param.researchId,
+        {
+          participantInfo: researchParticipationInfo,
+          researchId: param.researchId,
+        },
         researchSession,
       );
 

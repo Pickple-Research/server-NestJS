@@ -133,15 +133,16 @@ export class UserUpdateService {
   ) {
     //* 유저가 이미 투표에 참여했는지 확인
     const checkAlreadyParticipated =
-      this.mongoUserFindService.didUserParticipatedVote(
-        param.userId,
-        param.voteId,
-        true,
-      );
+      this.mongoUserFindService.didUserParticipatedVote({
+        userId: param.userId,
+        voteId: param.voteId,
+      });
     //* UserVote 에 투표 참여 정보를 추가
     const updateUserVote = this.mongoUserUpdateService.participateVote(
-      param.userId,
-      param.participatedVoteInfo,
+      {
+        userId: param.userId,
+        participatedVoteInfo: param.participatedVoteInfo,
+      },
       session,
     );
     await Promise.all([checkAlreadyParticipated, updateUserVote]);

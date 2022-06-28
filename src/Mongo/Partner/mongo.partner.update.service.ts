@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection, ClientSession } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, ClientSession } from "mongoose";
 import {
   PartnerPost,
   PartnerPostDocument,
@@ -9,8 +9,6 @@ import {
   PartnerActivity,
   PartnerActivityDocument,
 } from "src/Schema";
-import { tryTransaction } from "src/Util";
-import { MONGODB_PARTNER_CONNECTION } from "src/Constant";
 
 @Injectable()
 export class MongoPartnerUpdateService {
@@ -21,9 +19,6 @@ export class MongoPartnerUpdateService {
     private readonly PartnerProduct: Model<PartnerProductDocument>,
     @InjectModel(PartnerActivity.name)
     private readonly PartnerActivity: Model<PartnerActivityDocument>,
-
-    @InjectConnection(MONGODB_PARTNER_CONNECTION)
-    private readonly connection: Connection,
   ) {}
 
   async updateProduct() {}
@@ -36,15 +31,12 @@ export class MongoPartnerUpdateService {
    * @author 현웅
    */
   async updateFollower(
-    userId: string,
-    partnerId: string,
+    param: { userId: string; partnerId: string },
     session?: ClientSession,
   ) {
     await this.PartnerActivity.findByIdAndUpdate(
-      partnerId,
-      {
-        $addToSet: { followerIds: { $each: [userId], $position: 0 } },
-      },
+      param.partnerId,
+      { $addToSet: { followerIds: { $each: [param.userId], $position: 0 } } },
       { session },
     );
     return;
@@ -56,15 +48,12 @@ export class MongoPartnerUpdateService {
    * @author 현웅
    */
   async updateUnfollower(
-    userId: string,
-    partnerId: string,
+    param: { userId: string; partnerId: string },
     session?: ClientSession,
   ) {
     await this.PartnerActivity.findByIdAndUpdate(
-      partnerId,
-      {
-        $pull: { followerIds: userId },
-      },
+      param.partnerId,
+      { $pull: { followerIds: param.userId } },
       { session },
     );
     return;

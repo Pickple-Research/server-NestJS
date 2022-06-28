@@ -32,8 +32,7 @@ export class VoteUpdateService {
     //* 투표 참여자 정보를 VoteParticipation 에 추가하고
     //* 참여자 수를 1 증가시킵니다.
     const updateParticipant = this.mongoVoteUpdateService.updateParticipant(
-      param.voteId,
-      param.voteParticipantInfo,
+      { voteId: param.voteId, participantInfo: param.voteParticipantInfo },
       session,
     );
 
@@ -63,7 +62,7 @@ export class VoteUpdateService {
     });
     //* 투표를 마감합니다.
     const closeVote = this.mongoVoteUpdateService.closeVote(
-      param.voteId,
+      { voteId: param.voteId },
       session,
     );
 

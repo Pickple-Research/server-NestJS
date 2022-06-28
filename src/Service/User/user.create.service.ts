@@ -57,9 +57,7 @@ export class UserCreateService {
 
     //* 이메일 인증이 완료되어 있는지 확인합니다.
     const checkEmailAuthorized = this.mongoUserFindService.checkEmailAuthorized(
-      {
-        email: param.user.email,
-      },
+      { email: param.user.email },
     );
 
     //* 기존의 미인증 유저 데이터를 삭제합니다.

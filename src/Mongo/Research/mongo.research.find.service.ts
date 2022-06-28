@@ -13,10 +13,7 @@ import {
   ResearchUser,
   ResearchUserDocument,
 } from "src/Schema";
-import {
-  NotResearchAuthorException,
-  ResearchNotFoundException,
-} from "src/Exception";
+import { NotResearchAuthorException } from "src/Exception";
 
 @Injectable()
 export class MongoResearchFindService {

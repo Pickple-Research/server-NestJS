@@ -59,8 +59,7 @@ export class PartnerPatchController {
         userSession,
       );
       const updatePartner = this.mongoPartnerUpdateService.updateFollower(
-        req.user.userId,
-        partnerId,
+        { userId: req.user.userId, partnerId },
         partnerSession,
       );
       //* Promise.all 을 이용해 두 작업을 동시에 수행합니다.
@@ -96,8 +95,7 @@ export class PartnerPatchController {
         userSession,
       );
       const updatePartner = this.mongoPartnerUpdateService.updateUnfollower(
-        req.user.userId,
-        partnerId,
+        { userId: req.user.userId, partnerId },
         partnerSession,
       );
       //* Promise.all 을 이용해 두 작업을 동시에 수행합니다.

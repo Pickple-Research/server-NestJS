@@ -43,14 +43,14 @@ export class VotePatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { voteId: string },
   ) {
-    const updateUser = this.mongoUserUpdateService.viewVote(
-      req.user.userId,
-      param.voteId,
-    );
-    const updateVote = this.mongoVoteUpdateService.updateView(
-      req.user.userId,
-      param.voteId,
-    );
+    const updateUser = this.mongoUserUpdateService.viewVote({
+      userId: req.user.userId,
+      voteId: param.voteId,
+    });
+    const updateVote = this.mongoVoteUpdateService.updateView({
+      userId: req.user.userId,
+      voteId: param.voteId,
+    });
     await Promise.all([updateUser, updateVote]);
     return;
   }
@@ -65,14 +65,14 @@ export class VotePatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { voteId: string },
   ) {
-    const updateUser = this.mongoUserUpdateService.scrapVote(
-      req.user.userId,
-      param.voteId,
-    );
-    const updateVote = this.mongoVoteUpdateService.updateScrap(
-      req.user.userId,
-      param.voteId,
-    );
+    const updateUser = this.mongoUserUpdateService.scrapVote({
+      userId: req.user.userId,
+      voteId: param.voteId,
+    });
+    const updateVote = this.mongoVoteUpdateService.updateScrap({
+      userId: req.user.userId,
+      voteId: param.voteId,
+    });
 
     const updatedVote = await Promise.all([updateUser, updateVote]).then(
       ([_, updatedVote]) => {
@@ -92,14 +92,14 @@ export class VotePatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { voteId: string },
   ) {
-    const updateUser = this.mongoUserUpdateService.unscrapVote(
-      req.user.userId,
-      param.voteId,
-    );
-    const updateVote = this.mongoVoteUpdateService.updateUnscrap(
-      req.user.userId,
-      param.voteId,
-    );
+    const updateUser = this.mongoUserUpdateService.unscrapVote({
+      userId: req.user.userId,
+      voteId: param.voteId,
+    });
+    const updateVote = this.mongoVoteUpdateService.updateUnscrap({
+      userId: req.user.userId,
+      voteId: param.voteId,
+    });
 
     const updatedVote = await Promise.all([updateUser, updateVote]).then(
       ([_, updatedVote]) => {
