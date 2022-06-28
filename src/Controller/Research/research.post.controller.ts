@@ -86,8 +86,15 @@ export class ResearchPostController {
     };
 
     //* User DB, Research DB 세션을 시작합니다.
-    const userSession = await this.userConnection.startSession();
-    const researchSession = await this.researchConnection.startSession();
+    const startUserSession = this.userConnection.startSession();
+    const startResearchSession = this.researchConnection.startSession();
+
+    const { userSession, researchSession } = await Promise.all([
+      startUserSession,
+      startResearchSession,
+    ]).then(([userSession, researchSession]) => {
+      return { userSession, researchSession };
+    });
 
     return await tryMultiTransaction(async () => {
       //* 먼저 리서치를 만듭니다

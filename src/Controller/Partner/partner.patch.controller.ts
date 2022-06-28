@@ -43,14 +43,22 @@ export class PartnerPatchController {
     @Param("partnerId") partnerId: string,
   ) {
     //* User DB, Partner DB에 대한 Session을 시작하고
-    const userSession = await this.userConnection.startSession();
-    const partnerSession = await this.partnerConnection.startSession();
+    const startUserSession = this.userConnection.startSession();
+    const startPartnerSession = this.partnerConnection.startSession();
+
+    const { userSession, partnerSession } = await Promise.all([
+      startUserSession,
+      startPartnerSession,
+    ]).then(([userSession, partnerSession]) => {
+      return { userSession, partnerSession };
+    });
+
     return await tryMultiTransaction(async () => {
-      const updateUser = await this.mongoUserUpdateService.followPartner(
+      const updateUser = this.mongoUserUpdateService.followPartner(
         { userId: req.user.userId, partnerId: partnerId },
         userSession,
       );
-      const updatePartner = await this.mongoPartnerUpdateService.updateFollower(
+      const updatePartner = this.mongoPartnerUpdateService.updateFollower(
         req.user.userId,
         partnerId,
         partnerSession,
@@ -72,19 +80,26 @@ export class PartnerPatchController {
     @Param("partnerId") partnerId: string,
   ) {
     //* User DB, Partner DB에 대한 Session을 시작하고
-    const userSession = await this.userConnection.startSession();
-    const partnerSession = await this.partnerConnection.startSession();
+    const startUserSession = this.userConnection.startSession();
+    const startPartnerSession = this.partnerConnection.startSession();
+
+    const { userSession, partnerSession } = await Promise.all([
+      startUserSession,
+      startPartnerSession,
+    ]).then(([userSession, partnerSession]) => {
+      return { userSession, partnerSession };
+    });
+
     return await tryMultiTransaction(async () => {
-      const updateUser = await this.mongoUserUpdateService.unfollowPartner(
+      const updateUser = this.mongoUserUpdateService.unfollowPartner(
         { userId: req.user.userId, partnerId },
         userSession,
       );
-      const updatePartner =
-        await this.mongoPartnerUpdateService.updateUnfollower(
-          req.user.userId,
-          partnerId,
-          partnerSession,
-        );
+      const updatePartner = this.mongoPartnerUpdateService.updateUnfollower(
+        req.user.userId,
+        partnerId,
+        partnerSession,
+      );
       //* Promise.all 을 이용해 두 작업을 동시에 수행합니다.
       await Promise.all([updateUser, updatePartner]);
       return;

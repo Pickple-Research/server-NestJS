@@ -84,9 +84,21 @@ export class UserPostController {
   @Public()
   @Post("email")
   async createEmailUser(@Body() body: EmailUserSignupBodyDto) {
-    const userSession = await this.userConnection.startSession();
-    const researchSession = await this.researchConnection.startSession();
-    const voteSession = await this.voteConnection.startSession();
+    const startUserSession = this.userConnection.startSession();
+    const startResearchSession = this.researchConnection.startSession();
+    const startVoteSession = this.voteConnection.startSession();
+
+    const { userSession, researchSession, voteSession } = await Promise.all([
+      startUserSession,
+      startResearchSession,
+      startVoteSession,
+    ]).then(([userSession, researchSession, voteSession]) => {
+      return {
+        userSession,
+        researchSession,
+        voteSession,
+      };
+    });
 
     const salt = getSalt();
     const hashedPassword = getKeccak512Hash(
@@ -113,12 +125,12 @@ export class UserPostController {
 
       //* 새로 만들어진 유저 정보를 바탕으로 ResearchUser 를 생성합니다.
       const createResearchUser =
-        await this.mongoResearchCreateService.createResearchUser(
+        this.mongoResearchCreateService.createResearchUser(
           { user: newUser },
           researchSession,
         );
       //* 새로 만들어진 유저 정보를 바탕으로 VoteUser 를 생성합니다.
-      const createVoteUser = await this.mongoVoteCreateService.createVoteUser(
+      const createVoteUser = this.mongoVoteCreateService.createVoteUser(
         { user: newUser },
         voteSession,
       );

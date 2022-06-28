@@ -24,17 +24,16 @@ export class ResearchDeleteService {
     session: ClientSession,
   ) {
     //* 리서치 삭제를 요청한 유저가 리서치 작성자인지 여부를 확인합니다.
-    const checkIsAuthor = await this.mongoResearchFindService.isResearchAuthor({
+    const checkIsAuthor = this.mongoResearchFindService.isResearchAuthor({
       userId: param.userId,
       researchId: param.researchId,
     });
 
     //* 리서치와 관련된 모든 정보를 삭제합니다.
-    const deleteResearch =
-      await this.mongoResearchDeleteService.deleteResearchById(
-        param.researchId,
-        session,
-      );
+    const deleteResearch = this.mongoResearchDeleteService.deleteResearchById(
+      param.researchId,
+      session,
+    );
 
     await Promise.all([checkIsAuthor, deleteResearch]);
     return;

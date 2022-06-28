@@ -34,7 +34,7 @@ export class UserUpdateService {
   ) {
     //* 유저가 이미 리서치에 참여했었는지 확인
     const checkAlreadyParticipated =
-      await this.mongoUserFindService.didUserParticipatedResearch({
+      this.mongoUserFindService.didUserParticipatedResearch({
         userId: param.userId,
         researchId: param.participatedResearchInfo.researchId,
       });
@@ -81,7 +81,7 @@ export class UserUpdateService {
   ) {
     //* 유저가 리서치를 업로드하기에 충분한 크레딧을 가지고 있는지 확인
     const checkEnoughCredit =
-      await this.mongoUserFindService.checkUserHasEnoughCredit({
+      this.mongoUserFindService.checkUserHasEnoughCredit({
         userId: param.userId,
         credit: -1 * param.creditHistory.scale,
       });

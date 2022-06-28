@@ -28,25 +28,31 @@ export class VoteDeleteController {
     @Request() req: { user: JwtUserInfo },
     @Headers("vote_id") voteId: string,
   ) {
-    const userSession = await this.userConnection.startSession();
-    const voteSession = await this.voteConnection.startSession();
+    const startUserSession = this.userConnection.startSession();
+    const startVoteSession = this.voteConnection.startSession();
+
+    const { userSession, voteSession } = await Promise.all([
+      startUserSession,
+      startVoteSession,
+    ]).then(([userSession, voteSession]) => {
+      return { userSession, voteSession };
+    });
 
     await tryMultiTransaction(async () => {
       //* 투표 삭제를 요청한 유저가 투표 작성자인지 여부를 확인합니다.
-      const checkIsAuthor = await this.mongoVoteFindService.isVoteAuthor({
+      const checkIsAuthor = this.mongoVoteFindService.isVoteAuthor({
         userId: req.user.userId,
         voteId,
       });
 
       //* 유저 투표 정보 중 업로드한 투표 _id 를 제거합니다.
-      const updateUserVote =
-        await this.mongoUserUpdateService.deleteUploadedVote(
-          { userId: req.user.userId, voteId },
-          userSession,
-        );
+      const updateUserVote = this.mongoUserUpdateService.deleteUploadedVote(
+        { userId: req.user.userId, voteId },
+        userSession,
+      );
 
       //* 투표와 관련된 모든 정보를 삭제합니다.
-      const deleteVote = await this.mongoVoteDeleteService.deleteVoteById(
+      const deleteVote = this.mongoVoteDeleteService.deleteVoteById(
         { voteId },
         voteSession,
       );

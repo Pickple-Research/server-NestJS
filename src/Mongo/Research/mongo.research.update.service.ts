@@ -36,13 +36,13 @@ export class MongoResearchUpdateService {
    * @author 현웅
    */
   async updateView(userId: string, researchId: string) {
-    const updateResearch = await this.Research.findByIdAndUpdate(researchId, {
+    const updateResearch = this.Research.findByIdAndUpdate(researchId, {
       $inc: { viewsNum: 1 },
     });
-    const updateParticipation =
-      await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-        $addToSet: { viewedUserIds: userId },
-      });
+    const updateParticipation = this.ResearchParticipation.findByIdAndUpdate(
+      researchId,
+      { $addToSet: { viewedUserIds: userId } },
+    );
 
     await Promise.all([updateResearch, updateParticipation]);
     return;
@@ -54,11 +54,9 @@ export class MongoResearchUpdateService {
    * @author 현웅
    */
   async updateScrap(userId: string, researchId: string) {
-    const updateResearch = await this.Research.findByIdAndUpdate(
+    const updateResearch = this.Research.findByIdAndUpdate(
       researchId,
-      {
-        $inc: { scrapsNum: 1 },
-      },
+      { $inc: { scrapsNum: 1 } },
       { returnOriginal: false },
     )
       .populate({
@@ -67,10 +65,10 @@ export class MongoResearchUpdateService {
       })
       .lean();
 
-    const updateParticipation =
-      await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-        $addToSet: { scrappedUserIds: userId },
-      });
+    const updateParticipation = this.ResearchParticipation.findByIdAndUpdate(
+      researchId,
+      { $addToSet: { scrappedUserIds: userId } },
+    );
 
     const updatedResearch = await Promise.all([
       updateResearch,
@@ -87,11 +85,9 @@ export class MongoResearchUpdateService {
    * @author 현웅
    */
   async updateUnscrap(userId: string, researchId: string) {
-    const updateResearch = await this.Research.findByIdAndUpdate(
+    const updateResearch = this.Research.findByIdAndUpdate(
       researchId,
-      {
-        $inc: { scrapsNum: -1 },
-      },
+      { $inc: { scrapsNum: -1 } },
       { returnOriginal: false },
     )
       .populate({
@@ -100,10 +96,10 @@ export class MongoResearchUpdateService {
       })
       .lean();
 
-    const updateParticipation =
-      await this.ResearchParticipation.findByIdAndUpdate(researchId, {
-        $pull: { scrappedUserIds: userId },
-      });
+    const updateParticipation = this.ResearchParticipation.findByIdAndUpdate(
+      researchId,
+      { $pull: { scrappedUserIds: userId } },
+    );
 
     const updatedResearch = await Promise.all([
       updateResearch,

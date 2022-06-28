@@ -52,11 +52,11 @@ export class VotePatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { voteId: string },
   ) {
-    const updateUser = await this.mongoUserUpdateService.viewVote(
+    const updateUser = this.mongoUserUpdateService.viewVote(
       req.user.userId,
       param.voteId,
     );
-    const updateVote = await this.mongoVoteUpdateService.updateView(
+    const updateVote = this.mongoVoteUpdateService.updateView(
       req.user.userId,
       param.voteId,
     );
@@ -74,11 +74,11 @@ export class VotePatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { voteId: string },
   ) {
-    const updateUser = await this.mongoUserUpdateService.scrapVote(
+    const updateUser = this.mongoUserUpdateService.scrapVote(
       req.user.userId,
       param.voteId,
     );
-    const updateVote = await this.mongoVoteUpdateService.updateScrap(
+    const updateVote = this.mongoVoteUpdateService.updateScrap(
       req.user.userId,
       param.voteId,
     );
@@ -101,11 +101,11 @@ export class VotePatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { voteId: string },
   ) {
-    const updateUser = await this.mongoUserUpdateService.unscrapVote(
+    const updateUser = this.mongoUserUpdateService.unscrapVote(
       req.user.userId,
       param.voteId,
     );
-    const updateVote = await this.mongoVoteUpdateService.updateUnscrap(
+    const updateVote = this.mongoVoteUpdateService.updateUnscrap(
       req.user.userId,
       param.voteId,
     );
@@ -130,47 +130,54 @@ export class VotePatchController {
     @Param("voteId") voteId: string,
     @Body() body: VoteParticipateBodyDto,
   ) {
-    const currentISOTime = getCurrentISOTime();
-    const userSession = await this.userConnection.startSession();
-    const voteSession = await this.voteConnection.startSession();
+    const startUserSession = this.userConnection.startSession();
+    const startVoteSession = this.voteConnection.startSession();
+
+    const { userSession, voteSession } = await Promise.all([
+      startUserSession,
+      startVoteSession,
+    ]).then(([userSession, voteSession]) => {
+      return { userSession, voteSession };
+    });
+
+    const currentTime = getCurrentISOTime();
+
+    //* 유저의 투표 참여 정보
+    const participatedVoteInfo: ParticipatedVoteInfo = {
+      voteId,
+      selectedOptionIndexes: body.selectedOptionIndexes,
+      participatedAt: currentTime,
+    };
+
+    //* 투표의 참여 정보
+    const voteParticipantInfo: VoteParticipantInfo = {
+      userId: req.user.userId,
+      selectedOptionIndexes: body.selectedOptionIndexes,
+      participatedAt: currentTime,
+    };
 
     return await tryMultiTransaction(async () => {
       //* 선택지 index가 유효한 범위 내에 있는지 확인
-      const checkIndexesValid =
-        await this.mongoVoteFindService.isOptionIndexesValid(
-          voteId,
-          body.selectedOptionIndexes,
-        );
+      const checkIndexesValid = this.mongoVoteFindService.isOptionIndexesValid(
+        voteId,
+        body.selectedOptionIndexes,
+      );
 
       //* 유저가 이미 투표에 참여했는지 확인
       const checkAlreadyParticipated =
-        await this.mongoUserFindService.didUserParticipatedVote(
+        this.mongoUserFindService.didUserParticipatedVote(
           req.user.userId,
           voteId,
           true,
         );
 
-      //* 유저의 투표 참여 정보를 업데이트
-      const participatedVoteInfo: ParticipatedVoteInfo = {
-        voteId,
-        selectedOptionIndexes: body.selectedOptionIndexes,
-        participatedAt: currentISOTime,
-      };
-
-      const updateUser = await this.mongoUserUpdateService.participateVote(
+      const updateUser = this.mongoUserUpdateService.participateVote(
         req.user.userId,
         participatedVoteInfo,
         userSession,
       );
 
-      //* 투표의 참여 정보를 업데이트
-      const voteParticipantInfo: VoteParticipantInfo = {
-        userId: req.user.userId,
-        selectedOptionIndexes: body.selectedOptionIndexes,
-        participatedAt: currentISOTime,
-      };
-
-      const updateVote = await this.mongoVoteUpdateService.updateParticipant(
+      const updateVote = this.mongoVoteUpdateService.updateParticipant(
         voteId,
         voteParticipantInfo,
         voteSession,
@@ -208,12 +215,12 @@ export class VotePatchController {
 
     return await tryTransaction(async () => {
       //* 투표 마감을 요청한 유저가 투표 작성자인지 여부를 확인합니다.
-      const checkIsAuthor = await this.mongoVoteFindService.isVoteAuthor({
+      const checkIsAuthor = this.mongoVoteFindService.isVoteAuthor({
         userId: req.user.userId,
         voteId,
       });
       //* 투표를 마감합니다.
-      const closeVote = await this.mongoVoteUpdateService.closeVote(voteId);
+      const closeVote = this.mongoVoteUpdateService.closeVote(voteId);
 
       const updatedVote = await Promise.all([checkIsAuthor, closeVote]).then(
         ([_, updatedVote]) => {

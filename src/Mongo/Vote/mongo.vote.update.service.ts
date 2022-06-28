@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection, ClientSession } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, ClientSession } from "mongoose";
 import {
   Vote,
   VoteDocument,
@@ -9,7 +9,6 @@ import {
   VoteUser,
   VoteUserDocument,
 } from "src/Schema";
-import { MONGODB_VOTE_CONNECTION } from "src/Constant";
 import { VoteParticipantInfo } from "src/Schema/Vote/Embedded";
 
 @Injectable()
@@ -20,24 +19,19 @@ export class MongoVoteUpdateService {
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
     @InjectModel(VoteUser.name)
     private readonly VoteUser: Model<VoteUserDocument>,
-
-    @InjectConnection(MONGODB_VOTE_CONNECTION)
-    private readonly connection: Connection,
   ) {}
 
   /**
-   * 조회자 정보를 추가합니다.
+   * 투표 조회자 정보를 추가합니다.
    * @author 현웅
    */
   async updateView(userId: string, voteId: string) {
-    const updateVote = await this.Vote.findByIdAndUpdate(voteId, {
+    const updateVote = this.Vote.findByIdAndUpdate(voteId, {
       $inc: { viewsNum: 1 },
     });
-    const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
+    const updateParticipation = this.VoteParticipation.findByIdAndUpdate(
       voteId,
-      {
-        $addToSet: { viewedUserIds: userId },
-      },
+      { $addToSet: { viewedUserIds: userId } },
     );
 
     await Promise.all([updateVote, updateParticipation]);
@@ -50,11 +44,9 @@ export class MongoVoteUpdateService {
    * @author 현웅
    */
   async updateScrap(userId: string, voteId: string) {
-    const updateVote = await this.Vote.findByIdAndUpdate(
+    const updateVote = this.Vote.findByIdAndUpdate(
       voteId,
-      {
-        $inc: { scrapsNum: 1 },
-      },
+      { $inc: { scrapsNum: 1 } },
       { returnOriginal: false },
     )
       .populate({
@@ -62,11 +54,9 @@ export class MongoVoteUpdateService {
         model: this.VoteUser,
       })
       .lean();
-    const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
+    const updateParticipation = this.VoteParticipation.findByIdAndUpdate(
       voteId,
-      {
-        $addToSet: { scrappedUserIds: userId },
-      },
+      { $addToSet: { scrappedUserIds: userId } },
     );
 
     const updatedVote = await Promise.all([
@@ -84,11 +74,9 @@ export class MongoVoteUpdateService {
    * @author 현웅
    */
   async updateUnscrap(userId: string, voteId: string) {
-    const updateVote = await this.Vote.findByIdAndUpdate(
+    const updateVote = this.Vote.findByIdAndUpdate(
       voteId,
-      {
-        $inc: { scrapsNum: -1 },
-      },
+      { $inc: { scrapsNum: -1 } },
       { returnOriginal: false },
     )
       .populate({
@@ -96,11 +84,9 @@ export class MongoVoteUpdateService {
         model: this.VoteUser,
       })
       .lean();
-    const updateParticipation = await this.VoteParticipation.findByIdAndUpdate(
+    const updateParticipation = this.VoteParticipation.findByIdAndUpdate(
       voteId,
-      {
-        $pull: { scrappedUserIds: userId },
-      },
+      { $pull: { scrappedUserIds: userId } },
     );
 
     const updatedVote = await Promise.all([
