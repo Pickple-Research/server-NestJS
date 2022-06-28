@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { AuthController } from "src/Controller";
-import { AuthService } from "src/Service";
+import { AuthService, UserFindService } from "src/Service";
 import {
   MongoUserModule,
   MongoResearchModule,
@@ -16,7 +16,7 @@ import { MongoSurBayModule } from "src/Mongo";
  */
 @Module({
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, UserFindService],
   imports: [
     MongoUserModule,
     MongoResearchModule,

@@ -20,8 +20,10 @@ import {
   UserVoteDocument,
 } from "src/Schema";
 import {
-  EmailNotAuthorizedException,
+  EmailDuplicateException,
+  NotEnoughCreditException,
   UserNotFoundException,
+  EmailNotAuthorizedException,
   WrongPasswordException,
   AlreadyParticipatedResearchException,
   AlreadyParticipatedVoteException,
@@ -49,6 +51,17 @@ export class MongoUserFindService {
   ) {}
 
   /**
+   * 인자로 받은 이메일로 가입된 정규 유저가 있는지 확인하고
+   * 이미 존재한다면, 에러를 발생시킵니다.
+   * @author 현웅
+   */
+  async checkEmailDuplicated(email: string) {
+    const user = await this.User.findOne({ email }).lean();
+    if (user) throw new EmailDuplicateException();
+    return;
+  }
+
+  /**
    * 정규유저를 만들기 전, 인자로 주어진 이메일이 인증된 상태인지 확인합니다.
    * 인증되어 있지 않은 경우 에러를 일으킵니다.
    * @author 현웅
@@ -62,13 +75,14 @@ export class MongoUserFindService {
   }
 
   /**
-   * 주어진 이메일과 비밀번호를 사용해 로그인합니다.
+   * 주어진 이메일과 비밀번호를 사용해 로그인이 가능한지 확인합니다.
    * 해당 이메일을 사용하는 유저가 없는 경우,
    * 혹은 비밀번호가 다른 경우 오류를 일으킵니다.
    * @param email
    * @param password
+   * @author 현웅
    */
-  async login(email: string, password: string) {
+  async authorize(email: string, password: string) {
     //* 유저 데이터 탐색
     const user = await this.User.findOne({ email })
       .select({ _id: 1, email: 1, salt: 1, password: 1 })
@@ -78,15 +92,14 @@ export class MongoUserFindService {
     if (!user) throw new UserNotFoundException();
 
     //* 주어진 비밀번호 해쉬
-    const givenPassword = getKeccak512Hash(
+    const hashedPassword = getKeccak512Hash(
       password + user.salt,
       parseInt(process.env.PEPPER),
     );
 
     //* 비밀번호가 일치하지 않는 경우
-    if (givenPassword !== user.password) throw new WrongPasswordException();
-
-    return await this.getUserInfoById(user._id);
+    if (hashedPassword !== user.password) throw new WrongPasswordException();
+    return;
   }
 
   /**
@@ -106,7 +119,6 @@ export class MongoUserFindService {
 
     const userCredit = await this.UserCredit.findById(userId).lean();
     const userProperty = await this.UserProperty.findById(userId).lean();
-
     const userResearch = await this.UserResearch.findById(userId).lean();
     const userVote = await this.UserVote.findById(userId).lean();
     return await Promise.all([
@@ -164,6 +176,17 @@ export class MongoUserFindService {
   }
 
   /**
+   * 주이진 userId 를 사용하는 유저 데이터를 반환합니다.
+   * (UserPrivacy는 제외하고 반환)
+   * @author 현웅
+   */
+  async getUserInfoByEmail(email: string) {
+    const user = await this.User.findOne({ email }).select({ _id: 1 }).lean();
+
+    if (user) return await this.getUserInfoById(user._id);
+  }
+
+  /**
    * 인자로 받은 닉네임을 사용하는 유저를 찾고 반환합니다.
    * 존재하지 않는다면 null을 반환합니다.
    * @author 현웅
@@ -180,43 +203,60 @@ export class MongoUserFindService {
   }
 
   /**
-   * 유저가 리서치에 참여한 적이 있는지 확인합니다.
-   * 유저 정보가 존재하지 않거나 리서치에 참여한 적이 있는 경우 true를
-   * 리서치를 참여하지 않은 경우 false를 반환합니다.
-   * handleAsException 값을 true로 지정하는 경우, 결과가 Exception으로 처리됩니다.
-   * @param userId 유저 _id
-   * @param researchId 리서치 _id
-   * @param handleAsException 결과를 예외로 처리할지 여부
+   * 유저 잔여 크레딧을 반환합니다.
    * @author 현웅
    */
-  async didUserParticipatedResearch(
-    userId: string,
-    researchId: string,
-    handleAsException: boolean = false,
-  ) {
+  async getUserCredit(userId: string) {
+    const userCredit = await this.UserCredit.findById(userId)
+      .select({ credit: 1 })
+      .lean();
+    return userCredit.credit;
+  }
+
+  /**
+   * 유저가 일정량 이상의 크레딧이 있는지 확인합니다.
+   * 그렇지 못한 경우, 에러를 일으킵니다.
+   * @author 현웅
+   */
+  async checkUserHasEnoughCredit(param: { userId: string; credit: number }) {
+    const userCredit = await this.UserCredit.findById(param.userId)
+      .select({ credit: 1 })
+      .lean();
+    if (userCredit.credit < param.credit) throw new NotEnoughCreditException();
+    return;
+  }
+
+  /**
+   * 유저가 리서치에 참여한 적이 있는지 확인합니다.
+   * 유저 정보가 존재하지 않거나 리서치에 참여한 적이 있는 경우 에러를 일으킵니다.
+   * @param userId 유저 _id
+   * @param researchId 리서치 _id
+   * @author 현웅
+   */
+  async didUserParticipatedResearch(param: {
+    userId: string;
+    researchId: string;
+  }) {
     const userResearch = await this.UserResearch.findOne({
-      _id: userId,
+      _id: param.userId,
     })
       .select({ participatedResearchInfos: 1 })
       .lean();
 
     //* 유저 정보가 존재하지 않는 경우
     if (!userResearch) {
-      if (handleAsException) throw new UserNotFoundException();
-      return true;
+      throw new UserNotFoundException();
     }
 
     //* 참여한 리서치 목록에 researchId가 포함되어 있는 경우
     if (
       userResearch.participatedResearchInfos.some((researchInfo) => {
-        return researchInfo.researchId === researchId;
+        return researchInfo.researchId === param.researchId;
       })
     ) {
-      if (handleAsException) throw new AlreadyParticipatedResearchException();
-      return true;
+      throw new AlreadyParticipatedResearchException();
     }
-
-    return false;
+    return;
   }
 
   /**

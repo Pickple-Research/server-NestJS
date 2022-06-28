@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection } from "mongoose";
+import { Model, Connection, ClientSession } from "mongoose";
 import {
   CreditHistory,
   CreditHistoryDocument,
@@ -19,9 +19,6 @@ import {
   UserVote,
   UserVoteDocument,
 } from "src/Schema";
-import { MongoUserFindService } from "./mongo.user.find.service";
-import { UserNotFoundException } from "src/Exception";
-import { tryMultiTransaction } from "src/Util";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
 
 @Injectable()
@@ -47,17 +44,20 @@ export class MongoUserDeleteService {
     // 사용하는 DB 연결 인스턴스 (session 만드는 용도)
     @InjectConnection(MONGODB_USER_CONNECTION)
     private readonly connection: Connection,
-
-    // 추가로 사용하는 서비스
-    private readonly mongoUserFindService: MongoUserFindService,
   ) {}
 
   /**
    * 이메일 미인증 유저 데이터를 삭제합니다.
    * @author 현웅
    */
-  async deleteUnauthorizedUser(email: string) {
-    return "deleted!";
+  async deleteUnauthorizedUser(
+    param: { email: string },
+    session: ClientSession,
+  ) {
+    await this.UnauthorizedUser.findOneAndDelete(
+      { email: param.email },
+      { session },
+    );
   }
 
   /**
@@ -66,26 +66,21 @@ export class MongoUserDeleteService {
    * UserProperty는 데이터 분석을 위해 남겨둡니다.
    * @author 현웅
    */
-  async deleteUserById(_id: string) {
-    const session = await this.connection.startSession();
-
-    //TODO: #QUERY-EFFICIENCY #CREATE/DELETE-MANY (해당 해쉬태그로 모두 찾아서 바꿀 것)
-    return await tryMultiTransaction(async () => {
-      await this.User.findOneAndDelete({ _id }, { session });
-      await this.UserPrivacy.findOneAndDelete({ _id }, { session });
-      await this.UserResearch.findOneAndDelete({ _id }, { session });
-      await this.UserVote.findOneAndDelete({ _id }, { session });
-      //* 크레딧 변동 내역 삭제
-      const creditHistories = await this.UserCredit.findOneAndDelete(
-        { _id },
-        { session },
-      )
-        .select({ creditHistoryIds: 1 })
-        .lean();
-      await this.CreditHistory.deleteMany(
-        { _id: { $in: creditHistories.creditHistoryIds } },
-        { session },
-      );
-    }, [session]);
+  async deleteUserById(param: { userId: string }, session: ClientSession) {
+    await this.User.findByIdAndDelete(param.userId, { session });
+    await this.UserPrivacy.findByIdAndDelete(param.userId, { session });
+    await this.UserResearch.findByIdAndDelete(param.userId, { session });
+    await this.UserVote.findByIdAndDelete(param.userId, { session });
+    //* 크레딧 변동 내역 삭제
+    const creditHistories = await this.UserCredit.findByIdAndDelete(
+      param.userId,
+      { session },
+    )
+      .select({ creditHistoryIds: 1 })
+      .lean();
+    await this.CreditHistory.deleteMany(
+      { _id: { $in: creditHistories.creditHistoryIds } },
+      { session },
+    );
   }
 }

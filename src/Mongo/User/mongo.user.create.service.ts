@@ -31,7 +31,7 @@ import { MONGODB_USER_CONNECTION } from "src/Constant";
 export class MongoUserCreateService {
   constructor(
     @InjectModel(CreditHistory.name)
-    private readonly UserCreditHistory: Model<CreditHistoryDocument>,
+    private readonly CreditHistory: Model<CreditHistoryDocument>,
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
@@ -52,26 +52,17 @@ export class MongoUserCreateService {
   ) {}
 
   /**
-   * @Transaction
-   * 유저를 생성합니다.
-   * @author 현웅
-   */
-  async createUser() {
-    return "create User";
-  }
-
-  /**
    * 이메일을 이용하여 회원가입을 시도하는 미인증 유저를 생성합니다.
    * 이미 해당 이메일이 존재하는 경우, 기존 데이터를 덮어씁니다.
    * @author 현웅
    */
   async createUnauthorizedUser(
-    userInfo: UnauthorizedUser,
+    param: { userInfo: UnauthorizedUser },
     session: ClientSession,
   ) {
     await this.UnauthorizedUser.updateOne(
-      { email: userInfo.email },
-      { ...userInfo },
+      { email: param.userInfo.email },
+      { ...param.userInfo },
       { upsert: true, session },
     );
     return;
@@ -87,38 +78,14 @@ export class MongoUserCreateService {
    */
   async createEmailUser(
     param: {
-      user: { email: string; password: string };
-      userPrivacy: UserPrivacy;
+      user: User;
+      userPrivacy?: UserPrivacy;
+      userProperty?: UserProperty;
     },
     session: ClientSession,
   ) {
-    //* 회원가입을 시도하던 기존의 미인증 유저 데이터를 삭제합니다
-    await this.UnauthorizedUser.findOneAndDelete(
-      { email: param.user.email },
-      { session },
-    );
-
-    //* 비밀번호는 해쉬시킨 후 저장합니다.
-    const salt = getSalt();
-    const hashedPassword = getKeccak512Hash(
-      param.user.password + salt,
-      parseInt(process.env.PEPPER),
-    );
-
-    //* 기존 데이터를 사용하여 새로운 User 데이터 생성
-    const newUsers = await this.User.create(
-      [
-        {
-          userType: UserType.USER,
-          accountType: AccountType.EMAIL,
-          email: param.user.email,
-          password: hashedPassword,
-          salt,
-          createdAt: getCurrentISOTime(),
-        },
-      ],
-      { session },
-    );
+    //* 새로운 User 데이터 생성
+    const newUsers = await this.User.create([param.user], { session });
 
     //* 새로 생성된 User 데이터에서 _id 추출
     //* (mongoose의 create 함수는 여러 개의 데이터를 만들 수 있도록 배열 형태의 인자를 받고
@@ -128,17 +95,13 @@ export class MongoUserCreateService {
     //* 새로운 유저 크레딧 사용내역, 개인정보, 특성정보, 리서치 활동정보, 투표 활동정보 데이터를 만들되
     //* 새로운 유저 데이터의 _id를 공유하도록 설정합니다.
     await this.UserCredit.create([{ _id: newUserId }], { session });
-    //* 유저 실명을 UserPrivacy에 저장
-    await this.UserPrivacy.create(
-      [
-        {
-          _id: newUserId,
-          ...param.userPrivacy,
-        },
-      ],
+    await this.UserPrivacy.create([{ _id: newUserId, ...param.userPrivacy }], {
+      session,
+    });
+    await this.UserProperty.create(
+      [{ _id: newUserId, ...param.userProperty }],
       { session },
     );
-    await this.UserProperty.create([{ _id: newUserId }], { session });
     await this.UserResearch.create([{ _id: newUserId }], { session });
     await this.UserVote.create([{ _id: newUserId }], { session });
 
@@ -150,5 +113,41 @@ export class MongoUserCreateService {
       nickname: `newUser.nickname`,
       grade: newUser.grade,
     };
+  }
+
+  /**
+   * @Transaction
+   * 크레딧 사용내역을 새로 만들고 UserCredit에 반영합니다.
+   * @return 새로 만들어진 CreditHistory 정보
+   * @author 현웅
+   */
+  async createCreditHistory(
+    param: {
+      userId: string;
+      creditHistory: CreditHistory;
+    },
+    session: ClientSession,
+  ) {
+    //* 잔여 크레딧 정보를 추가한 CreditHistory 를 새로 만듭니다.
+    const newCreditHistories = await this.CreditHistory.create(
+      [param.creditHistory],
+      { session },
+    );
+    //* UserCredit 의 credit 액수를 업데이트하고
+    //* 새로 만들어진 CreditHistory 의 _id 를 추가합니다.
+    await this.UserCredit.findByIdAndUpdate(
+      param.userId,
+      {
+        $inc: { credit: param.creditHistory.scale },
+        $push: {
+          creditHistoryIds: {
+            $each: [newCreditHistories[0]._id],
+            $position: 0,
+          },
+        },
+      },
+      { session },
+    );
+    return newCreditHistories[0].toObject();
   }
 }

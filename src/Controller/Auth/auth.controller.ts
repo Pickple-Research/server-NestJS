@@ -1,5 +1,5 @@
 import { Controller, Inject, Request, Body, Post } from "@nestjs/common";
-import { AuthService } from "src/Service";
+import { AuthService, UserFindService } from "src/Service";
 import { MongoUserFindService, MongoUserUpdateService } from "src/Mongo";
 // SurBay
 import { MongoSurBayService } from "src/Mongo";
@@ -9,7 +9,10 @@ import { JwtUserInfo } from "src/Object/Type";
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly userFindService: UserFindService,
+  ) {}
 
   @Inject() private readonly mongoUserFindService: MongoUserFindService;
   @Inject() private readonly mongoUserUpdateService: MongoUserUpdateService;
@@ -26,7 +29,7 @@ export class AuthController {
   @Public()
   @Post("login")
   async login(@Body() body: LoginBodyDto) {
-    const userInfo = await this.mongoUserFindService.login(
+    const userInfo = await this.userFindService.loginWithEmail(
       body.email,
       body.password,
     );

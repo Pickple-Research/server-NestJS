@@ -1,4 +1,5 @@
 import { Injectable, Inject } from "@nestjs/common";
+import { ClientSession } from "mongoose";
 import { MongoUserFindService, MongoUserDeleteService } from "src/Mongo";
 import { UserNotFoundException } from "src/Exception";
 
@@ -14,11 +15,11 @@ export class UserDeleteService {
    * 해당 유저가 존재하지 않는다면, 에러를 반환합니다.
    * @author 현웅
    */
-  async deleteUserById(_id: string) {
-    if (!(await this.mongoUserFindService.getUserById(_id))) {
+  async deleteUserById(param: { userId: string }, session: ClientSession) {
+    if (!(await this.mongoUserFindService.getUserById(param.userId))) {
       throw new UserNotFoundException();
     }
 
-    return await this.mongoUserDeleteService.deleteUserById(_id);
+    // return await this.mongoUserDeleteService.deleteUserById({userId: param.userId});
   }
 }

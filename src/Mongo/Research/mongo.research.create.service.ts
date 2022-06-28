@@ -3,11 +3,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model, ClientSession } from "mongoose";
 import { AwsS3Service } from "src/AWS";
 import { S3UploadingObject } from "src/Object/Type";
-import {
-  getCurrentISOTime,
-  getISOTimeAfterGivenDays,
-  getS3UploadingObject,
-} from "src/Util";
+import { getCurrentISOTime, getS3UploadingObject } from "src/Util";
 import {
   Research,
   ResearchDocument,
@@ -80,11 +76,11 @@ export class MongoResearchCreateService {
     },
     session: ClientSession,
   ) {
-    const currentTime = getCurrentISOTime();
-
     //* 인자로 주어진 Session을 이용해 진행합니다.
 
-    //* 먼저 주어진 리서치 정보에 누락된 필수정보인
+    //* 먼저 주어진 리서치 정보에 누락된 필수정보인 author 에
+    //* (author 는 ResearchUser 타입을 갖고 있기에,
+    //*   Research 객체를 만들 때 author property에 string 타입을 넣으면 에러가 납니다.)
     //* 리서치 진행자 _id와 생성 시간과 마감일자를 추가하여 리서치를 만들어둡니다.
     //* 이 행위는 session에 종속됩니다.
     const newResearches = await this.Research.create(
@@ -92,8 +88,6 @@ export class MongoResearchCreateService {
         {
           ...param.research,
           author: param.research.authorId,
-          pulledupAt: currentTime,
-          createdAt: currentTime,
         },
       ],
       { session },

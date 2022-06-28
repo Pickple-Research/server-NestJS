@@ -24,10 +24,10 @@ export class User {
   salt: string;
 
   @Prop({ trim: true }) // 닉네임
-  nickname: string;
+  nickname?: string;
 
   @Prop({ default: 1 }) // 등급
-  grade: number;
+  grade?: number;
 
   @Prop({}) // 회원가입 일자
   createdAt: string;

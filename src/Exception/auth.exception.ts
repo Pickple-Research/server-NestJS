@@ -1,4 +1,17 @@
-import { Status401Exception } from "./Status";
+import { Status400Exception, Status401Exception } from "./Status";
+
+/**
+ * 중복된 이메일로 회원가입을 시도하는 경우 사용합니다.
+ * 기본 message: '이미 사용 중인 이메일입니다'
+ * @author 현웅
+ */
+export class EmailDuplicateException extends Status400Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage ? newMessage : `이미 사용 중인 이메일입니다`,
+    });
+  }
+}
 
 /**
  * 주어진 인증번호가 미인증 유저의 인증번호와 일치하지 않는 경우 사용합니다.
