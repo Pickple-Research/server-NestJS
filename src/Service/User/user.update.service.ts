@@ -76,20 +76,10 @@ export class UserUpdateService {
     session: ClientSession,
   ) {
     //* 유저가 리서치를 업로드하기에 충분한 크레딧을 가지고 있는지 확인
-    const checkCredit = this.mongoUserFindService.checkUserHasEnoughCredit({
+    await this.mongoUserFindService.checkUserHasEnoughCredit({
       userId: param.userId,
       credit: -1 * param.creditHistory.scale,
     });
-    //* UserResearch 에 researchId 추가
-    const addResearchId = this.mongoUserUpdateService.uploadResearch(
-      {
-        userId: param.userId,
-        researchId: param.researchId,
-      },
-      session,
-    );
-
-    await Promise.all([checkCredit, addResearchId]);
 
     //* CreditHistory 생성 및 UserCredit 에 반영 후 해당 CreditHistory 반환
     return await this.mongoUserCreateService.createCreditHistory(

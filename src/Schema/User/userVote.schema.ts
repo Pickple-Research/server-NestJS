@@ -16,9 +16,6 @@ export class UserVote {
 
   @Prop({ type: [ParticipatedVoteInfoSchema], default: [] }) // 참여한 투표들 정보
   participatedVoteInfos: ParticipatedVoteInfo[];
-
-  @Prop({ type: [String], default: [] }) // 작성한 투표들 _id
-  uploadedVoteIds: string[];
 }
 
 export const UserVoteSchema = SchemaFactory.createForClass(UserVote);

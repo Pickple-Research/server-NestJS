@@ -133,46 +133,6 @@ export class MongoUserUpdateService {
   }
 
   /**
-   * @Transaction
-   * UserResearch 의 uploadedResearchIds에 리서치 _id를 추가합니다.
-   * @author 현웅
-   */
-  async uploadResearch(
-    param: { userId: string; researchId: string },
-    session: ClientSession,
-  ) {
-    await this.UserResearch.findByIdAndUpdate(
-      param.userId,
-      {
-        $push: {
-          uploadedResearchIds: { $each: [param.researchId], $position: 0 },
-        },
-      },
-      { session },
-    );
-
-    return;
-  }
-
-  /**
-   * @Transaction
-   * 본인이 업로드한 리서치를 삭제합니다.
-   * 유저 리서치 활동 정보에서 uploadedResearchIds를 찾고, 인자로 받은 researchId를 제거합니다.
-   * @author 현웅
-   */
-  async deleteUploadedResearch(
-    param: { userId: string; researchId: string },
-    session: ClientSession,
-  ) {
-    await this.UserResearch.findByIdAndUpdate(
-      param.userId,
-      { $pull: { uploadedResearchIds: param.researchId } },
-      { session },
-    );
-    return;
-  }
-
-  /**
    * 조회한 투표 _id를 UserVote 에 추가합니다.
    * @author 현웅
    */
@@ -226,44 +186,6 @@ export class MongoUserUpdateService {
           },
         },
       },
-      { session },
-    );
-    return;
-  }
-
-  /**
-   * @Transaction
-   * 투표를 업로드합니다.
-   * UserVote 의 uploadedVoteIds 맨 앞에 업로드 된 투표 _id를 추가합니다.
-   * @author 현웅
-   */
-  async uploadVote(
-    param: { userId: string; voteId: string },
-    session: ClientSession,
-  ) {
-    await this.UserVote.findByIdAndUpdate(
-      param.userId,
-      {
-        $push: { uploadedVoteIds: { $each: [param.voteId], $position: 0 } },
-      },
-      { session },
-    );
-    return;
-  }
-
-  /**
-   * @Transaction
-   * 본인이 업로드한 투표를 삭제합니다.
-   * 유저 투표 활동 정보에서 uploadedVoteIds를 찾고, 인자로 받은 voteId를 제거합니다.
-   * @author 현웅
-   */
-  async deleteUploadedVote(
-    param: { userId: string; voteId: string },
-    session: ClientSession,
-  ) {
-    await this.UserVote.findByIdAndUpdate(
-      param.userId,
-      { $pull: { uploadedVoteIds: param.voteId } },
       { session },
     );
     return;

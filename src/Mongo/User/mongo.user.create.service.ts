@@ -118,7 +118,7 @@ export class MongoUserCreateService {
 
   /**
    * @Transaction
-   * 크레딧 사용내역을 새로 만들고 UserCredit에 반영합니다.
+   * 크레딧 사용내역을 새로 만들고 User 의 credit 정보에 반영합니다.
    * @return 새로 만들어진 CreditHistory 정보
    * @author 현웅
    */
@@ -134,19 +134,11 @@ export class MongoUserCreateService {
       [param.creditHistory],
       { session },
     );
-    //* UserCredit 의 credit 액수를 업데이트하고
+    //* User의 credit 액수를 업데이트하고
     //* 새로 만들어진 CreditHistory 의 _id 를 추가합니다.
-    await this.UserCredit.findByIdAndUpdate(
+    await this.User.findByIdAndUpdate(
       param.userId,
-      {
-        $inc: { credit: param.creditHistory.scale },
-        $push: {
-          creditHistoryIds: {
-            $each: [newCreditHistories[0]._id],
-            $position: 0,
-          },
-        },
-      },
+      { $inc: { credit: param.creditHistory.scale } },
       { session },
     );
     return newCreditHistories[0].toObject();

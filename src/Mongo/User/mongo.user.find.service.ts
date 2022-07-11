@@ -233,7 +233,7 @@ export class MongoUserFindService {
    * @author 현웅
    */
   async checkUserHasEnoughCredit(param: { userId: string; credit: number }) {
-    const userCredit = await this.UserCredit.findById(param.userId)
+    const userCredit = await this.User.findById(param.userId)
       .select({ credit: 1 })
       .lean();
     if (userCredit.credit < param.credit) throw new NotEnoughCreditException();

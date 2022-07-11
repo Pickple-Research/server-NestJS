@@ -39,9 +39,9 @@ export class UserFindService {
    * @author 현웅
    */
   async getUserActivities(param: UserActivityBodyDto) {
-    const getCreditHistories = this.mongoUserFindService.getCreditHisories(
-      param.creditHistoryIds,
-    );
+    // const getCreditHistories = this.mongoUserFindService.getUserCreditHisories(
+    //   param.creditHistoryIds,
+    // );
     const getScrappedResearches = this.mongoResearchFindService.getResearches(
       param.scrappedResearchIds,
     );
@@ -49,45 +49,45 @@ export class UserFindService {
       this.mongoResearchFindService.getResearches(
         param.participatedResearchIds,
       );
-    const getUploadedResearches = this.mongoResearchFindService.getResearches(
-      param.uploadedResearchIds,
-    );
+    // const getUploadedResearches = this.mongoResearchFindService.getUploadedResearches(
+    //   param.uploadedResearchIds,
+    // );
     const getScrappedVotes = this.mongoVoteFindService.getVotes(
       param.scrappedVoteIds,
     );
     const getParticipatedVotes = this.mongoVoteFindService.getVotes(
       param.participatedVoteIds,
     );
-    const getUploadedVotes = this.mongoVoteFindService.getVotes(
-      param.uploadedVoteIds,
-    );
+    // const getUploadedVotes = this.mongoVoteFindService.getUploadedVotes(
+    //   param.uploadedVoteIds,
+    // );
 
     const [
-      creditHistories,
+      // creditHistories,
       scrappedResearches,
       participatedResearches,
-      uploadedResearches,
+      // uploadedResearches,
       scrappedVotes,
       participatedVotes,
-      uploadedVotes,
+      // uploadedVotes,
     ] = await Promise.all([
-      getCreditHistories,
+      // getCreditHistories,
       getScrappedResearches,
       getParticipatedResearches,
-      getUploadedResearches,
+      // getUploadedResearches,
       getScrappedVotes,
       getParticipatedVotes,
-      getUploadedVotes,
+      // getUploadedVotes,
     ]);
 
     return {
-      creditHistories,
+      // creditHistories,
       scrappedResearches,
       participatedResearches,
-      uploadedResearches,
+      // uploadedResearches,
       scrappedVotes,
       participatedVotes,
-      uploadedVotes,
+      // uploadedVotes,
     };
   }
 }
