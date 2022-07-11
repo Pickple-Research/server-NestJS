@@ -37,9 +37,13 @@ export class AppController {
   @Public()
   @Get("bootstrap")
   async bootstrap() {
-    const researches = this.mongoResearchFindService.getResearchById("");
-    // const votes = this.mongoVoteFindService
+    const getResearches = this.mongoResearchFindService.getRecentResearches();
+    const getVotes = this.mongoVoteFindService.getRecentVotes();
 
-    return await Promise.all([researches]);
+    return await Promise.all([getResearches, getVotes]).then(
+      ([researches, votes]) => {
+        return { researches, votes };
+      },
+    );
   }
 }

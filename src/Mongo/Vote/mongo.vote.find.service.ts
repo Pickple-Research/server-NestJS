@@ -147,4 +147,14 @@ export class MongoVoteFindService {
 
     return;
   }
+
+  /**
+   * 인자로 받은 voteIds 로 투표를 모두 찾고 반환합니다.
+   * @author 현웅
+   */
+  async getVotes(voteIds: string[]) {
+    return await this.Vote.find({ _id: { $in: voteIds } })
+      .populate({ path: "author", model: this.VoteUser })
+      .lean();
+  }
 }

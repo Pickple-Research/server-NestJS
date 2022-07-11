@@ -46,6 +46,17 @@ export class MongoResearchFindService {
   }
 
   /**
+   * 리서치 제목을 반환합니다.
+   * @author 현웅
+   */
+  async getResearchTitle(researchId: string) {
+    const research = await this.Research.findById(researchId)
+      .select({ title: 1 })
+      .lean();
+    return research.title;
+  }
+
+  /**
    * 리서치 참여시 제공 크레딧을 반환합니다.
    * @author 현웅
    */
@@ -127,7 +138,9 @@ export class MongoResearchFindService {
    * @author 현웅
    */
   async getResearchComments(researchId: string) {
-    return await this.ResearchParticipation.findById(researchId)
+    const researchParticipation = await this.ResearchParticipation.findById(
+      researchId,
+    )
       .select({ comments: 1 })
       .populate({
         path: "comments",
@@ -146,6 +159,22 @@ export class MongoResearchFindService {
             },
           },
         ],
+      })
+      .lean();
+    return researchParticipation.comments;
+  }
+
+  /**
+   * 인자로 받은 researchIds 로 리서치를 모두 찾고 반환합니다.
+   * @author 현웅
+   */
+  async getResearches(researchIds: string[]) {
+    return await this.Research.find({
+      _id: { $in: researchIds },
+    })
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
       })
       .lean();
   }

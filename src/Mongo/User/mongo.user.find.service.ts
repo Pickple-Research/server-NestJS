@@ -214,6 +214,18 @@ export class MongoUserFindService {
   }
 
   /**
+   * 인자로 받은 CreditHistoryIds 로 CreditHistory 를 모두 찾고 반환합니다.
+   * @author 현웅
+   */
+  async getCreditHisories(creditHistoryIds: string[]) {
+    return await this.CreditHistory.find({
+      _id: { $in: creditHistoryIds },
+    })
+      .sort({ _id: -1 })
+      .lean();
+  }
+
+  /**
    * 유저가 일정량 이상의 크레딧이 있는지 확인합니다.
    * 그렇지 못한 경우, 에러를 일으킵니다.
    * @author 현웅
