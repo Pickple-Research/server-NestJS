@@ -1,27 +1,28 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection, ClientSession } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, ClientSession } from "mongoose";
 import {
   CreditHistory,
   CreditHistoryDocument,
+  Notification,
+  NotificationDocument,
   UnauthorizedUser,
   UnauthorizedUserDocument,
   User,
   UserDocument,
-  UserCredit,
-  UserCreditDocument,
+  UserNotice,
+  UserNoticeDocument,
   UserPrivacy,
   UserPrivacyDocument,
   UserProperty,
   UserPropertyDocument,
   UserResearch,
   UserResearchDocument,
+  UserSecurity,
+  UserSecurityDocument,
   UserVote,
   UserVoteDocument,
 } from "src/Schema";
-import { AccountType, UserType } from "src/Object/Enum";
-import { getSalt, getKeccak512Hash, getCurrentISOTime } from "src/Util";
-import { MONGODB_USER_CONNECTION } from "src/Constant";
 
 /**
  * 유저 데이터를 생성하는 mongo 서비스 모음입니다.
@@ -32,23 +33,23 @@ export class MongoUserCreateService {
   constructor(
     @InjectModel(CreditHistory.name)
     private readonly CreditHistory: Model<CreditHistoryDocument>,
+    @InjectModel(Notification.name)
+    private readonly Notification: Model<NotificationDocument>,
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
-    @InjectModel(UserCredit.name)
-    private readonly UserCredit: Model<UserCreditDocument>,
+    @InjectModel(UserNotice.name)
+    private readonly UserNotice: Model<UserNoticeDocument>,
     @InjectModel(UserPrivacy.name)
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
     private readonly UserProperty: Model<UserPropertyDocument>,
     @InjectModel(UserResearch.name)
     private readonly UserResearch: Model<UserResearchDocument>,
+    @InjectModel(UserSecurity.name)
+    private readonly UserSecurity: Model<UserSecurityDocument>,
     @InjectModel(UserVote.name)
     private readonly UserVote: Model<UserVoteDocument>,
-
-    // 사용하는 DB 연결 인스턴스 (session 만드는 용도)
-    @InjectConnection(MONGODB_USER_CONNECTION)
-    private readonly connection: Connection,
   ) {}
 
   /**
@@ -71,7 +72,7 @@ export class MongoUserCreateService {
   /**
    * @Transaction
    * 메일 인증이 완료된 미인증 유저를 정규 유저로 전환합니다.
-   * UserCredit, UserProperty, UserPrivacy, UserResearch, UserVote Document도 함께 만들고,
+   * UserProperty, UserPrivacy, UserSecurity UserResearch, UserVote Document도 함께 만들고,
    * 해당 email을 사용하는 미인증 유저 데이터를 삭제합니다.
    * @return 새로운 정규 유저 정보 중 ResearchUser 및 VoteUser 에 저장할 유저 정보 Object
    * @author 현웅
@@ -81,6 +82,7 @@ export class MongoUserCreateService {
       user: User;
       userPrivacy?: UserPrivacy;
       userProperty?: UserProperty;
+      userSecurity?: UserSecurity;
     },
     session: ClientSession,
   ) {
@@ -92,9 +94,8 @@ export class MongoUserCreateService {
     //*   배열 형태의 결과를 반환하기 때문에 [0]으로 인덱싱 해줘야 함)
     const newUserId = newUsers[0]._id;
 
-    //* 새로운 유저 크레딧 사용내역, 개인정보, 특성정보, 리서치 활동정보, 투표 활동정보 데이터를 만들되
+    //* 새로운 유저 개인정보, 특성정보, 보안정보, 공지 확인정보, 리서치 활동정보, 투표 활동정보 데이터를 만들되
     //* 새로운 유저 데이터의 _id를 공유하도록 설정합니다.
-    await this.UserCredit.create([{ _id: newUserId }], { session });
     await this.UserPrivacy.create([{ _id: newUserId, ...param.userPrivacy }], {
       session,
     });
@@ -102,10 +103,15 @@ export class MongoUserCreateService {
       [{ _id: newUserId, ...param.userProperty }],
       { session },
     );
+    await this.UserSecurity.create(
+      [{ _id: newUserId, ...param.userSecurity }],
+      { session },
+    );
+    await this.UserNotice.create([{ _id: newUserId }], { session });
     await this.UserResearch.create([{ _id: newUserId }], { session });
     await this.UserVote.create([{ _id: newUserId }], { session });
 
-    //* ResearchUser와 VoteUser에 저장할, 민감하지 않은 유저 정보를 추출해 반환합니다.
+    //* ResearchUser와 VoteUser에 저장할 유저 정보를 추출해 반환합니다.
     const newUser = newUsers[0].toObject();
     return {
       _id: newUser._id,
@@ -117,7 +123,7 @@ export class MongoUserCreateService {
 
   /**
    * @Transaction
-   * 크레딧 사용내역을 새로 만들고 UserCredit에 반영합니다.
+   * 크레딧 사용내역을 새로 만들고 User 의 credit 정보에 반영합니다.
    * @return 새로 만들어진 CreditHistory 정보
    * @author 현웅
    */
@@ -133,21 +139,21 @@ export class MongoUserCreateService {
       [param.creditHistory],
       { session },
     );
-    //* UserCredit 의 credit 액수를 업데이트하고
+    //* User의 credit 액수를 업데이트하고
     //* 새로 만들어진 CreditHistory 의 _id 를 추가합니다.
-    await this.UserCredit.findByIdAndUpdate(
+    await this.User.findByIdAndUpdate(
       param.userId,
-      {
-        $inc: { credit: param.creditHistory.scale },
-        $push: {
-          creditHistoryIds: {
-            $each: [newCreditHistories[0]._id],
-            $position: 0,
-          },
-        },
-      },
+      { $inc: { credit: param.creditHistory.scale } },
       { session },
     );
     return newCreditHistories[0].toObject();
+  }
+
+  /**
+   * 개인화된 유저 알림을 생성합니다.
+   * @author 현웅
+   */
+  async createNotification() {
+    await this.Notification.create([{}]);
   }
 }

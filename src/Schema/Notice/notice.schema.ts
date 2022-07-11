@@ -10,10 +10,10 @@ export class Notice {
   content: string;
 
   @Prop({ type: [String], default: [] })
-  imageUrls: string[];
+  imageUrls?: string[];
 
   @Prop({ default: false }) // 숨김 여부
-  hide: boolean;
+  hide?: boolean;
 
   @Prop() // 생성 날짜
   createdAt: Date;

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection, ClientSession } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, ClientSession } from "mongoose";
 import {
   CreditHistory,
   CreditHistoryDocument,
@@ -8,18 +8,17 @@ import {
   UnauthorizedUserDocument,
   User,
   UserDocument,
-  UserCredit,
-  UserCreditDocument,
   UserPrivacy,
   UserPrivacyDocument,
   UserProperty,
   UserPropertyDocument,
   UserResearch,
   UserResearchDocument,
+  UserSecurity,
+  UserSecurityDocument,
   UserVote,
   UserVoteDocument,
 } from "src/Schema";
-import { MONGODB_USER_CONNECTION } from "src/Constant";
 
 @Injectable()
 export class MongoUserDeleteService {
@@ -30,20 +29,16 @@ export class MongoUserDeleteService {
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
-    @InjectModel(UserCredit.name)
-    private readonly UserCredit: Model<UserCreditDocument>,
     @InjectModel(UserPrivacy.name)
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
     private readonly UserProperty: Model<UserPropertyDocument>,
     @InjectModel(UserResearch.name)
     private readonly UserResearch: Model<UserResearchDocument>,
+    @InjectModel(UserSecurity.name)
+    private readonly UserSecurity: Model<UserSecurityDocument>,
     @InjectModel(UserVote.name)
     private readonly UserVote: Model<UserVoteDocument>,
-
-    // 사용하는 DB 연결 인스턴스 (session 만드는 용도)
-    @InjectConnection(MONGODB_USER_CONNECTION)
-    private readonly connection: Connection,
   ) {}
 
   /**
@@ -70,17 +65,12 @@ export class MongoUserDeleteService {
     await this.User.findByIdAndDelete(param.userId, { session });
     await this.UserPrivacy.findByIdAndDelete(param.userId, { session });
     await this.UserResearch.findByIdAndDelete(param.userId, { session });
+    await this.UserSecurity.findByIdAndDelete(param.userId, { session });
     await this.UserVote.findByIdAndDelete(param.userId, { session });
-    //* 크레딧 변동 내역 삭제
-    const creditHistories = await this.UserCredit.findByIdAndDelete(
-      param.userId,
-      { session },
-    )
-      .select({ creditHistoryIds: 1 })
-      .lean();
-    await this.CreditHistory.deleteMany(
-      { _id: { $in: creditHistories.creditHistoryIds } },
-      { session },
-    );
+    await this.CreditHistory.deleteMany({ userId: param.userId }, { session });
+    // await this.Notification.deleteMany(
+    //   { userId: param.userId },
+    //   { session },
+    // );
   }
 }

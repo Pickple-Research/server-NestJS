@@ -17,19 +17,16 @@ export class User {
   @Prop({ unique: true, trim: true }) // 이메일
   email: string;
 
-  @Prop() // 비밀번호
-  password: string;
-
-  @Prop() // 비밀번호 해쉬 salt
-  salt: string;
-
   @Prop({ trim: true }) // 닉네임
   nickname?: string;
+
+  @Prop({ default: 0 }) // 크레딧
+  credit?: number;
 
   @Prop({ default: 1 }) // 등급
   grade?: number;
 
-  @Prop({}) // 회원가입 일자
+  @Prop({ required: true }) // 회원가입 일자
   createdAt: string;
 }
 

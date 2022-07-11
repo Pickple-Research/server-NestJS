@@ -22,12 +22,14 @@ export * from "./SurBay/surbayUser.schema";
 
 // 유저 관련 정보 스키마
 export * from "./User/creditHistory.schema";
+export * from "./User/notification.schema";
 export * from "./User/unauthorizedUser.schema";
 export * from "./User/user.schema";
-export * from "./User/userCredit.schema";
+export * from "./User/userNotice.schema";
 export * from "./User/userPrivacy.schema";
 export * from "./User/userProperty.schema";
 export * from "./User/userResearch.schema";
+export * from "./User/userSecurity.schema";
 export * from "./User/userVote.schema";
 export * from "./User/Embedded";
 

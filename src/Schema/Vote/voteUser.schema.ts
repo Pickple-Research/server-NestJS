@@ -18,6 +18,9 @@ export class VoteUser {
 
   @Prop({ default: 1 }) // 등급
   grade: number;
+
+  @Prop({ default: false }) // 유저 탈퇴 여부
+  deleted?: boolean;
 }
 
 export const VoteUserSchema = SchemaFactory.createForClass(VoteUser);

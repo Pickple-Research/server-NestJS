@@ -30,7 +30,6 @@ export class VotePostController {
   /**
    * @Transaction
    * 새로운 투표를 업로드합니다.
-   * 먼저 투표를 생성하고, 해당 투표 _id를 유저 투표 정보에 추가합니다.
    * @return 생성된 투표 정보
    * @author 현웅
    */
@@ -39,29 +38,14 @@ export class VotePostController {
     @Request() req: { user: JwtUserInfo },
     @Body() body: VoteCreateBodyDto,
   ) {
-    const startUserSession = this.userConnection.startSession();
-    const startVoteSession = this.voteConnection.startSession();
-
-    const { userSession, voteSession } = await Promise.all([
-      startUserSession,
-      startVoteSession,
-    ]).then(([userSession, voteSession]) => {
-      return { userSession, voteSession };
-    });
-
+    const voteSession = await this.voteConnection.startSession();
     return await tryMultiTransaction(async () => {
       const newVote = await this.mongoVoteCreateService.createVote(
         { vote: { authorId: req.user.userId, ...body } },
         voteSession,
       );
-
-      await this.mongoUserUpdateService.uploadVote(
-        { userId: req.user.userId, voteId: newVote._id },
-        userSession,
-      );
-
       return newVote;
-    }, [userSession, voteSession]);
+    }, [voteSession]);
   }
 
   /**

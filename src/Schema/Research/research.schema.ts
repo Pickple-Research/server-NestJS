@@ -27,8 +27,14 @@ export class Research {
   @Prop({ required: true }) // 리서치 내용
   content: string;
 
-  @Prop({ required: true }) // 리서치 목적
+  @Prop({ required: true }) // 리서치 목적 (학술, 개인, 기타, ...)
   purpose: string;
+
+  @Prop({ required: true }) // 리서치 종류 (설문조사, 실험참여, UIUX 설문, ...)
+  type: string;
+
+  @Prop({ type: [String], enum: Category }) // 리서치 카테고리
+  categories?: Category[];
 
   @Prop() // 리서치 진행 단체
   organization: string;
@@ -36,33 +42,17 @@ export class Research {
   @Prop() // 참여 대상 (줄글 작성)
   target: string;
 
+  @Prop({ type: [String], default: [] }) // 참여 성별 조건
+  targetGenders?: string[];
+
+  @Prop({ type: [Number], default: [] }) // 참여 나이 조건
+  targetAges?: number[];
+
+  @Prop({ type: [String], default: [] }) // 참여 나이대 조건
+  targetAgeGroups?: string[];
+
   @Prop({ required: true }) // 예상 소요시간
   estimatedTime: number;
-
-  @Prop({ required: true }) // 마감일
-  deadline: string;
-
-  //TODO: enum화
-  // @Prop({ required: true }) // 최소 참여조건
-  @Prop() // 최소 참여조건
-  eligibility?: string;
-
-  @Prop() // 참여 성별 조건
-  genderCondition?: string;
-
-  @Prop() // 참여 나이 조건
-  ageCondition?: string;
-
-  //! 끌올한 날짜. 리서치는 _id가 아니라 이 일자를 기준으로 노출됩니다.
-  //* 끌올하기 전에는 생성일과 같습니다.
-  @Prop({ index: true, required: true })
-  pulledupAt: string;
-
-  @Prop() // 생성일
-  createdAt: string;
-
-  @Prop({ type: [String], enum: Category }) // 리서치 카테고리
-  categories?: Category[];
 
   @Prop() // 참여시 제공 크레딧
   credit: number;
@@ -72,6 +62,17 @@ export class Research {
 
   @Prop() // 추가 제공 크레딧 추첨 수령자 수
   extraCreditRecieverNum?: number;
+
+  @Prop({ required: true }) // 마감일
+  deadline: string;
+
+  //! 끌올한 날짜. 리서치는 _id가 아니라 이 일자를 기준으로 노출됩니다.
+  //* 끌올하기 전에는 생성일과 같습니다.
+  @Prop({ index: true, required: true })
+  pulledupAt: string;
+
+  @Prop() // 생성일
+  createdAt: string;
 
   //? 앱단에 정보를 넘겨줄 때는 유저 _id를 넘겨줄 필요가 없고 숫자만 넘기면 되는데,
   //? 그 때마다 .length를 사용하여 넘겨주면 (아마도) 좋지 않기에 숫자만 따로 관리합니다.

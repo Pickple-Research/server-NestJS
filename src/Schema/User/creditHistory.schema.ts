@@ -7,19 +7,22 @@ import { Document } from "mongoose";
  */
 @Schema()
 export class CreditHistory {
-  @Prop() // 변동 사유 (줄글)
+  @Prop({ required: true }) // 유저 _id
+  userId: string;
+
+  @Prop({ required: true }) // 변동 사유 (줄글)
   reason: string;
 
-  @Prop() // 변동 타입 (ex. 리서치 등록, 리서치 참여, 리서치 끌올 ...)
+  @Prop({ required: true }) // 변동 타입 (ex. 리서치 등록, 리서치 참여, 리서치 끌올 ...)
   type: string;
 
-  @Prop() // 변동 액수
+  @Prop({ required: true }) // 변동 액수
   scale: number;
 
-  @Prop() // 변동 일시
+  @Prop({ required: true }) // 변동 일시
   createdAt?: string;
 
-  @Prop() // 변동 이후 잔여 크레딧
+  @Prop({ required: true }) // 변동 이후 잔여 크레딧
   balance?: number;
 }
 

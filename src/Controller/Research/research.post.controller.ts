@@ -78,6 +78,7 @@ export class ResearchPostController {
     };
     //* CreditHistory 정보
     const creditHistory: CreditHistory = {
+      userId: req.user.userId,
       reason: body.title,
       type: "리서치 작성",
       scale: -1 * requiredCredit,
@@ -97,6 +98,7 @@ export class ResearchPostController {
     });
 
     return await tryMultiTransaction(async () => {
+      //TODO: Promise.all 로 처리
       //* 먼저 리서치를 만듭니다
       const newResearch = await this.mongoResearchCreateService.createResearch(
         { research, files: {} },
@@ -167,6 +169,7 @@ export class ResearchPostController {
     //* CreditHistory 정보
     //TODO: ExtraCredit 에 따른 credit 도 반영해야 함
     const creditHistory: CreditHistory = {
+      userId: req.user.userId,
       reason: body.title,
       type: "리서치 작성",
       scale: -1 * requiredCredit,

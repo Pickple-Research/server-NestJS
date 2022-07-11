@@ -78,9 +78,7 @@ export class UserPostController {
 
   /**
    * 이메일 인증이 완료된 정규 유저를 생성합니다.
-   * 인자로 받은 이메일을 사용하는 미인증 유저 데이터를 삭제하고
-   * User, UserCredit, UserProperty, UserPrivacy, UserResearch, UserVote 데이터를 생성합니다.
-   * 또한 ResearchUser, VoteUser 데이터를 생성합니다.
+   * 정규 유저 생성 이후엔 ResearchUser, VoteUser 데이터도 생성합니다.
    * @author 현웅
    */
   @Public()
@@ -112,16 +110,15 @@ export class UserPostController {
       userType: UserType.USER,
       accountType: AccountType.EMAIL,
       email: body.email,
-      salt,
-      password: hashedPassword,
       createdAt: getCurrentISOTime(),
     };
     const userPrivacy = { lastName: body.lastName, name: body.name };
+    const userSecurity = { password: hashedPassword, salt };
 
     await tryMultiTransaction(async () => {
       //* 새로운 유저를 생성합니다.
       const newUser = await this.userCreateService.createEmailUser(
-        { user, userPrivacy },
+        { user, userPrivacy, userSecurity },
         userSession,
       );
 
