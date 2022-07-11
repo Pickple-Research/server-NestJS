@@ -9,6 +9,8 @@ import {
 import {
   CreditHistory,
   CreditHistorySchema,
+  Notification,
+  NotificationSchema,
   UnauthorizedUser,
   UnauthorizedUserSchema,
   User,
@@ -21,9 +23,12 @@ import {
   UserPropertySchema,
   UserResearch,
   UserResearchSchema,
+  UserSecurity,
+  UserSecuritySchema,
   UserVote,
   UserVoteSchema,
 } from "src/Schema";
+import { AuthService } from "src/Service";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
 
 @Module({
@@ -41,12 +46,14 @@ import { MONGODB_USER_CONNECTION } from "src/Constant";
     MongooseModule.forFeature(
       [
         { name: CreditHistory.name, schema: CreditHistorySchema },
+        { name: Notification.name, schema: NotificationSchema },
         { name: UnauthorizedUser.name, schema: UnauthorizedUserSchema },
         { name: User.name, schema: UserSchema },
         { name: UserCredit.name, schema: UserCreditSchema },
         { name: UserPrivacy.name, schema: UserPrivacySchema },
         { name: UserProperty.name, schema: UserPropertySchema },
         { name: UserResearch.name, schema: UserResearchSchema },
+        { name: UserSecurity.name, schema: UserSecuritySchema },
         { name: UserVote.name, schema: UserVoteSchema },
       ],
       MONGODB_USER_CONNECTION,

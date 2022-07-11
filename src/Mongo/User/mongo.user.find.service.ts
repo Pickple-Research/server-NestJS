@@ -16,6 +16,8 @@ import {
   UserPropertyDocument,
   UserResearch,
   UserResearchDocument,
+  UserSecurity,
+  UserSecurityDocument,
   UserVote,
   UserVoteDocument,
 } from "src/Schema";
@@ -46,6 +48,8 @@ export class MongoUserFindService {
     private readonly UserProperty: Model<UserPropertyDocument>,
     @InjectModel(UserResearch.name)
     private readonly UserResearch: Model<UserResearchDocument>,
+    @InjectModel(UserSecurity.name)
+    private readonly UserSecurity: Model<UserSecurityDocument>,
     @InjectModel(UserVote.name)
     private readonly UserVote: Model<UserVoteDocument>,
   ) {}
@@ -84,21 +88,27 @@ export class MongoUserFindService {
    */
   async authorize(email: string, password: string) {
     //* 유저 데이터 탐색
-    const user = await this.User.findOne({ email })
-      .select({ _id: 1, email: 1, salt: 1, password: 1 })
-      .lean();
+    const user = await this.User.findOne({ email }).select({ _id: 1 }).lean();
 
     //* 유저가 존재하지 않는 경우
     if (!user) throw new UserNotFoundException();
 
+    const userSecurity = await this.UserSecurity.findOne({ userId: user._id })
+      .select({
+        password: 1,
+        salt: 1,
+      })
+      .lean();
+
     //* 주어진 비밀번호 해쉬
     const hashedPassword = getKeccak512Hash(
-      password + user.salt,
+      password + userSecurity.salt,
       parseInt(process.env.PEPPER),
     );
 
     //* 비밀번호가 일치하지 않는 경우
-    if (hashedPassword !== user.password) throw new WrongPasswordException();
+    if (hashedPassword !== userSecurity.password)
+      throw new WrongPasswordException();
     return;
   }
 
@@ -116,23 +126,15 @@ export class MongoUserFindService {
         createdAt: 1,
       })
       .lean();
-    const userCredit = this.UserCredit.findById(userId).lean();
     const userProperty = this.UserProperty.findById(userId).lean();
     const userResearch = this.UserResearch.findById(userId).lean();
     const userVote = this.UserVote.findById(userId).lean();
 
-    return await Promise.all([
-      user,
-      userCredit,
-      userProperty,
-      userResearch,
-      userVote,
-    ]).then(
-      //* [user, userCredit, ...] 형태였던 반환값을 {user, userCredit, ...} 형태로 바꿔줍니다.
-      ([user, userCredit, userProperty, userResearch, userVote]) => {
+    return await Promise.all([user, userProperty, userResearch, userVote]).then(
+      //* [user, userProperty, ...] 형태였던 반환값을 {user, userProperty, ...} 형태로 바꿔줍니다.
+      ([user, userProperty, userResearch, userVote]) => {
         return {
           user,
-          userCredit,
           userProperty,
           userResearch,
           userVote,

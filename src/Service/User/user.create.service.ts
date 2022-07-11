@@ -5,7 +5,7 @@ import {
   MongoUserCreateService,
   MongoUserDeleteService,
 } from "src/Mongo";
-import { UnauthorizedUser, User, UserPrivacy } from "src/Schema";
+import { UnauthorizedUser, User, UserPrivacy, UserSecurity } from "src/Schema";
 
 /**
  * 유저를 생성하는 서비스입니다.
@@ -47,7 +47,7 @@ export class UserCreateService {
    * @author 현웅
    */
   async createEmailUser(
-    param: { user: User; userPrivacy: UserPrivacy },
+    param: { user: User; userPrivacy: UserPrivacy; userSecurity: UserSecurity },
     session: ClientSession,
   ) {
     const checkEmailDuplicated =
@@ -73,7 +73,11 @@ export class UserCreateService {
 
     //* 이 후, 새로운 유저를 생성합니다.
     return await this.mongoUserCreateService.createEmailUser(
-      { user: param.user, userPrivacy: param.userPrivacy },
+      {
+        user: param.user,
+        userPrivacy: param.userPrivacy,
+        userSecurity: param.userSecurity,
+      },
       session,
     );
   }

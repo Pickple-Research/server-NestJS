@@ -29,5 +29,6 @@ import { MongoSurBayModule } from "src/Mongo";
     // SurBay
     MongoSurBayModule,
   ],
+  exports: [AuthService],
 })
 export class AuthModule {}

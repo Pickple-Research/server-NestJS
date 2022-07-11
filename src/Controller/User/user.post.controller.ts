@@ -112,16 +112,15 @@ export class UserPostController {
       userType: UserType.USER,
       accountType: AccountType.EMAIL,
       email: body.email,
-      salt,
-      password: hashedPassword,
       createdAt: getCurrentISOTime(),
     };
     const userPrivacy = { lastName: body.lastName, name: body.name };
+    const userSecurity = { password: hashedPassword, salt };
 
     await tryMultiTransaction(async () => {
       //* 새로운 유저를 생성합니다.
       const newUser = await this.userCreateService.createEmailUser(
-        { user, userPrivacy },
+        { user, userPrivacy, userSecurity },
         userSession,
       );
 

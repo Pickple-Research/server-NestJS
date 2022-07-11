@@ -25,6 +25,7 @@ export const getSalt = (length: number = 32) => {
  * @author 현웅
  */
 export const getKeccak512Hash = (original: string, pepper: number) => {
+  // let hashRound = parseInt(process.env.PEPPER);
   let hashRound = pepper;
 
   function hash(text: string) {

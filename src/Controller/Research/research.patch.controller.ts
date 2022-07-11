@@ -166,6 +166,7 @@ export class ResearchPatchController {
     };
     //* CreditHistory 정보
     const creditHistory: CreditHistory = {
+      userId: req.user.userId,
       reason: researchTitle,
       type: "리서치 참여",
       scale: researchCredit,
