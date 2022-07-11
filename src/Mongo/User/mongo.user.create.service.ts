@@ -4,10 +4,14 @@ import { Model, ClientSession } from "mongoose";
 import {
   CreditHistory,
   CreditHistoryDocument,
+  Notification,
+  NotificationDocument,
   UnauthorizedUser,
   UnauthorizedUserDocument,
   User,
   UserDocument,
+  UserNotice,
+  UserNoticeDocument,
   UserPrivacy,
   UserPrivacyDocument,
   UserProperty,
@@ -29,9 +33,13 @@ export class MongoUserCreateService {
   constructor(
     @InjectModel(CreditHistory.name)
     private readonly CreditHistory: Model<CreditHistoryDocument>,
+    @InjectModel(Notification.name)
+    private readonly Notification: Model<NotificationDocument>,
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
+    @InjectModel(UserNotice.name)
+    private readonly UserNotice: Model<UserNoticeDocument>,
     @InjectModel(UserPrivacy.name)
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
@@ -86,7 +94,7 @@ export class MongoUserCreateService {
     //*   배열 형태의 결과를 반환하기 때문에 [0]으로 인덱싱 해줘야 함)
     const newUserId = newUsers[0]._id;
 
-    //* 새로운 유저 개인정보, 특성정보, 보안정보, 리서치 활동정보, 투표 활동정보 데이터를 만들되
+    //* 새로운 유저 개인정보, 특성정보, 보안정보, 공지 확인정보, 리서치 활동정보, 투표 활동정보 데이터를 만들되
     //* 새로운 유저 데이터의 _id를 공유하도록 설정합니다.
     await this.UserPrivacy.create([{ _id: newUserId, ...param.userPrivacy }], {
       session,
@@ -99,6 +107,7 @@ export class MongoUserCreateService {
       [{ _id: newUserId, ...param.userSecurity }],
       { session },
     );
+    await this.UserNotice.create([{ _id: newUserId }], { session });
     await this.UserResearch.create([{ _id: newUserId }], { session });
     await this.UserVote.create([{ _id: newUserId }], { session });
 
@@ -138,5 +147,13 @@ export class MongoUserCreateService {
       { session },
     );
     return newCreditHistories[0].toObject();
+  }
+
+  /**
+   * 개인화된 유저 알림을 생성합니다.
+   * @author 현웅
+   */
+  async createNotification() {
+    await this.Notification.create([{}]);
   }
 }
