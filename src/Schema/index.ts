@@ -25,7 +25,6 @@ export * from "./User/creditHistory.schema";
 export * from "./User/notification.schema";
 export * from "./User/unauthorizedUser.schema";
 export * from "./User/user.schema";
-export * from "./User/userCredit.schema";
 export * from "./User/userPrivacy.schema";
 export * from "./User/userProperty.schema";
 export * from "./User/userResearch.schema";

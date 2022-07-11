@@ -8,8 +8,6 @@ import {
   UnauthorizedUserDocument,
   User,
   UserDocument,
-  UserCredit,
-  UserCreditDocument,
   UserPrivacy,
   UserPrivacyDocument,
   UserProperty,
@@ -34,8 +32,6 @@ export class MongoUserCreateService {
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
-    @InjectModel(UserCredit.name)
-    private readonly UserCredit: Model<UserCreditDocument>,
     @InjectModel(UserPrivacy.name)
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
@@ -68,7 +64,7 @@ export class MongoUserCreateService {
   /**
    * @Transaction
    * 메일 인증이 완료된 미인증 유저를 정규 유저로 전환합니다.
-   * UserCredit, UserProperty, UserPrivacy, UserResearch, UserVote Document도 함께 만들고,
+   * UserProperty, UserPrivacy, UserSecurity UserResearch, UserVote Document도 함께 만들고,
    * 해당 email을 사용하는 미인증 유저 데이터를 삭제합니다.
    * @return 새로운 정규 유저 정보 중 ResearchUser 및 VoteUser 에 저장할 유저 정보 Object
    * @author 현웅

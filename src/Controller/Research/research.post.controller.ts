@@ -98,6 +98,7 @@ export class ResearchPostController {
     });
 
     return await tryMultiTransaction(async () => {
+      //TODO: Promise.all 로 처리
       //* 먼저 리서치를 만듭니다
       const newResearch = await this.mongoResearchCreateService.createResearch(
         { research, files: {} },

@@ -8,8 +8,6 @@ import {
   UnauthorizedUserDocument,
   User,
   UserDocument,
-  UserCredit,
-  UserCreditDocument,
   UserPrivacy,
   UserPrivacyDocument,
   UserProperty,
@@ -40,8 +38,6 @@ export class MongoUserFindService {
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
-    @InjectModel(UserCredit.name)
-    private readonly UserCredit: Model<UserCreditDocument>,
     @InjectModel(UserPrivacy.name)
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
@@ -209,10 +205,8 @@ export class MongoUserFindService {
    * @author 현웅
    */
   async getUserCredit(userId: string) {
-    const userCredit = await this.UserCredit.findById(userId)
-      .select({ credit: 1 })
-      .lean();
-    return userCredit.credit;
+    const user = await this.User.findById(userId).select({ credit: 1 }).lean();
+    return user.credit;
   }
 
   /**
@@ -233,10 +227,10 @@ export class MongoUserFindService {
    * @author 현웅
    */
   async checkUserHasEnoughCredit(param: { userId: string; credit: number }) {
-    const userCredit = await this.User.findById(param.userId)
+    const user = await this.User.findById(param.userId)
       .select({ credit: 1 })
       .lean();
-    if (userCredit.credit < param.credit) throw new NotEnoughCreditException();
+    if (user.credit < param.credit) throw new NotEnoughCreditException();
     return;
   }
 

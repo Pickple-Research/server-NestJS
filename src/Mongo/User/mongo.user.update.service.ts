@@ -106,7 +106,7 @@ export class MongoUserUpdateService {
   }
 
   /**
-   * 리서치에 참여합니다. UserResearch 와 UserCredit 정보를 업데이트 합니다.
+   * 리서치에 참여합니다. UserResearch 와 User 의 credit 정보를 업데이트 합니다.
    * @return 새로 만들어진 CreditHistory 정보
    * @author 현웅
    */

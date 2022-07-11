@@ -53,7 +53,7 @@ export class UserUpdateService {
 
     await Promise.all([checkAlreadyParticipated, updateUser]);
 
-    //* CreditHistory 를 생성하고 UserCredit에 반영한 후 해당 CreditHistory 반환
+    //* CreditHistory 를 생성하고 User 의 credit 에 반영한 후 해당 CreditHistory 반환
     return await this.mongoUserCreateService.createCreditHistory(
       {
         userId: param.userId,
@@ -81,7 +81,7 @@ export class UserUpdateService {
       credit: -1 * param.creditHistory.scale,
     });
 
-    //* CreditHistory 생성 및 UserCredit 에 반영 후 해당 CreditHistory 반환
+    //* CreditHistory 생성 및 User 의 credit 에 반영 후 해당 CreditHistory 반환
     return await this.mongoUserCreateService.createCreditHistory(
       { userId: param.userId, creditHistory: param.creditHistory },
       session,

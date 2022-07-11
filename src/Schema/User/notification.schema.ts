@@ -7,6 +7,9 @@ import { Document } from "mongoose";
  */
 @Schema()
 export class Notification {
+  @Prop({ required: true }) // 알림 대상 유저
+  userId: string;
+
   @Prop({ required: true }) // 알림 타입
   type: string;
 
