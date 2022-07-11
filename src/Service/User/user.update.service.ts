@@ -42,7 +42,6 @@ export class UserUpdateService {
         userId: param.userId,
         researchId: param.participatedResearchInfo.researchId,
       });
-
     //* UserResearch 에 리서치 참여 정보를 추가
     const updateUser = await this.mongoUserUpdateService.participateResearch(
       {
@@ -52,23 +51,16 @@ export class UserUpdateService {
       session,
     );
 
-    //* CreditHistory 를 생성하고 UserCredit에 반영
-    const createCreditHistory =
-      await this.mongoUserCreateService.createCreditHistory(
-        {
-          userId: param.userId,
-          creditHistory: param.creditHistory,
-        },
-        session,
-      );
+    await Promise.all([checkAlreadyParticipated, updateUser]);
 
-    return await Promise.all([
-      checkAlreadyParticipated,
-      updateUser,
-      createCreditHistory,
-    ]).then(([_, __, newCreditHistory]) => {
-      return newCreditHistory;
-    });
+    //* CreditHistory 를 생성하고 UserCredit에 반영한 후 해당 CreditHistory 반환
+    return await this.mongoUserCreateService.createCreditHistory(
+      {
+        userId: param.userId,
+        creditHistory: param.creditHistory,
+      },
+      session,
+    );
   }
 
   /**
@@ -84,36 +76,26 @@ export class UserUpdateService {
     session: ClientSession,
   ) {
     //* 유저가 리서치를 업로드하기에 충분한 크레딧을 가지고 있는지 확인
-    const checkEnoughCredit =
-      this.mongoUserFindService.checkUserHasEnoughCredit({
-        userId: param.userId,
-        credit: -1 * param.creditHistory.scale,
-      });
+    const checkCredit = this.mongoUserFindService.checkUserHasEnoughCredit({
+      userId: param.userId,
+      credit: -1 * param.creditHistory.scale,
+    });
     //* UserResearch 에 researchId 추가
-    const updateUserResearch = await this.mongoUserUpdateService.uploadResearch(
+    const addResearchId = this.mongoUserUpdateService.uploadResearch(
       {
         userId: param.userId,
         researchId: param.researchId,
       },
       session,
     );
-    //* CreditHistory 생성 및 UserCredit 에 반영
-    const createCreditHistory =
-      await this.mongoUserCreateService.createCreditHistory(
-        { userId: param.userId, creditHistory: param.creditHistory },
-        session,
-      );
 
-    //* 위 세 함수를 한꺼번에 시행하되, 새로 생성된 CreditHistory 는 따로 빼서 반환
-    const newCreditHistory = await Promise.all([
-      checkEnoughCredit,
-      updateUserResearch,
-      createCreditHistory,
-    ]).then(([_, __, newCreditHistory]) => {
-      return newCreditHistory;
-    });
+    await Promise.all([checkCredit, addResearchId]);
 
-    return newCreditHistory;
+    //* CreditHistory 생성 및 UserCredit 에 반영 후 해당 CreditHistory 반환
+    return await this.mongoUserCreateService.createCreditHistory(
+      { userId: param.userId, creditHistory: param.creditHistory },
+      session,
+    );
   }
 
   /**

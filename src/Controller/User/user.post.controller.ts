@@ -4,8 +4,9 @@ import { Connection } from "mongoose";
 import {
   EmailUnauthorizedUserSignupBodyDto,
   EmailUserSignupBodyDto,
+  UserActivityBodyDto,
 } from "src/Dto";
-import { UserCreateService } from "src/Service";
+import { UserFindService, UserCreateService } from "src/Service";
 import { MongoResearchCreateService, MongoVoteCreateService } from "src/Mongo";
 import { UnauthorizedUser, User } from "src/Schema";
 import { Public } from "src/Security/Metadata";
@@ -30,6 +31,7 @@ import {
 @Controller("users")
 export class UserPostController {
   constructor(
+    private readonly userFindService: UserFindService,
     private readonly userCreateService: UserCreateService,
 
     @InjectConnection(MONGODB_USER_CONNECTION)
@@ -143,9 +145,12 @@ export class UserPostController {
   }
 
   /**
-   * 테스트 유저를 생성합니다.
+   * 유저의 크레딧 사용내역과
+   * 스크랩/참여/업로드한 리서치/투표 정보를 가져옵니다.
    * @author 현웅
    */
-  @Post("tester")
-  async createTestUser() {}
+  @Post("activity")
+  async getUserActivities(@Body() body: UserActivityBodyDto) {
+    return await this.userFindService.getUserActivities(body);
+  }
 }

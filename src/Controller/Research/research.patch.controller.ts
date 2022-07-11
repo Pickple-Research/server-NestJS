@@ -138,19 +138,23 @@ export class ResearchPatchController {
     @Param() param: { researchId: string },
     @Body() body: ResearchParticiateBodyDto,
   ) {
-    //* 유저가 가진 credit, 리서치 참여시 제공 credit 을 가져옵니다
+    //* 유저가 가진 credit, 리서치 참여시 제공 credit, 리서치 제목 을 가져옵니다
     const getUserCredit = this.mongoUserFindService.getUserCredit(
       req.user.userId,
+    );
+    const getResearchTitle = this.mongoResearchFindService.getResearchTitle(
+      param.researchId,
     );
     const getResearchCredit = this.mongoResearchFindService.getResearchCredit(
       param.researchId,
     );
 
-    const { userCredit, researchCredit } = await Promise.all([
+    const { userCredit, researchTitle, researchCredit } = await Promise.all([
       getUserCredit,
+      getResearchTitle,
       getResearchCredit,
-    ]).then(([userCredit, researchCredit]) => {
-      return { userCredit, researchCredit };
+    ]).then(([userCredit, researchTitle, researchCredit]) => {
+      return { userCredit, researchTitle, researchCredit };
     });
 
     //* 필요한 데이터 형태를 미리 만들어둡니다.
@@ -162,7 +166,7 @@ export class ResearchPatchController {
     };
     //* CreditHistory 정보
     const creditHistory: CreditHistory = {
-      reason: body.researchTitle,
+      reason: researchTitle,
       type: "리서치 참여",
       scale: researchCredit,
       balance: userCredit + researchCredit,

@@ -50,40 +50,31 @@ export class UserCreateService {
     param: { user: User; userPrivacy: UserPrivacy },
     session: ClientSession,
   ) {
-    //* 해당 이메일로 가입된 정규 유저가 있는지 확인합니다.
-    const checkEmailDuplicated = this.mongoUserFindService.checkEmailDuplicated(
-      param.user.email,
-    );
-
+    const checkEmailDuplicated =
+      //* 해당 이메일로 가입된 정규 유저가 있는지 확인합니다.
+      await this.mongoUserFindService.checkEmailDuplicated(param.user.email);
     //* 이메일 인증이 완료되어 있는지 확인합니다.
-    const checkEmailAuthorized = this.mongoUserFindService.checkEmailAuthorized(
-      { email: param.user.email },
-    );
-
+    const checkEmailAuthorized =
+      await this.mongoUserFindService.checkEmailAuthorized({
+        email: param.user.email,
+      });
     //* 기존의 미인증 유저 데이터를 삭제합니다.
     const deleteUnauthorizedUser =
       await this.mongoUserDeleteService.deleteUnauthorizedUser(
         { email: param.user.email },
         session,
       );
-
-    //* 새로운 유저를 생성합니다.
-    const createNewUser = await this.mongoUserCreateService.createEmailUser(
-      { user: param.user, userPrivacy: param.userPrivacy },
-      session,
-    );
-
-    //* 이메일 인증 여부 검증, 이메일 중복 여부 검증,
-    //* 미인증 유저 데이터 삭제와 새로운 유저 데이터 생성을 한꺼번에 실행하고
-    //* 새로 생성된 유저 데이터를 반환합니다.
-    const newUser = await Promise.all([
+    //* 이메일 중복 확인, 인증 완료 확인, 기존 미인증 유저 삭제를 한꺼번에 진행합니다.
+    await Promise.all([
       checkEmailDuplicated,
       checkEmailAuthorized,
       deleteUnauthorizedUser,
-      createNewUser,
-    ]).then(([_, __, ___, newUser]) => {
-      return newUser;
-    });
-    return newUser;
+    ]);
+
+    //* 이 후, 새로운 유저를 생성합니다.
+    return await this.mongoUserCreateService.createEmailUser(
+      { user: param.user, userPrivacy: param.userPrivacy },
+      session,
+    );
   }
 }
