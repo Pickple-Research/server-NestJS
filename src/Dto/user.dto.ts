@@ -1,4 +1,4 @@
-import { IsString } from "class-validator";
+import { IsString, IsOptional } from "class-validator";
 
 /**
  * 이메일을 사용한 최초 회원가입 요청시 (즉, 미인증 유저 생성시)
@@ -19,6 +19,7 @@ export class EmailUnauthorizedUserSignupBodyDto {
  * @author 현웅
  */
 export class EmailUserSignupBodyDto {
+  /** 이메일 */
   @IsString()
   email: string;
 
@@ -30,8 +31,23 @@ export class EmailUserSignupBodyDto {
   @IsString()
   name: string;
 
+  /** 비밀번호 */
   @IsString()
   password: string;
+
+  /** 닉네임 */
+  @IsString()
+  nickname: string;
+
+  /** 생년월일 */
+  @IsString()
+  @IsOptional()
+  birthday?: string;
+
+  /** 성별 */
+  @IsString()
+  @IsOptional()
+  gender?: string;
 }
 
 /**

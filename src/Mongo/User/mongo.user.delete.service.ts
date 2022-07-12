@@ -8,6 +8,8 @@ import {
   UnauthorizedUserDocument,
   User,
   UserDocument,
+  UserNotice,
+  UserNoticeDocument,
   UserPrivacy,
   UserPrivacyDocument,
   UserProperty,
@@ -29,6 +31,8 @@ export class MongoUserDeleteService {
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
+    @InjectModel(UserNotice.name)
+    private readonly UserNotice: Model<UserNoticeDocument>,
     @InjectModel(UserPrivacy.name)
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
@@ -56,13 +60,14 @@ export class MongoUserDeleteService {
   }
 
   /**
-   * 인자로 받은 _id를 사용하는 유저의 데이터를 삭제합니다.
+   * 인자로 받은 _id를 사용하는 유저의 모든 데이터를 삭제합니다.
    * UserPrivacy, UserResearch, UserVote 및 크레딧 내역을 모두 삭제하되,
    * UserProperty는 데이터 분석을 위해 남겨둡니다.
    * @author 현웅
    */
   async deleteUserById(param: { userId: string }, session: ClientSession) {
     await this.User.findByIdAndDelete(param.userId, { session });
+    await this.UserNotice.findByIdAndDelete(param.userId, { session });
     await this.UserPrivacy.findByIdAndDelete(param.userId, { session });
     await this.UserResearch.findByIdAndDelete(param.userId, { session });
     await this.UserSecurity.findByIdAndDelete(param.userId, { session });

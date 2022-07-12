@@ -21,7 +21,7 @@ import { MongoSurBayModule } from "src/Mongo";
     MongoUserModule,
     MongoResearchModule,
     MongoVoteModule,
-    //? authController에서 jwtService를 사용하고 있으므로 imports에 포함시킵니다
+    //? authService 에서 jwtService를 사용하고 있으므로 imports에 포함시킵니다
     JwtModule.register({
       secret: process.env.JWT_SECRET,
       signOptions: { expiresIn: "14d" },

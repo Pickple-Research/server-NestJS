@@ -1,4 +1,5 @@
 import { Module } from "@nestjs/common";
+import { JwtModule } from "@nestjs/jwt";
 import {
   UserGetController,
   UserPostController,
@@ -6,6 +7,7 @@ import {
   UserDeleteController,
 } from "src/Controller";
 import {
+  AuthService,
   UserCreateService,
   UserFindService,
   UserDeleteService,
@@ -28,12 +30,22 @@ import {
     UserPatchController,
     UserDeleteController,
   ],
-  providers: [UserCreateService, UserFindService, UserDeleteService],
+  providers: [
+    AuthService,
+    UserCreateService,
+    UserFindService,
+    UserDeleteService,
+  ],
   imports: [
     MongoUserModule,
     MongoResearchModule,
     MongoVoteModule,
     MongoPartnerModule,
+    //* provider 로 포함시킨 AuthService 가 jwtService 를 사용하고 있으므로 JwtModule 을 imports 합니다.
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: "14d" },
+    }),
   ],
 })
 export class UserModule {}

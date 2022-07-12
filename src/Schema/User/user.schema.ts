@@ -18,7 +18,7 @@ export class User {
   email: string;
 
   @Prop({ trim: true }) // 닉네임
-  nickname?: string;
+  nickname: string;
 
   @Prop({ default: 0 }) // 크레딧
   credit?: number;

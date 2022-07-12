@@ -71,9 +71,8 @@ export class MongoUserCreateService {
 
   /**
    * @Transaction
-   * 메일 인증이 완료된 미인증 유저를 정규 유저로 전환합니다.
-   * UserProperty, UserPrivacy, UserSecurity UserResearch, UserVote Document도 함께 만들고,
-   * 해당 email을 사용하는 미인증 유저 데이터를 삭제합니다.
+   * 메일 인증이 완료된 정규 유저를 생성합니다.
+   * UserProperty, UserPrivacy, UserSecurity, UserResearch, UserVote Document도 함께 만듭니다.
    * @return 새로운 정규 유저 정보 중 ResearchUser 및 VoteUser 에 저장할 유저 정보 Object
    * @author 현웅
    */
@@ -111,14 +110,8 @@ export class MongoUserCreateService {
     await this.UserResearch.create([{ _id: newUserId }], { session });
     await this.UserVote.create([{ _id: newUserId }], { session });
 
-    //* ResearchUser와 VoteUser에 저장할 유저 정보를 추출해 반환합니다.
-    const newUser = newUsers[0].toObject();
-    return {
-      _id: newUser._id,
-      userType: newUser.userType,
-      nickname: `newUser.nickname`,
-      grade: newUser.grade,
-    };
+    //* 새로운 유저 정보를 반환합니다.
+    return newUsers[0].toObject();
   }
 
   /**

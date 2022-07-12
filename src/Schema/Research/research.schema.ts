@@ -33,7 +33,7 @@ export class Research {
   @Prop({ required: true }) // 리서치 종류 (설문조사, 실험참여, UIUX 설문, ...)
   type: string;
 
-  @Prop({ type: [String], enum: Category }) // 리서치 카테고리
+  @Prop({ type: [String], default: [], enum: Category }) // 리서치 카테고리
   categories?: Category[];
 
   @Prop() // 리서치 진행 단체
