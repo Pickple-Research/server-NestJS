@@ -6,14 +6,13 @@ import {
   EmailUserSignupBodyDto,
   UserActivityBodyDto,
 } from "src/Dto";
-import { UserFindService, UserCreateService } from "src/Service";
+import { AuthService, UserFindService, UserCreateService } from "src/Service";
 import { MongoResearchCreateService, MongoVoteCreateService } from "src/Mongo";
 import { UnauthorizedUser, User } from "src/Schema";
 import { Public } from "src/Security/Metadata";
 import {
   tryMultiTransaction,
   getSalt,
-  getKeccak512Hash,
   getCurrentISOTime,
   getISOTimeAfterGivenMinutes,
 } from "src/Util";
@@ -31,6 +30,7 @@ import {
 @Controller("users")
 export class UserPostController {
   constructor(
+    private readonly authService: AuthService,
     private readonly userFindService: UserFindService,
     private readonly userCreateService: UserCreateService,
 
@@ -79,66 +79,71 @@ export class UserPostController {
   /**
    * 이메일 인증이 완료된 정규 유저를 생성합니다.
    * 정규 유저 생성 이후엔 ResearchUser, VoteUser 데이터도 생성합니다.
+   * @return 생성된 유저 JWT
    * @author 현웅
    */
   @Public()
   @Post("email")
   async createEmailUser(@Body() body: EmailUserSignupBodyDto) {
-    const startUserSession = this.userConnection.startSession();
-    const startResearchSession = this.researchConnection.startSession();
-    const startVoteSession = this.voteConnection.startSession();
-
-    const { userSession, researchSession, voteSession } = await Promise.all([
-      startUserSession,
-      startResearchSession,
-      startVoteSession,
-    ]).then(([userSession, researchSession, voteSession]) => {
-      return {
-        userSession,
-        researchSession,
-        voteSession,
-      };
-    });
+    const userSession = await this.userConnection.startSession();
+    const researchSession = await this.researchConnection.startSession();
+    const voteSession = await this.voteConnection.startSession();
 
     const salt = getSalt();
-    const hashedPassword = getKeccak512Hash(
-      body.password + salt,
-      parseInt(process.env.PEPPER),
+    const hashedPassword = await this.authService.getHashPassword(
+      body.password,
+      salt,
     );
 
     const user: User = {
       userType: UserType.USER,
       accountType: AccountType.EMAIL,
       email: body.email,
+      nickname: body.nickname,
       createdAt: getCurrentISOTime(),
     };
     const userPrivacy = { lastName: body.lastName, name: body.name };
+    const userProperty = { gender: body.gender, birthday: body.birthday };
     const userSecurity = { password: hashedPassword, salt };
 
-    await tryMultiTransaction(async () => {
+    return await tryMultiTransaction(async () => {
       //* 새로운 유저를 생성합니다.
       const newUser = await this.userCreateService.createEmailUser(
-        { user, userPrivacy, userSecurity },
+        { user, userPrivacy, userProperty, userSecurity },
         userSession,
       );
+
+      //* ResearchUser, VoteUser 에 사용되는 유저 정보를 생성합니다.
+      const author = {
+        userType: newUser.userType,
+        nickname: newUser.nickname,
+        grade: newUser.grade,
+      };
 
       //* 새로 만들어진 유저 정보를 바탕으로 ResearchUser 를 생성합니다.
       const createResearchUser =
         this.mongoResearchCreateService.createResearchUser(
-          { user: newUser },
+          { user: author },
           researchSession,
         );
       //* 새로 만들어진 유저 정보를 바탕으로 VoteUser 를 생성합니다.
       const createVoteUser = this.mongoVoteCreateService.createVoteUser(
-        { user: newUser },
+        { user: author },
         voteSession,
       );
 
       //* ResearchUser, VoteUser 데이터를 한꺼번에 생성합니다.
       await Promise.all([createResearchUser, createVoteUser]);
-    }, [userSession, researchSession, voteSession]);
 
-    return;
+      //* 모든 데이터 생성이 완료되면 JWT를 발급하고 새로운 유저정보와 함께 반환합니다.
+      const jwt = await this.authService.issueJWT({
+        userId: newUser.id,
+        userEmail: newUser.email,
+        userNickname: newUser.nickname,
+      });
+
+      return { user: newUser, jwt };
+    }, [userSession, researchSession, voteSession]);
   }
 
   /**

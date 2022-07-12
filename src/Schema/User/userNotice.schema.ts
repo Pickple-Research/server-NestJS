@@ -7,7 +7,7 @@ import { Document } from "mongoose";
  */
 @Schema()
 export class UserNotice {
-  @Prop({ required: true }) // 마지막으로 공지를 확인한 시각
+  @Prop({ default: "" }) // 마지막으로 공지를 확인한 시각
   lastCheck: string;
 
   @Prop({ type: [String], default: [] }) // 확인한 공지 _id

@@ -2,8 +2,6 @@ import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, ClientSession } from "mongoose";
 import {
-  CreditHistory,
-  // CreditHistoryDocument,
   UnauthorizedUser,
   UnauthorizedUserDocument,
   User,
@@ -20,7 +18,11 @@ import {
   ParticipatedResearchInfo,
   ParticipatedVoteInfo,
 } from "src/Schema";
-import { WrongAuthorizationCodeException } from "src/Exception";
+import { didDatePassed } from "src/Util";
+import {
+  WrongAuthorizationCodeException,
+  AuthCodeExpiredException,
+} from "src/Exception";
 
 @Injectable()
 export class MongoUserUpdateService {
@@ -41,14 +43,15 @@ export class MongoUserUpdateService {
   /**
    * 인자로 받은 이메일을 사용하는 미인증 유저의 인증번호와
    * 인자로 받은 인증번호가 일치하는지 확인합니다.
-   * 인증번호가 일치하면 인증 여부를 true로 변경하고, 그렇지 않다면 에러를 일으킵니다.
+   * 인증번호가 일치하지 않거나 인증번호가 만료되었다면 에러를 일으킵니다.
+   * 인증번호가 일치하면 인증 여부를 true로 변경합니다.
    * @author 현웅
    */
   async checkUnauthorizedUserCode(param: { email: string; code: string }) {
     const unauthorizedUser = await this.UnauthorizedUser.findOne({
       email: param.email,
     })
-      .select({ authorizationCode: 1 })
+      .select({ authorizationCode: 1, codeExpiredAt: 1 })
       .lean();
 
     //* 해당 이메일을 사용하는 유저가 없거나, 인증번호가 일치하지 않는 경우
@@ -57,6 +60,11 @@ export class MongoUserUpdateService {
       unauthorizedUser.authorizationCode !== param.code
     ) {
       throw new WrongAuthorizationCodeException();
+    }
+
+    //* 인증번호 유효기간이 만료된 경우
+    if (didDatePassed(unauthorizedUser.codeExpiredAt)) {
+      throw new AuthCodeExpiredException();
     }
 
     //TODO: #QUERY-EFFICIENCY 한번의 DB 검색으로 끝낼 수 있는 방법 없나?

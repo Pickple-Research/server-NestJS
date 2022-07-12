@@ -10,6 +10,15 @@ export function getCurrentISOTime() {
 }
 
 /**
+ * 인자로 받은 날짜가 경과하였는지 반환합니다.
+ * 경과한 경우 true, 그렇지 않은 경우 false 를 반환합니다.
+ * @author 현웅
+ */
+export function didDatePassed(date: string | Date) {
+  return new Date(date) < new Date();
+}
+
+/**
  * 인자로 받은 분 수 만큼의 미래 한국 시간을 ISO 타입으로 반환합니다.
  * 인자가 주어지지 않으면 30분 뒤의 시간을 반환합니다.
  * @author 현웅

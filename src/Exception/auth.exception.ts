@@ -27,6 +27,21 @@ export class WrongAuthorizationCodeException extends Status401Exception {
 }
 
 /**
+ * 인증번호가 만료된 후 인증을 시도하는 경우 경우 사용합니다.
+ * 기본 message: `인증번호가 만료되었습니다.\n새로운 인증번호를 발급받아주세요`
+ * @author 현웅
+ */
+export class AuthCodeExpiredException extends Status401Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage
+        ? newMessage
+        : `인증번호가 만료되었습니다.\n새로운 인증번호를 발급받아주세요`,
+    });
+  }
+}
+
+/**
  * 이메일 회원가입을 진행하기 전에 해당 이메일이 인증된 상태인지 확인합니다.
  * 기본 message: `이메일이 인증되지 않았습니다`
  * @author 현웅
