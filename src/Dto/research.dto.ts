@@ -1,4 +1,9 @@
-import { IsString, IsNumber, IsNumberString } from "class-validator";
+import {
+  IsString,
+  IsNumber,
+  IsNumberString,
+  IsOptional,
+} from "class-validator";
 
 /**
  * 리서치 생성 요청시 Body에 포함되어야 하는 정보들입니다.
@@ -43,7 +48,8 @@ export class ResearchCreateBodyDto {
   @IsString({ each: true }) // 참여 성별 조건
   targetGenders: string[];
 
-  @IsNumber() // 참여 나이 조건
+  @IsString({ each: true }) // 참여 나이 조건
+  @IsOptional()
   targetAges: number[];
 
   @IsString({ each: true }) // 참여 나이대 조건

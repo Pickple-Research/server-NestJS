@@ -157,4 +157,16 @@ export class MongoVoteFindService {
       .populate({ path: "author", model: this.VoteUser })
       .lean();
   }
+
+  /**
+   * 인자로 받은 userId 를 사용하는 유저가 업로드한 투표를 가져옵니다.
+   * @author 현웅
+   */
+  async getUploadedVotes(userId: string) {
+    return await this.Vote.find({ authorId: userId })
+      .sort({ _id: -1 })
+      .limit(20)
+      .populate({ path: "author", model: this.VoteUser })
+      .lean();
+  }
 }

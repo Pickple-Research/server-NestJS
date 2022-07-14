@@ -216,28 +216,14 @@ export class MongoUserFindService {
   }
 
   /**
-   * 인자로 받은 CreditHistoryIds 로 CreditHistory 를 모두 찾고 반환합니다.
+   * 인자로 받은 userId 를 사용하는 유저의 크레딧 사용내역을 가져옵니다.
    * @author 현웅
    */
-  async getCreditHisories(creditHistoryIds: string[]) {
-    return await this.CreditHistory.find({
-      _id: { $in: creditHistoryIds },
-    })
+  async getCreditHisories(userId: string) {
+    return await this.CreditHistory.find({ userId })
       .sort({ _id: -1 })
+      .limit(20)
       .lean();
-  }
-
-  /**
-   * 유저가 일정량 이상의 크레딧이 있는지 확인합니다.
-   * 그렇지 못한 경우, 에러를 일으킵니다.
-   * @author 현웅
-   */
-  async checkUserHasEnoughCredit(param: { userId: string; credit: number }) {
-    const user = await this.User.findById(param.userId)
-      .select({ credit: 1 })
-      .lean();
-    if (user.credit < param.credit) throw new NotEnoughCreditException();
-    return;
   }
 
   /**

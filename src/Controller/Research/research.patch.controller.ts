@@ -181,15 +181,8 @@ export class ResearchPatchController {
     };
 
     //* User DB, Research DB에 대한 Session을 시작합니다.
-    const startUserSession = this.userConnection.startSession();
-    const startResearchSession = this.researchConnection.startSession();
-
-    const { userSession, researchSession } = await Promise.all([
-      startUserSession,
-      startResearchSession,
-    ]).then(([userSession, researchSession]) => {
-      return { userSession, researchSession };
-    });
+    const userSession = await this.userConnection.startSession();
+    const researchSession = await this.researchConnection.startSession();
 
     return await tryMultiTransaction(async () => {
       //* 유저의 리서치 참여 정보에 리서치 참여 정보 추가,

@@ -1,12 +1,11 @@
-import { Controller, Inject, Body, Post } from "@nestjs/common";
+import { Controller, Inject, Request, Body, Post } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import {
   EmailUnauthorizedUserSignupBodyDto,
   EmailUserSignupBodyDto,
-  UserActivityBodyDto,
 } from "src/Dto";
-import { AuthService, UserFindService, UserCreateService } from "src/Service";
+import { AuthService, UserCreateService } from "src/Service";
 import { MongoResearchCreateService, MongoVoteCreateService } from "src/Mongo";
 import { UnauthorizedUser, User } from "src/Schema";
 import { Public } from "src/Security/Metadata";
@@ -31,7 +30,6 @@ import {
 export class UserPostController {
   constructor(
     private readonly authService: AuthService,
-    private readonly userFindService: UserFindService,
     private readonly userCreateService: UserCreateService,
 
     @InjectConnection(MONGODB_USER_CONNECTION)
@@ -115,6 +113,7 @@ export class UserPostController {
 
       //* ResearchUser, VoteUser 에 사용되는 유저 정보를 생성합니다.
       const author = {
+        _id: newUser._id,
         userType: newUser.userType,
         nickname: newUser.nickname,
         grade: newUser.grade,
@@ -144,15 +143,5 @@ export class UserPostController {
 
       return { user: newUser, jwt };
     }, [userSession, researchSession, voteSession]);
-  }
-
-  /**
-   * 유저의 크레딧 사용내역과
-   * 스크랩/참여/업로드한 리서치/투표 정보를 가져옵니다.
-   * @author 현웅
-   */
-  @Post("activity")
-  async getUserActivities(@Body() body: UserActivityBodyDto) {
-    return await this.userFindService.getUserActivities(body);
   }
 }

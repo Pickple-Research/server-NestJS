@@ -169,9 +169,29 @@ export class MongoResearchFindService {
    * @author 현웅
    */
   async getResearches(researchIds: string[]) {
+    //* Mongoose 의 $in 을 사용하면 입력 순서가 보장되지 않고 _id 를 기준으로 오름차순하여 반환되므로
+    //* 아래 답변을 참고하여 최초로 주어진 _id 를 기준으로 정렬한 후 반환
+    //* https://stackoverflow.com/questions/35538509/sort-an-array-of-objects-based-on-another-array-of-ids
     return await this.Research.find({
       _id: { $in: researchIds },
     })
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
+      .lean();
+  }
+
+  /**
+   * 인자로 받은 userId 를 사용하는 유저가 업로드한 리서치를 가져옵니다.
+   * @author 현웅
+   */
+  async getUploadedResearches(userId: string) {
+    return await this.Research.find({
+      authorId: userId,
+    })
+      .sort({ pulledupAt: -1 })
+      .limit(20)
       .populate({
         path: "author",
         model: this.ResearchUser,

@@ -4,7 +4,7 @@ import {
   MongoResearchFindService,
   MongoVoteFindService,
 } from "src/Mongo";
-import { UserActivityBodyDto } from "src/Dto";
+import { UserResearch, UserVote } from "src/Schema";
 
 @Injectable()
 export class UserFindService {
@@ -38,56 +38,63 @@ export class UserFindService {
    * 스크랩/참여/업로드한 리서치/투표 정보를 가져옵니다.
    * @author 현웅
    */
-  async getUserActivities(param: UserActivityBodyDto) {
-    // const getCreditHistories = this.mongoUserFindService.getUserCreditHisories(
-    //   param.creditHistoryIds,
-    // );
+  async getUserActivities(param: {
+    userId: string;
+    userResearch: UserResearch;
+    userVote: UserVote;
+  }) {
+    const getCreditHistories = this.mongoUserFindService.getCreditHisories(
+      param.userId,
+    );
     const getScrappedResearches = this.mongoResearchFindService.getResearches(
-      param.scrappedResearchIds,
+      param.userResearch.scrappedResearchIds.splice(0, 20),
     );
     const getParticipatedResearches =
       this.mongoResearchFindService.getResearches(
-        param.participatedResearchIds,
+        param.userResearch.participatedResearchInfos
+          .splice(0, 20)
+          .map((info) => info.researchId),
       );
-    // const getUploadedResearches = this.mongoResearchFindService.getUploadedResearches(
-    //   param.uploadedResearchIds,
-    // );
+    const getUploadedResearches =
+      this.mongoResearchFindService.getUploadedResearches(param.userId);
     const getScrappedVotes = this.mongoVoteFindService.getVotes(
-      param.scrappedVoteIds,
+      param.userVote.scrappedVoteIds.splice(0, 20),
     );
     const getParticipatedVotes = this.mongoVoteFindService.getVotes(
-      param.participatedVoteIds,
+      param.userVote.participatedVoteInfos
+        .splice(0, 20)
+        .map((info) => info.voteId),
     );
-    // const getUploadedVotes = this.mongoVoteFindService.getUploadedVotes(
-    //   param.uploadedVoteIds,
-    // );
+    const getUploadedVotes = this.mongoVoteFindService.getUploadedVotes(
+      param.userId,
+    );
 
     const [
-      // creditHistories,
+      creditHistories,
       scrappedResearches,
       participatedResearches,
-      // uploadedResearches,
+      uploadedResearches,
       scrappedVotes,
       participatedVotes,
-      // uploadedVotes,
+      uploadedVotes,
     ] = await Promise.all([
-      // getCreditHistories,
+      getCreditHistories,
       getScrappedResearches,
       getParticipatedResearches,
-      // getUploadedResearches,
+      getUploadedResearches,
       getScrappedVotes,
       getParticipatedVotes,
-      // getUploadedVotes,
+      getUploadedVotes,
     ]);
 
     return {
-      // creditHistories,
+      creditHistories,
       scrappedResearches,
       participatedResearches,
-      // uploadedResearches,
+      uploadedResearches,
       scrappedVotes,
       participatedVotes,
-      // uploadedVotes,
+      uploadedVotes,
     };
   }
 }
