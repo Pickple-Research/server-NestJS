@@ -34,13 +34,19 @@ export class AuthController {
       body.password,
     );
 
+    const userActivities = await this.userFindService.getUserActivities({
+      userId: userInfo.user._id,
+      userResearch: userInfo.userResearch,
+      userVote: userInfo.userVote,
+    });
+
     const jwt = await this.authService.issueJWT({
       userId: userInfo.user._id,
       userNickname: userInfo.user.nickname,
       userEmail: userInfo.user.email,
     });
 
-    return { jwt, ...userInfo };
+    return { jwt, userInfo, userActivities };
   }
 
   /**

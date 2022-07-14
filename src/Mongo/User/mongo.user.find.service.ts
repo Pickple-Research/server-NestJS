@@ -8,6 +8,8 @@ import {
   UnauthorizedUserDocument,
   User,
   UserDocument,
+  UserNotice,
+  UserNoticeDocument,
   UserPrivacy,
   UserPrivacyDocument,
   UserProperty,
@@ -38,6 +40,8 @@ export class MongoUserFindService {
     @InjectModel(UnauthorizedUser.name)
     private readonly UnauthorizedUser: Model<UnauthorizedUserDocument>,
     @InjectModel(User.name) private readonly User: Model<UserDocument>,
+    @InjectModel(UserNotice.name)
+    private readonly UserNotice: Model<UserNoticeDocument>,
     @InjectModel(UserPrivacy.name)
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
@@ -82,7 +86,7 @@ export class MongoUserFindService {
    * @param password
    * @author 현웅
    */
-  async authorize(email: string, password: string) {
+  async authenticate(email: string, password: string) {
     //* 유저 데이터 탐색
     const user = await this.User.findOne({ email }).select({ _id: 1 }).lean();
 
@@ -110,27 +114,28 @@ export class MongoUserFindService {
 
   /**
    * 주이진 userId 를 사용하는 유저 데이터를 반환합니다.
-   * (UserPrivacy는 제외하고 반환)
+   * (UserPrivacy와 UserSecurity는 제외하고 반환)
    * @author 현웅
    */
   async getUserInfoById(userId: string) {
-    const user = this.User.findById(userId)
-      .select({
-        email: 1,
-        nickname: 1,
-        grade: 1,
-        createdAt: 1,
-      })
-      .lean();
+    const user = this.User.findById(userId).lean();
+    const userNotice = this.UserNotice.findById(userId).lean();
     const userProperty = this.UserProperty.findById(userId).lean();
     const userResearch = this.UserResearch.findById(userId).lean();
     const userVote = this.UserVote.findById(userId).lean();
 
-    return await Promise.all([user, userProperty, userResearch, userVote]).then(
-      //* [user, userProperty, ...] 형태였던 반환값을 {user, userProperty, ...} 형태로 바꿔줍니다.
-      ([user, userProperty, userResearch, userVote]) => {
+    return await Promise.all([
+      user,
+      userNotice,
+      userProperty,
+      userResearch,
+      userVote,
+    ]).then(
+      //* [user, userNotice, ...] 형태였던 반환값을 {user, userNotice, ...} 형태로 바꿔줍니다.
+      ([user, userNotice, userProperty, userResearch, userVote]) => {
         return {
           user,
+          userNotice,
           userProperty,
           userResearch,
           userVote,
@@ -175,13 +180,14 @@ export class MongoUserFindService {
 
   /**
    * 주이진 userId 를 사용하는 유저 데이터를 반환합니다.
-   * (UserPrivacy는 제외하고 반환)
+   * (UserPrivacy 와 UserSecurity 는 제외하고 반환)
    * @author 현웅
    */
   async getUserInfoByEmail(email: string) {
     const user = await this.User.findOne({ email }).select({ _id: 1 }).lean();
 
     if (user) return await this.getUserInfoById(user._id);
+    //* 유저가 존재하지 않는 경우엔 로직상 다른 곳에서 Exception 을 일으키므로 여기선 발생시키지 않습니다.
   }
 
   /**
@@ -210,28 +216,14 @@ export class MongoUserFindService {
   }
 
   /**
-   * 인자로 받은 CreditHistoryIds 로 CreditHistory 를 모두 찾고 반환합니다.
+   * 인자로 받은 userId 를 사용하는 유저의 크레딧 사용내역을 가져옵니다.
    * @author 현웅
    */
-  async getCreditHisories(creditHistoryIds: string[]) {
-    return await this.CreditHistory.find({
-      _id: { $in: creditHistoryIds },
-    })
+  async getCreditHisories(userId: string) {
+    return await this.CreditHistory.find({ userId })
       .sort({ _id: -1 })
+      .limit(20)
       .lean();
-  }
-
-  /**
-   * 유저가 일정량 이상의 크레딧이 있는지 확인합니다.
-   * 그렇지 못한 경우, 에러를 일으킵니다.
-   * @author 현웅
-   */
-  async checkUserHasEnoughCredit(param: { userId: string; credit: number }) {
-    const user = await this.User.findById(param.userId)
-      .select({ credit: 1 })
-      .lean();
-    if (user.credit < param.credit) throw new NotEnoughCreditException();
-    return;
   }
 
   /**

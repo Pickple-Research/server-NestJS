@@ -1,7 +1,7 @@
 import { Controller, Inject, Request, Body, Post } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { MongoUserUpdateService, MongoVoteCreateService } from "src/Mongo";
+import { MongoVoteCreateService } from "src/Mongo";
 import {
   VoteCreateBodyDto,
   VoteCommentCreateBodyDto,
@@ -10,20 +10,16 @@ import {
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
 import { tryTransaction, tryMultiTransaction } from "src/Util";
-import { MONGODB_USER_CONNECTION, MONGODB_VOTE_CONNECTION } from "src/Constant";
+import { MONGODB_VOTE_CONNECTION } from "src/Constant";
 // import { getDummyVotes } from "src/Dummy";
 
 @Controller("votes")
 export class VotePostController {
   constructor(
-    @InjectConnection(MONGODB_USER_CONNECTION)
-    private readonly userConnection: Connection,
     @InjectConnection(MONGODB_VOTE_CONNECTION)
     private readonly voteConnection: Connection,
   ) {}
 
-  @Inject()
-  private readonly mongoUserUpdateService: MongoUserUpdateService;
   @Inject()
   private readonly mongoVoteCreateService: MongoVoteCreateService;
 
@@ -136,11 +132,7 @@ export class VotePostController {
   //   });
 
   //   for (const vote of dummyVotes) {
-  //     const newVote = await this.mongoVoteCreateService.createVote({ vote });
-  //     await this.mongoUserUpdateService.uploadVote({
-  //       userId: req.user.userId,
-  //       voteId: newVote._id,
-  //     });
+  //     await this.mongoVoteCreateService.createVote({ vote });
   //   }
 
   //   return;

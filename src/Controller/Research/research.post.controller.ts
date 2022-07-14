@@ -11,8 +11,11 @@ import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { Research, CreditHistory } from "src/Schema";
-import { UserUpdateService } from "src/Service";
-import { MongoUserFindService, MongoResearchCreateService } from "src/Mongo";
+import {
+  MongoUserFindService,
+  MongoUserCreateService,
+  MongoResearchCreateService,
+} from "src/Mongo";
 import {
   getCurrentISOTime,
   getMulterOptions,
@@ -30,13 +33,12 @@ import {
   MONGODB_USER_CONNECTION,
   MONGODB_RESEARCH_CONNECTION,
 } from "src/Constant";
+import { NotEnoughCreditException } from "src/Exception";
 // import { getDummyResearches } from "src/Dummy";
 
 @Controller("researches")
 export class ResearchPostController {
   constructor(
-    private readonly userUpdateService: UserUpdateService,
-
     @InjectConnection(MONGODB_USER_CONNECTION)
     private readonly userConnection: Connection,
     @InjectConnection(MONGODB_RESEARCH_CONNECTION)
@@ -45,6 +47,8 @@ export class ResearchPostController {
 
   @Inject()
   private readonly mongoUserFindService: MongoUserFindService;
+  @Inject()
+  private readonly mongoUserCreateService: MongoUserCreateService;
   @Inject()
   private readonly mongoResearchCreateService: MongoResearchCreateService;
 
@@ -63,11 +67,17 @@ export class ResearchPostController {
       req.user.userId,
     );
     //* 필요한 데이터 형태를 미리 만들어둡니다.
+    //* 리서치 생성에 필요한 크레딧
+    const requiredCredit =
+      CREDIT_PER_MINUTE * body.estimatedTime +
+      body.extraCredit * body.extraCreditRecieverNum +
+      (body.targetAgeGroups.length !== 0 ? 5 : 0);
+
+    //* 이 때, 유저의 크레딧이 충분한지 확인하고 충분하지 않으면 에러를 일으킵니다.
+    if (userCredit < requiredCredit) throw new NotEnoughCreditException();
+
     //* 현재 시간
     const currentTime = getCurrentISOTime();
-    //* 리서치 생성에 필요한 크레딧
-    //TODO: ExtraCredit 에 따른 credit 도 반영해야 함
-    const requiredCredit = CREDIT_PER_MINUTE * body.estimatedTime;
     //* 새로운 리서치 정보
     const research: Research = {
       ...body,
@@ -87,34 +97,23 @@ export class ResearchPostController {
     };
 
     //* User DB, Research DB 세션을 시작합니다.
-    const startUserSession = this.userConnection.startSession();
-    const startResearchSession = this.researchConnection.startSession();
-
-    const { userSession, researchSession } = await Promise.all([
-      startUserSession,
-      startResearchSession,
-    ]).then(([userSession, researchSession]) => {
-      return { userSession, researchSession };
-    });
+    const userSession = await this.userConnection.startSession();
+    const researchSession = await this.researchConnection.startSession();
 
     return await tryMultiTransaction(async () => {
       //TODO: Promise.all 로 처리
-      //* 먼저 리서치를 만듭니다
+      //* 리서치/리서치 참여 현황 데이터를 만듭니다
       const newResearch = await this.mongoResearchCreateService.createResearch(
         { research, files: {} },
         researchSession,
       );
 
-      //* 만들어진 리서치 정보와
-      //* 미리 작성한 CreditHistory 정보를 User DB 에 반영합니다.
-      const newCreditHistory = await this.userUpdateService.uploadResearch(
-        {
-          userId: req.user.userId,
-          researchId: newResearch._id,
-          creditHistory,
-        },
-        userSession,
-      );
+      //* CreditHistory 정보를 User DB 에 반영합니다.
+      const newCreditHistory =
+        await this.mongoUserCreateService.createCreditHistory(
+          { userId: req.user.userId, creditHistory },
+          userSession,
+        );
 
       return { newResearch, newCreditHistory };
     }, [userSession, researchSession]);
@@ -156,8 +155,12 @@ export class ResearchPostController {
       req.user.userId,
     );
     //* 필요한 데이터 형태를 미리 만들어둡니다.
-    const currentTime = getCurrentISOTime();
     const requiredCredit = CREDIT_PER_MINUTE * body.estimatedTime;
+
+    //* 이 때, 유저의 크레딧이 충분한지 확인하고 충분하지 않으면 에러를 일으킵니다.
+    if (userCredit < requiredCredit) throw new NotEnoughCreditException();
+
+    const currentTime = getCurrentISOTime();
     //* 새로운 리서치 정보
     const research: Research = {
       ...body,
@@ -187,14 +190,12 @@ export class ResearchPostController {
         researchSession,
       );
 
-      const newCreditHistory = await this.userUpdateService.uploadResearch(
-        {
-          userId: req.user.userId,
-          researchId: newResearch._id,
-          creditHistory,
-        },
-        userSession,
-      );
+      //* CreditHistory 정보를 User DB 에 반영합니다.
+      const newCreditHistory =
+        await this.mongoUserCreateService.createCreditHistory(
+          { userId: req.user.userId, creditHistory },
+          userSession,
+        );
 
       return { newResearch, newCreditHistory };
     }, [userSession, researchSession]);
@@ -303,6 +304,7 @@ export class ResearchPostController {
   //     };
 
   //     const creditHistory: CreditHistory = {
+  //       userId: req.user.userId,
   //       reason: dummyResearch.title,
   //       type: "리서치 작성",
   //       scale: -1 * requiredCredit,
@@ -310,15 +312,14 @@ export class ResearchPostController {
   //       createdAt: currentTime,
   //     };
 
-  //     const newResearch = await this.mongoResearchCreateService.createResearch({
+  //     await this.mongoResearchCreateService.createResearch({
   //       research,
   //       files: {},
   //     });
 
-  //     await this.userUpdateService.uploadResearch({
+  //     await this.mongoUserCreateService.createCreditHistory({
   //       userId: req.user.userId,
   //       creditHistory,
-  //       researchId: newResearch._id,
   //     });
   //   }
 
