@@ -15,7 +15,7 @@ export class AppController {
    * @author 현웅
    */
   @Public()
-  @Get("test")
+  @Get("release")
   async test() {
     return "2022-07-15 1100 release";
   }

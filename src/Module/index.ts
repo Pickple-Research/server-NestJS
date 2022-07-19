@@ -4,6 +4,7 @@
  * @author 현웅
  */
 
+export * from "./admin.module";
 export * from "./auth.module";
 export * from "./feedback.module";
 export * from "./notice.module";

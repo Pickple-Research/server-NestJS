@@ -4,6 +4,9 @@
  * @author 현웅
  */
 
+//Admin
+export * from "./Admin/admin.controller";
+
 //Auth
 export * from "./Auth/auth.controller";
 
