@@ -24,6 +24,7 @@ import {
 } from "src/Module/Global";
 // Main Modules
 import {
+  AdminModule,
   AuthModule,
   FeedbackModule,
   NoticeModule,
@@ -118,6 +119,7 @@ import {
     FilterModule,
 
     //* Controller & Service 형태의 일반 모듈
+    AdminModule,
     AuthModule,
     FeedbackModule,
     NoticeModule,

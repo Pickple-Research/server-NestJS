@@ -11,7 +11,8 @@ import { CORS_ORIGINS } from "./Constant";
  * ***
  * 주요 기능:
  * - CORS 설정
- * - 모든 요청 주소에 globalPrefix 추가 ('/api')
+ * - 기본 Logger 설정
+ * // - 모든 요청 주소에 globalPrefix 추가 ('/api')
  * //- AWS IAM 인증
  * ***
  * @author 현웅
