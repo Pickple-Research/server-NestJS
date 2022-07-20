@@ -1,12 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import admin from "firebase-admin";
+import * as account from "./r2c-pickpleresearch-firebase-adminsdk-7ykfc-8627d5f061.json";
 
 @Injectable()
 export class FirebaseService {
   constructor() {
-    const serviceAccount = require("./r2c-pickpleresearch-firebase-adminsdk-7ykfc-8627d5f061.json");
+    //! 왠진 모르겠지만 require로 가져오면 에러가 납니다.
+    // const serviceAccount = require("./r2c-pickpleresearch-firebase-adminsdk-7ykfc-8627d5f061.json");
     admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
+      credential: admin.credential.cert(account as any),
     });
   }
 
@@ -18,7 +20,7 @@ export class FirebaseService {
   async sendPushAlarm(notification: { title: string; body: string }) {
     const message = {
       token:
-        "f9oS6FhnTI2Z0c0PW68JxK:APA91bE_sFx8NDC9SBP0RgJb-tyZexI6t2XkrjEVNRhelksMCui_dE6MItRhoRZ4cvu2HqxKgD7gKDWDa1V9WfkyGOsc7fyhj_54ZtvM7pgUaWTIgo7A288XG3oAYd365LoPPernWtNK",
+        "eG-GgBynS6ubvv6gmvk_2h:APA91bHSc440P_sRVIGJJOnyNpb9SUrShWIEp6XQ56KY3iPNDfcxNSMyvtBHEjls0K9lNvoE0jmSkkMMnmU0vsLDAF0usfwT_l3y3r9ceo2eR6sihG5bdmB7PpAhW15LegY4kB9grz6v",
       notification: {
         title: "서버 공지 제목",
         body: "서버 공지 내용",

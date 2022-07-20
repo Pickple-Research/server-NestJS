@@ -14,6 +14,7 @@ import { Research, CreditHistory } from "src/Schema";
 import {
   MongoUserFindService,
   MongoUserCreateService,
+  MongoResearchFindService,
   MongoResearchCreateService,
 } from "src/Mongo";
 import {
@@ -26,6 +27,7 @@ import {
   ResearchCommentCreateBodyDto,
   ResearchReplyCreateBodyDto,
   ResearchReportBodyDto,
+  ResearchMypageBodyDto,
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
 import {
@@ -49,6 +51,8 @@ export class ResearchPostController {
   private readonly mongoUserFindService: MongoUserFindService;
   @Inject()
   private readonly mongoUserCreateService: MongoUserCreateService;
+  @Inject()
+  private readonly mongoResearchFindService: MongoResearchFindService;
   @Inject()
   private readonly mongoResearchCreateService: MongoResearchCreateService;
 
@@ -277,6 +281,16 @@ export class ResearchPostController {
       researchId: body.researchId,
       content: body.content,
     });
+  }
+
+  /**
+   * TODO: get 요청으로 처리하고 싶긴 한데...
+   * 마이페이지 - 스크랩/참여한 리서치 목록을 더 가져옵니다.
+   * @author 현웅
+   */
+  @Post("mypage")
+  async getMypageResearches(@Body() body: ResearchMypageBodyDto) {
+    return await this.mongoResearchFindService.getResearches(body.researchIds);
   }
 
   // /**

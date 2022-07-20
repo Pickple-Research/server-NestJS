@@ -47,22 +47,22 @@ export class UserFindService {
       param.userId,
     );
     const getScrappedResearches = this.mongoResearchFindService.getResearches(
-      param.userResearch.scrappedResearchIds.splice(0, 20),
+      param.userResearch.scrappedResearchIds.slice(0, 20),
     );
     const getParticipatedResearches =
       this.mongoResearchFindService.getResearches(
         param.userResearch.participatedResearchInfos
-          .splice(0, 20)
+          .slice(0, 20)
           .map((info) => info.researchId),
       );
     const getUploadedResearches =
       this.mongoResearchFindService.getUploadedResearches(param.userId);
     const getScrappedVotes = this.mongoVoteFindService.getVotes(
-      param.userVote.scrappedVoteIds.splice(0, 20),
+      param.userVote.scrappedVoteIds.slice(0, 20),
     );
     const getParticipatedVotes = this.mongoVoteFindService.getVotes(
       param.userVote.participatedVoteInfos
-        .splice(0, 20)
+        .slice(0, 20)
         .map((info) => info.voteId),
     );
     const getUploadedVotes = this.mongoVoteFindService.getUploadedVotes(

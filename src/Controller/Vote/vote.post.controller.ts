@@ -1,12 +1,13 @@
 import { Controller, Inject, Request, Body, Post } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { MongoVoteCreateService } from "src/Mongo";
+import { MongoVoteFindService, MongoVoteCreateService } from "src/Mongo";
 import {
   VoteCreateBodyDto,
   VoteCommentCreateBodyDto,
   VoteReplyCreateBodyDto,
   VoteReportBodyDto,
+  VoteMypageBodyDto,
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
 import { tryTransaction, tryMultiTransaction } from "src/Util";
@@ -20,6 +21,8 @@ export class VotePostController {
     private readonly voteConnection: Connection,
   ) {}
 
+  @Inject()
+  private readonly mongoVoteFindService: MongoVoteFindService;
   @Inject()
   private readonly mongoVoteCreateService: MongoVoteCreateService;
 
@@ -118,6 +121,15 @@ export class VotePostController {
       voteId: body.voteId,
       content: body.content,
     });
+  }
+
+  /**
+   * 마이페이지 - 스크랩/참여한 투표 목록을 더 가져옵니다.
+   * @author 현웅
+   */
+  @Post("mypage")
+  async getMypageVotes(@Body() body: VoteMypageBodyDto) {
+    return await this.mongoVoteFindService.getVotes(body.voteIds);
   }
 
   // /**

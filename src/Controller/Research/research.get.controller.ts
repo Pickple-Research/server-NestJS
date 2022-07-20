@@ -1,5 +1,6 @@
-import { Controller, Inject, Query, Param, Get } from "@nestjs/common";
+import { Controller, Inject, Request, Query, Param, Get } from "@nestjs/common";
 import { MongoResearchFindService } from "src/Mongo";
+import { JwtUserInfo } from "src/Object/Type";
 import { Public } from "src/Security/Metadata";
 import { ResearchNotFoundException } from "src/Exception";
 
@@ -38,6 +39,21 @@ export class ResearchGetController {
   @Get("older/:pulledupAt")
   async getOlderResearches(@Param("pulledupAt") pulledupAt: string) {
     return await this.mongoResearchFindService.getOlderResearches(pulledupAt);
+  }
+
+  /**
+   * 더 예전에 업로드한 리서치를 20개 찾고 반환합니다
+   * @author 현웅
+   */
+  @Get("uploaded/older/:pulledupAt")
+  async getOlderUploadedResearches(
+    @Request() req: { user: JwtUserInfo },
+    @Param("pulledupAt") pulledupAt: string,
+  ) {
+    return await this.mongoResearchFindService.getOlderUploadedResearches({
+      userId: req.user.userId,
+      pulledupAt,
+    });
   }
 
   /**
