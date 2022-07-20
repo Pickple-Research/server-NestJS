@@ -46,8 +46,7 @@ export class EmailUserSignupBodyDto {
 
   /** 성별 */
   @IsString()
-  @IsOptional()
-  gender?: string;
+  gender: string;
 }
 
 /**

@@ -14,6 +14,19 @@ export class EmailDuplicateException extends Status400Exception {
 }
 
 /**
+ * 중복된 닉네임으로 회원가입을 시도하는 경우 사용합니다.
+ * 기본 message: '이미 사용 중인 닉네임입니다'
+ * @author 현웅
+ */
+export class NicknameDuplicateException extends Status400Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage ? newMessage : `이미 사용 중인 닉네임입니다`,
+    });
+  }
+}
+
+/**
  * 주어진 인증번호가 미인증 유저의 인증번호와 일치하지 않는 경우 사용합니다.
  * 기본 message: `인증번호가 일치하지 않습니다`
  * @author 현웅
@@ -55,7 +68,7 @@ export class EmailNotAuthorizedException extends Status401Exception {
 }
 
 /**
- * 비밀번호가 일치하지 않는 경우 사용합니다.
+ * (로그인 시) 비밀번호가 일치하지 않는 경우 사용합니다.
  * 기본 message: `비밀번호가 일치하지 않습니다`
  * @author 현웅
  */

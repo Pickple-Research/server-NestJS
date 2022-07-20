@@ -62,7 +62,7 @@ export class UserPostController {
       authorizationCode: (
         "00000" + Math.floor(Math.random() * 1_000_000).toString()
       ).slice(-6),
-      codeExpiredAt: getISOTimeAfterGivenMinutes(),
+      codeExpiredAt: getISOTimeAfterGivenMinutes(15),
       createdAt: getCurrentISOTime(),
     };
 
@@ -133,15 +133,6 @@ export class UserPostController {
 
       //* ResearchUser, VoteUser 데이터를 한꺼번에 생성합니다.
       await Promise.all([createResearchUser, createVoteUser]);
-
-      //* 모든 데이터 생성이 완료되면 JWT를 발급하고 새로운 유저정보와 함께 반환합니다.
-      const jwt = await this.authService.issueJWT({
-        userId: newUser.id,
-        userEmail: newUser.email,
-        userNickname: newUser.nickname,
-      });
-
-      return { user: newUser, jwt };
     }, [userSession, researchSession, voteSession]);
   }
 }
