@@ -84,3 +84,12 @@ export class VoteReportBodyDto {
   @IsString()
   content: string;
 }
+
+/**
+ * 마이페이지 - 스크랩/참여한 투표 목록을 더 가져올 때 Body 에 포함되어야 하는 정보들
+ * @author 현웅
+ */
+export class VoteMypageBodyDto {
+  @IsString({ each: true })
+  voteIds: string[];
+}

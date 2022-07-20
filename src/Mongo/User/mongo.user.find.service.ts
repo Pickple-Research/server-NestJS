@@ -216,11 +216,29 @@ export class MongoUserFindService {
   }
 
   /**
-   * 인자로 받은 userId 를 사용하는 유저의 크레딧 사용내역을 가져옵니다.
+   * 인자로 받은 userId 를 사용하는 유저의 최근 20개 크레딧 사용내역을 가져옵니다.
    * @author 현웅
    */
   async getCreditHisories(userId: string) {
     return await this.CreditHistory.find({ userId })
+      .sort({ _id: -1 })
+      .limit(20)
+      .lean();
+  }
+
+  /**
+   * 인자로 받은 userId 의 크레딧 사용내역 중
+   * 인자로 받은 creditHistoryId 보다 오래된 크레딧 사용내역을 20개 가져옵니다.
+   * @author 현웅
+   */
+  async getOlderCreditHisories(param: {
+    userId: string;
+    creditHistoryId: string;
+  }) {
+    return await this.CreditHistory.find({
+      _id: { $lt: param.creditHistoryId },
+      userId: param.userId,
+    })
       .sort({ _id: -1 })
       .limit(20)
       .lean();

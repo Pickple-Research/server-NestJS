@@ -1,5 +1,6 @@
-import { Controller, Inject, Param, Get } from "@nestjs/common";
+import { Controller, Inject, Request, Param, Get } from "@nestjs/common";
 import { MongoVoteFindService } from "src/Mongo";
+import { JwtUserInfo } from "src/Object/Type";
 import { Public } from "src/Security/Metadata";
 import { VoteNotFoundException } from "src/Exception";
 
@@ -37,6 +38,21 @@ export class VoteGetController {
   @Get("/older/:voteId")
   async getOlderVotes(@Param("voteId") voteId: string) {
     return await this.mongoVoteFindService.getOlderVotes(voteId);
+  }
+
+  /**
+   * 더 예전에 업로드한 투표를 20개 찾고 반환합니다
+   * @author 현웅
+   */
+  @Get("uploaded/older/:voteId")
+  async getOlderUploadedVotes(
+    @Request() req: { user: JwtUserInfo },
+    @Param("voteId") voteId: string,
+  ) {
+    return await this.mongoVoteFindService.getOlderUploadedVotes({
+      userId: req.user.userId,
+      voteId,
+    });
   }
 
   /**

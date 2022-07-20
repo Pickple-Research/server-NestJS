@@ -88,14 +88,14 @@ export class MongoVoteFindService {
    * 주어진 투표 _id을 기준으로 하여 과거의 투표 10개를 찾고 반환합니다.
    * @author 현웅
    */
-  async getOlderVotes(voteId: string, limit: number = 10) {
+  async getOlderVotes(voteId: string, limit: number = 20) {
     return await this.Vote.find({
       hidden: false, // 숨겼거나
       blocked: false, // 차단되지 않은 투표 중
       _id: { $lt: voteId }, // 주어진 voteId 보다 먼저 업로드된 투표 중에서
     })
       .sort({ _id: -1 }) // 최신순 정렬 후
-      .limit(limit) // 10개를 가져오고
+      .limit(limit) // 20개를 가져오고
       .populate({ path: "author", model: this.VoteUser })
       .lean(); // data만 뽑아서 반환
   }
@@ -153,9 +153,15 @@ export class MongoVoteFindService {
    * @author 현웅
    */
   async getVotes(voteIds: string[]) {
-    return await this.Vote.find({ _id: { $in: voteIds } })
+    const votes = await this.Vote.find({ _id: { $in: voteIds } })
       .populate({ path: "author", model: this.VoteUser })
       .lean();
+
+    return votes.sort((a, b) => {
+      return (
+        voteIds.indexOf(a._id.toString()) - voteIds.indexOf(b._id.toString())
+      );
+    });
   }
 
   /**
@@ -167,6 +173,25 @@ export class MongoVoteFindService {
       .sort({ _id: -1 })
       .limit(20)
       .populate({ path: "author", model: this.VoteUser })
+      .lean();
+  }
+
+  /**
+   * 인자로 받은 userId 가 업로드한 투표 중
+   * 인자로 받은 voteId 이전의 투표를 가져옵니다.
+   * @author 현웅
+   */
+  async getOlderUploadedVotes(param: { userId: string; voteId: string }) {
+    return await this.Vote.find({
+      _id: { $lt: param.voteId },
+      authorId: param.userId,
+    })
+      .sort({ _id: -1 })
+      .limit(20)
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
       .lean();
   }
 }
