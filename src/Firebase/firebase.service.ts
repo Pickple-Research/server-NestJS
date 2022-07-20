@@ -1,20 +1,19 @@
 import { Injectable } from "@nestjs/common";
 import admin from "firebase-admin";
-import * as account from "./r2c-pickpleresearch-firebase-adminsdk-7ykfc-8627d5f061.json";
+// import * as account from "./r2c-pickpleresearch-firebase-adminsdk-7ykfc-8627d5f061.json";
 
 @Injectable()
 export class FirebaseService {
   constructor() {
-    //! 왠진 모르겠지만 require로 가져오면 에러가 납니다.
+    //! 왠진 모르겠지만 require로 가져오면 에러가 납니다. import 로 가져옵시다.
     // const serviceAccount = require("./r2c-pickpleresearch-firebase-adminsdk-7ykfc-8627d5f061.json");
-    admin.initializeApp({
-      credential: admin.credential.cert(account as any),
-    });
+    // admin.initializeApp({
+    //   credential: admin.credential.cert(account as any),
+    // });
   }
 
   /**
    * 인자로 주어진 내용을 푸쉬 알람 형태로 유저에게 전송합니다.
-   *
    * @author 현웅
    */
   async sendPushAlarm(notification: { title: string; body: string }) {

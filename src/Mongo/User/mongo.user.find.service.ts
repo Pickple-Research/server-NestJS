@@ -23,7 +23,7 @@ import {
 } from "src/Schema";
 import {
   EmailDuplicateException,
-  NotEnoughCreditException,
+  NicknameDuplicateException,
   UserNotFoundException,
   EmailNotAuthorizedException,
   WrongPasswordException,
@@ -62,6 +62,17 @@ export class MongoUserFindService {
   async checkEmailDuplicated(email: string) {
     const user = await this.User.findOne({ email }).lean();
     if (user) throw new EmailDuplicateException();
+    return;
+  }
+
+  /**
+   * 인자로 받은 닉네임으로 가입된 정규 유저가 있는지 확인하고
+   * 이미 존재한다면, 에러를 발생시킵니다.
+   * @author 현웅
+   */
+  async checkNicknameDuplicated(nickname: string) {
+    const user = await this.User.findOne({ nickname }).lean();
+    if (user) throw new NicknameDuplicateException();
     return;
   }
 

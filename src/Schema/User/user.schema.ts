@@ -17,7 +17,7 @@ export class User {
   @Prop({ unique: true, trim: true }) // 이메일
   email: string;
 
-  @Prop({ trim: true }) // 닉네임
+  @Prop({ unique: true, trim: true }) // 닉네임
   nickname: string;
 
   @Prop({ default: 0 }) // 크레딧
