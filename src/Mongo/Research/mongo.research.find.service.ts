@@ -13,7 +13,10 @@ import {
   ResearchUser,
   ResearchUserDocument,
 } from "src/Schema";
-import { NotResearchAuthorException } from "src/Exception";
+import {
+  NotResearchAuthorException,
+  UnableToDeleteResearchException,
+} from "src/Exception";
 
 @Injectable()
 export class MongoResearchFindService {
@@ -41,6 +44,21 @@ export class MongoResearchFindService {
       .lean();
     if (research.authorId !== param.userId) {
       throw new NotResearchAuthorException();
+    }
+    return;
+  }
+
+  /**
+   * 리서치 참여자 수가 0명으로, 삭제 가능한지 확인합니다.
+   * 0명이 아닌 경우 에러를 발생시킵니다.
+   * @author 현웅
+   */
+  async ableToDeleteResearch(researchId: string) {
+    const research = await this.Research.findById(researchId)
+      .select({ participantsNum: 1 })
+      .lean();
+    if (research.participantsNum !== 0) {
+      throw new UnableToDeleteResearchException();
     }
     return;
   }

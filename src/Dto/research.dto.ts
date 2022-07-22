@@ -65,6 +65,7 @@ export class ResearchCreateBodyDto {
   extraCreditRecieverNum: number;
 
   @IsString() // 마감일
+  @IsOptional()
   deadline: string;
 }
 

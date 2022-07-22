@@ -73,8 +73,11 @@ export class ResearchPostController {
     //* 필요한 데이터 형태를 미리 만들어둡니다.
     //* 리서치 생성에 필요한 크레딧
     const requiredCredit =
+      //* 소요시간에 필요한 크레딧
       CREDIT_PER_MINUTE * body.estimatedTime +
+      //* 추가 리서치 지급에 필요한 크레딧
       body.extraCredit * body.extraCreditRecieverNum +
+      //* 연령 스크리닝에 필요한 크레딧
       (body.targetAgeGroups.length !== 0 ? 5 : 0);
 
     //* 이 때, 유저의 크레딧이 충분한지 확인하고 충분하지 않으면 에러를 일으킵니다.
@@ -107,19 +110,24 @@ export class ResearchPostController {
     return await tryMultiTransaction(async () => {
       //TODO: Promise.all 로 처리
       //* 리서치/리서치 참여 현황 데이터를 만듭니다
-      const newResearch = await this.mongoResearchCreateService.createResearch(
+      const createNewResearch = this.mongoResearchCreateService.createResearch(
         { research, files: {} },
         researchSession,
       );
 
       //* CreditHistory 정보를 User DB 에 반영합니다.
-      const newCreditHistory =
-        await this.mongoUserCreateService.createCreditHistory(
+      const createNewCreditHistory =
+        this.mongoUserCreateService.createCreditHistory(
           { userId: req.user.userId, creditHistory },
           userSession,
         );
 
-      return { newResearch, newCreditHistory };
+      return await Promise.all([
+        createNewResearch,
+        createNewCreditHistory,
+      ]).then(([newResearch, newCreditHistory]) => {
+        return { newResearch, newCreditHistory };
+      });
     }, [userSession, researchSession]);
   }
 

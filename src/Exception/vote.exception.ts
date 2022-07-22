@@ -1,6 +1,20 @@
 import { Status400Exception, Status404Exception } from "./Status";
 
 /**
+ * 투표 삭제 시도 중 참여자가 생겨 삭제할 수 없는 경우 사용합니다.
+ * @author 현웅
+ */
+export class UnableToDeleteVoteException extends Status400Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage
+        ? newMessage
+        : "10명 이상의 사용자가 투표에 참여하여 투표를 삭제할 수 없습니다.",
+    });
+  }
+}
+
+/**
  * 선택한 투표 선택지 index가 유효하지 않을 때 사용합니다.
  * 기본 message: `유효하지 않은 선택지입니다`
  * @author 현웅
