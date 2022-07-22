@@ -132,8 +132,7 @@ export class MongoUserCreateService {
       [param.creditHistory],
       { session },
     );
-    //* User의 credit 액수를 업데이트하고
-    //* 새로 만들어진 CreditHistory 의 _id 를 추가합니다.
+    //* User의 credit 액수를 업데이트합니다.
     await this.User.findByIdAndUpdate(
       param.userId,
       { $inc: { credit: param.creditHistory.scale } },

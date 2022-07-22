@@ -25,13 +25,17 @@ export class VoteDeleteService {
       userId: param.userId,
       voteId: param.voteId,
     });
+    //* 투표 삭제 요청 시기를 기준으로 참여자 수가 10명 보다 적은지 확인합니다.
+    const checkAbleToDelete = this.mongoVoteFindService.ableToDeleteVote(
+      param.voteId,
+    );
     //* 투표와 관련된 모든 정보를 삭제합니다.
     const deleteVote = this.mongoVoteDeleteService.deleteVoteById(
       { voteId: param.voteId },
       session,
     );
 
-    await Promise.all([checkIsAuthor, deleteVote]);
+    await Promise.all([checkIsAuthor, checkAbleToDelete, deleteVote]);
     return;
   }
 }
