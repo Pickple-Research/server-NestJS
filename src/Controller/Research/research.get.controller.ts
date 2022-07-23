@@ -58,7 +58,7 @@ export class ResearchGetController {
 
   /**
    * _id로 특정 리서치를 찾고 반환합니다.
-   * 존재하지 않는 경우 exception을 일으킵니다.
+   * 존재하지 않는 경우 404 에러를 반환합니다.
    * @author 현웅
    */
   @Public()
@@ -68,11 +68,7 @@ export class ResearchGetController {
       researchId,
     );
 
-    //* 리서치 정보가 존재하지 않는 경우, 에러를 일으킵니다.
-    if (research === null || research.deleted) {
-      throw new ResearchNotFoundException();
-    }
-
+    if (!research) throw new ResearchNotFoundException();
     return research;
   }
 

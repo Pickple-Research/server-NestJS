@@ -57,6 +57,7 @@ export class VoteGetController {
 
   /**
    * _id로 특정 투표를 가져옵니다.
+   * 존재하지 않는 경우 404 에러를 반환합니다.
    * @author 현웅
    */
   @Public()
@@ -64,10 +65,7 @@ export class VoteGetController {
   async getVoteById(@Param("voteId") voteId: string) {
     const vote = await this.mongoVoteFindService.getVoteById(voteId);
 
-    if (vote === null || vote.deleted) {
-      throw new VoteNotFoundException();
-    }
-
+    if (!vote) throw new VoteNotFoundException();
     return vote;
   }
 

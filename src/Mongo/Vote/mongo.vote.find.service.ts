@@ -64,12 +64,6 @@ export class MongoVoteFindService {
     return;
   }
 
-  async getVoteById(voteId: string) {
-    return await this.Vote.findById(voteId)
-      .populate({ path: "author", model: this.VoteUser })
-      .lean();
-  }
-
   /**
    * 최신 투표를 가져옵니다. 인자가 주어지지 않으면 20개를 가져옵니다.
    * @author 현웅
@@ -116,8 +110,15 @@ export class MongoVoteFindService {
       .lean(); // data만 뽑아서 반환
   }
 
+  async getVoteById(voteId: string) {
+    return await this.Vote.findById(voteId)
+      .populate({ path: "author", model: this.VoteUser })
+      .lean();
+  }
+
   /**
    * 투표 댓글을 모두 가져옵니다.
+   * 투표가 삭제된 경우 null 을 반환합니다.
    * @author 현웅
    */
   async getVoteComments(voteId: string) {
@@ -143,6 +144,7 @@ export class MongoVoteFindService {
       })
       .lean();
 
+    if (!voteParticipation) return null;
     return voteParticipation.comments;
   }
 
