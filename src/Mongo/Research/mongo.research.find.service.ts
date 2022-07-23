@@ -142,7 +142,7 @@ export class MongoResearchFindService {
    * 주어진 _id를 통해 리서치를 찾고 반환합니다.
    * @author 현웅
    */
-  async getResearchById(researchId: string, handleAsException?: boolean) {
+  async getResearchById(researchId: string) {
     return await this.Research.findById(researchId)
       .populate({
         path: "author",
@@ -153,6 +153,7 @@ export class MongoResearchFindService {
 
   /**
    * 리서치 댓글을 모두 가져옵니다.
+   * 리서치가 삭제된 경우, null 을 반환합니다.
    * @author 현웅
    */
   async getResearchComments(researchId: string) {
@@ -179,6 +180,7 @@ export class MongoResearchFindService {
         ],
       })
       .lean();
+    if (!researchParticipation) return null;
     return researchParticipation.comments;
   }
 
