@@ -6,6 +6,7 @@ import {
   EmailUserSignupBodyDto,
 } from "src/Dto";
 import { AuthService, UserCreateService } from "src/Service";
+import { GoogleService } from "src/Google";
 import { MongoResearchCreateService, MongoVoteCreateService } from "src/Mongo";
 import { UnauthorizedUser, User } from "src/Schema";
 import { Public } from "src/Security/Metadata";
@@ -29,6 +30,7 @@ import {
 @Controller("users")
 export class UserPostController {
   constructor(
+    private readonly googleService: GoogleService,
     private readonly authService: AuthService,
     private readonly userCreateService: UserCreateService,
 
@@ -56,22 +58,30 @@ export class UserPostController {
   ) {
     const userSession = await this.userConnection.startSession();
 
+    const authCode = (
+      "00000" + Math.floor(Math.random() * 1_000_000).toString()
+    ).slice(-6);
+
     const userInfo: UnauthorizedUser = {
       email: body.email,
       authorized: false,
-      authorizationCode: (
-        "00000" + Math.floor(Math.random() * 1_000_000).toString()
-      ).slice(-6),
+      authorizationCode: authCode,
       codeExpiredAt: getISOTimeAfterGivenMinutes(15),
       createdAt: getCurrentISOTime(),
     };
 
-    return await tryMultiTransaction(async () => {
-      return await this.userCreateService.createUnauthorizedUser(
+    await tryMultiTransaction(async () => {
+      await this.userCreateService.createUnauthorizedUser(
         { userInfo },
         userSession,
       );
     }, [userSession]);
+
+    //* 유저 정보가 정상적으로 생성/업데이트 된 경우 인증용 메일을 발송합니다.
+    await this.googleService.sendAuthCodeEmail({
+      to: body.email,
+      code: authCode,
+    });
   }
 
   /**
