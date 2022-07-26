@@ -1,6 +1,16 @@
 import { Status400Exception, Status401Exception } from "./Status";
 
 /**
+ * 이메일 전송에 실패한 경우
+ * @author 현웅
+ */
+export class EmailTransmitFailedException extends Status401Exception {
+  constructor() {
+    super({ customMessage: "이메일 전송에 실패했습니다" });
+  }
+}
+
+/**
  * 중복된 이메일로 회원가입을 시도하는 경우 사용합니다.
  * 기본 message: '이미 사용 중인 이메일입니다'
  * @author 현웅

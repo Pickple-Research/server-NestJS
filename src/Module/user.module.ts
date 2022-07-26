@@ -6,6 +6,7 @@ import {
   UserPatchController,
   UserDeleteController,
 } from "src/Controller";
+import { GoogleService } from "src/Google";
 import {
   AuthService,
   UserCreateService,
@@ -31,6 +32,7 @@ import {
     UserDeleteController,
   ],
   providers: [
+    GoogleService,
     AuthService,
     UserCreateService,
     UserFindService,
