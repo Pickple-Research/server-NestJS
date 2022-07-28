@@ -334,6 +334,7 @@ export class ResearchPostController {
   //       type: "리서치 작성",
   //       scale: -1 * requiredCredit,
   //       balance: userCredit + -1 * requiredCredit,
+  //       isIncome: false,
   //       createdAt: currentTime,
   //     };
 

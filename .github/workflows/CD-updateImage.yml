@@ -50,3 +50,5 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SG_IAM_SECRET_ACCESS_KEY }}
           AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
         if: always()
+# 이 후 로그 확인하고 싶을 때:
+# server $ docker-compose logs
