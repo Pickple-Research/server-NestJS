@@ -15,6 +15,7 @@ import {
 } from "src/Schema";
 import {
   NotResearchAuthorException,
+  ResearchNotFoundException,
   UnableToDeleteResearchException,
 } from "src/Exception";
 
@@ -41,8 +42,9 @@ export class MongoResearchFindService {
   async isResearchAuthor(param: { userId: string; researchId: string }) {
     const research = await this.Research.findById(param.researchId)
       .select({ authorId: 1 })
-      .lean()
-      .exec();
+      .lean();
+
+    if (!research) throw new ResearchNotFoundException();
     if (research.authorId !== param.userId) {
       throw new NotResearchAuthorException();
     }
@@ -58,8 +60,9 @@ export class MongoResearchFindService {
     // const research = await this.Research.findById({ _id: researchId })
     const research = await this.Research.findById(researchId)
       .select({ participantsNum: 1 })
-      .lean()
-      .exec();
+      .lean();
+
+    if (!research) throw new ResearchNotFoundException();
     if (research.participantsNum !== 0) {
       throw new UnableToDeleteResearchException();
     }
