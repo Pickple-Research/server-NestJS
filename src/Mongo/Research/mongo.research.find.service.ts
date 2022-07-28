@@ -39,11 +39,10 @@ export class MongoResearchFindService {
    * @author 현웅
    */
   async isResearchAuthor(param: { userId: string; researchId: string }) {
-    const research = await this.Research.findOne({
-      _id: new Types.ObjectId(param.researchId),
-    })
+    const research = await this.Research.findById(param.researchId)
       .select({ authorId: 1 })
-      .lean();
+      .lean()
+      .exec();
     if (research.authorId !== param.userId) {
       throw new NotResearchAuthorException();
     }
@@ -56,12 +55,11 @@ export class MongoResearchFindService {
    * @author 현웅
    */
   async ableToDeleteResearch(researchId: string) {
-    // const research = await this.Research.findOne({ _id: researchId })
-    const research = await this.Research.findOne({
-      _id: new Types.ObjectId(researchId),
-    })
+    // const research = await this.Research.findById({ _id: researchId })
+    const research = await this.Research.findById(researchId)
       .select({ participantsNum: 1 })
-      .lean();
+      .lean()
+      .exec();
     if (research.participantsNum !== 0) {
       throw new UnableToDeleteResearchException();
     }
