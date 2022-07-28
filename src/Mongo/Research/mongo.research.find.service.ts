@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import { Model, Types } from "mongoose";
 import {
   Research,
   ResearchDocument,
@@ -39,10 +39,11 @@ export class MongoResearchFindService {
    * @author 현웅
    */
   async isResearchAuthor(param: { userId: string; researchId: string }) {
-    const research = await this.Research.findOne({ _id: param.researchId })
+    const research = await this.Research.findOne({
+      _id: new Types.ObjectId(param.researchId),
+    })
       .select({ authorId: 1 })
       .lean();
-    console.log(`research.authorId: ${research.authorId}`);
     if (research.authorId !== param.userId) {
       throw new NotResearchAuthorException();
     }
@@ -55,7 +56,10 @@ export class MongoResearchFindService {
    * @author 현웅
    */
   async ableToDeleteResearch(researchId: string) {
-    const research = await this.Research.findOne({ _id: researchId })
+    // const research = await this.Research.findOne({ _id: researchId })
+    const research = await this.Research.findOne({
+      _id: new Types.ObjectId(researchId),
+    })
       .select({ participantsNum: 1 })
       .lean();
     if (research.participantsNum !== 0) {
