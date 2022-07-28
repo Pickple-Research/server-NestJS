@@ -34,6 +34,20 @@ export class MongoResearchFindService {
     private readonly ResearchUser: Model<ResearchUserDocument>,
   ) {}
 
+  async getResearchAuthorId(researchId: string) {
+    const research = await this.Research.findById(researchId)
+      .select({ authorId: 1 })
+      .lean();
+    return research.authorId;
+  }
+
+  async getResearchParticipantsNum(researchId: string) {
+    const research = await this.Research.findById(researchId)
+      .select({ participantsNum: 1 })
+      .lean();
+    return research.participantsNum;
+  }
+
   /**
    * 인자로 받은 유저 _id 가 리서치 작성자 _id 와 일치하는지 확인합니다.
    * 일치하지 않는 경우, 에러를 발생시킵니다.
