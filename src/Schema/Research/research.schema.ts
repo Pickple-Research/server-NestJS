@@ -9,9 +9,6 @@ import { ResearchPurpose, Category } from "src/Object/Enum";
  */
 @Schema()
 export class Research {
-  @Prop({ type: String, default: () => new Types.ObjectId() })
-  _id?: string;
-
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: "ResearchUser",
