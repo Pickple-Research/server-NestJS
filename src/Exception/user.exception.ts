@@ -1,4 +1,4 @@
-import { Status400Exception, Status403Exception } from "./Status";
+import { Status400Exception, Status404Exception } from "./Status";
 
 /**
  * 유저 본인이 아닌 사람이 유저 탈퇴를 요청한 경우 사용합니다.
@@ -31,10 +31,23 @@ export class NotEnoughCreditException extends Status400Exception {
  * 기본 message: '유저가 존재하지 않습니다'
  * @author 현웅
  */
-export class UserNotFoundException extends Status403Exception {
+export class UserNotFoundException extends Status404Exception {
   constructor(newMessage?: string) {
     super({
       customMessage: newMessage ? newMessage : `유저가 존재하지 않습니다`,
+    });
+  }
+}
+
+/**
+ * 이미 데이터가 이관된 SurBay 유저가 한번 더 데이터 이관을 시도하는 경우
+ * 기본 message: '데이터가 이미 이관되었습니다'
+ * @author 현웅
+ */
+export class UserAlreadyMigratedException extends Status400Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage ? newMessage : `데이터가 이미 이관되었습니다`,
     });
   }
 }

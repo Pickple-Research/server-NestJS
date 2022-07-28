@@ -34,7 +34,11 @@ export class MongoVoteDeleteService {
    * @author 현웅
    */
   async deleteVoteUser(param: { userId: string }, session: ClientSession) {
-    await this.VoteUser.findByIdAndDelete(param.userId, { session });
+    await this.VoteUser.findByIdAndUpdate(
+      param.userId,
+      { $set: { deleted: true } },
+      { session },
+    );
     return;
   }
 

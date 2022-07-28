@@ -1,8 +1,10 @@
 import { Controller, Inject, Request, Body, Post } from "@nestjs/common";
 import { AuthService, UserFindService } from "src/Service";
-import { MongoUserFindService, MongoUserUpdateService } from "src/Mongo";
-// SurBay
-import { MongoSurBayService } from "src/Mongo";
+import {
+  MongoUserFindService,
+  MongoUserUpdateService,
+  MongoSurBayService,
+} from "src/Mongo";
 import { Public } from "src/Security/Metadata";
 import { LoginBodyDto, AuthCodeVerificationBodyDto } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
@@ -16,7 +18,6 @@ export class AuthController {
 
   @Inject() private readonly mongoUserFindService: MongoUserFindService;
   @Inject() private readonly mongoUserUpdateService: MongoUserUpdateService;
-  // SurBay
   @Inject() private readonly mongoSurBayService: MongoSurBayService;
 
   /**
@@ -29,23 +30,37 @@ export class AuthController {
   @Public()
   @Post("login")
   async login(@Body() body: LoginBodyDto) {
-    const userInfo = await this.userFindService.loginWithEmail(
+    //* 이메일과 비밀번호가 유효한지 확인
+    const authenticate = this.authService.authenticate(
       body.email,
       body.password,
     );
+    //* UserPrivacy, UserSecurity 를 제외한 정보 반환
+    const getUserInfo = this.mongoUserFindService.getUserInfoByEmail(
+      body.email,
+    );
+    //* 위 두 함수를 동시에 실행
+    const userInfo = await Promise.all([authenticate, getUserInfo]).then(
+      ([_, userInfo]) => {
+        return userInfo;
+      },
+    );
 
+    //* UserInfo 를 바탕으로 유저가 조회/스크랩/참여/업로드한 리서치, 투표 정보 반환
     const userActivities = await this.userFindService.getUserActivities({
       userId: userInfo.user._id,
       userResearch: userInfo.userResearch,
       userVote: userInfo.userVote,
     });
 
+    //* JWT 새로 발급
     const jwt = await this.authService.issueJWT({
       userId: userInfo.user._id,
       userNickname: userInfo.user.nickname,
       userEmail: userInfo.user.email,
     });
 
+    //* 가져온 정보를 모두 반환
     return { jwt, userInfo, userActivities };
   }
 

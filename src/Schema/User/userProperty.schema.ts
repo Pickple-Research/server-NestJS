@@ -10,11 +10,14 @@ import { Category } from "src/Object/Enum";
  */
 @Schema()
 export class UserProperty {
+  @Prop() // 서비스 정보 수신 동의 여부
+  agreeReceiveServiceInfo: boolean;
+
   @Prop() // 성별
-  gender?: string;
+  gender: string;
 
   @Prop() // 출생일 (ISO String 타입)
-  birthday?: string;
+  birthday: string;
 
   @Prop() // 수입
   income?: number;

@@ -19,11 +19,14 @@ export class CreditHistory {
   @Prop({ required: true }) // 변동 액수
   scale: number;
 
-  @Prop({ required: true }) // 변동 일시
-  createdAt?: string;
+  @Prop() // + 요소인지 - 요소인지 여부 (변동 액수가 0 인 경우 대비)
+  isIncome: boolean;
 
   @Prop({ required: true }) // 변동 이후 잔여 크레딧
   balance?: number;
+
+  @Prop({ required: true }) // 변동 일시
+  createdAt?: string;
 }
 
 export const CreditHistorySchema = SchemaFactory.createForClass(CreditHistory);

@@ -30,6 +30,7 @@ import {
   ResearchMypageBodyDto,
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
+import { CreditHistoryType } from "src/Object/Enum";
 import {
   CREDIT_PER_MINUTE,
   MONGODB_USER_CONNECTION,
@@ -97,8 +98,9 @@ export class ResearchPostController {
     const creditHistory: CreditHistory = {
       userId: req.user.userId,
       reason: body.title,
-      type: "리서치 작성",
+      type: CreditHistoryType.RESEARCH_UPLOAD,
       scale: -1 * requiredCredit,
+      isIncome: false,
       balance: userCredit + -1 * requiredCredit,
       createdAt: currentTime,
     };
@@ -186,8 +188,9 @@ export class ResearchPostController {
     const creditHistory: CreditHistory = {
       userId: req.user.userId,
       reason: body.title,
-      type: "리서치 작성",
+      type: CreditHistoryType.RESEARCH_UPLOAD,
       scale: -1 * requiredCredit,
+      isIncome: false,
       balance: userCredit + -1 * requiredCredit,
       createdAt: currentTime,
     };

@@ -29,3 +29,13 @@ export enum AccountType {
   GOOGLE = "GOOGLE",
   NAVER = "NAVER",
 }
+
+/**
+ * 크레딧 변동 사유
+ * @author 현웅
+ */
+export enum CreditHistoryType {
+  RESEARCH_PARTICIPATE = "RESEARCH_PARTICIPATE",
+  RESEARCH_UPLOAD = "RESEARCH_UPLOAD",
+  MIGRATE = "MIGRATE",
+}
