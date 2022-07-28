@@ -1,4 +1,11 @@
-import { Controller, Request, Headers, Delete, Inject } from "@nestjs/common";
+import {
+  Controller,
+  Request,
+  Param,
+  Headers,
+  Delete,
+  Inject,
+} from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { UserDeleteService } from "src/Service";
@@ -42,6 +49,7 @@ export class UserDeleteController {
   private readonly mongoVoteDeleteService: MongoVoteDeleteService;
 
   /**
+   * !caution: 서버에서 header 데이터를 못 받습니다
    * User 데이터를 삭제합니다.
    * @author 현웅
    */
@@ -77,6 +85,50 @@ export class UserDeleteController {
         );
       const deleteVoteUser = this.mongoVoteDeleteService.deleteVoteUser(
         { userId },
+        voteSession,
+      );
+
+      await Promise.all([deleteUser, deleteResearchUser, deleteVoteUser]);
+    }, [userSession, researchSession, voteSession]);
+    return;
+  }
+
+  /**
+   * User 데이터를 삭제합니다.
+   * @author 현웅
+   */
+  @Delete(":userId")
+  async deleteUserWithParam(
+    @Request() req: { user: JwtUserInfo },
+    @Param() param: { userId: string },
+  ) {
+    //* 다른 사람이 회원탈퇴를 요청하는 경우
+    if (req.user.userId !== param.userId) throw new NotSelfRequestException();
+
+    const startUserSession = this.userConnection.startSession();
+    const startResearchSession = this.researchConnection.startSession();
+    const startVoteSession = this.voteConnection.startSession();
+
+    const { userSession, researchSession, voteSession } = await Promise.all([
+      startUserSession,
+      startResearchSession,
+      startVoteSession,
+    ]).then(([userSession, researchSession, voteSession]) => {
+      return { userSession, researchSession, voteSession };
+    });
+
+    await tryMultiTransaction(async () => {
+      const deleteUser = this.mongoUserDeleteService.deleteUserById(
+        { userId: param.userId },
+        userSession,
+      );
+      const deleteResearchUser =
+        this.mongoResearchDeleteService.deleteResearchUser(
+          { userId: param.userId },
+          researchSession,
+        );
+      const deleteVoteUser = this.mongoVoteDeleteService.deleteVoteUser(
+        { userId: param.userId },
         voteSession,
       );
 
