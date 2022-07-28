@@ -39,7 +39,11 @@ export class MongoResearchDeleteService {
    * @author 현웅
    */
   async deleteResearchUser(param: { userId: string }, session: ClientSession) {
-    await this.ResearchUser.findByIdAndDelete(param.userId, { session });
+    await this.ResearchUser.findByIdAndUpdate(
+      param.userId,
+      { $set: { deleted: true } },
+      { session },
+    );
     return;
   }
 

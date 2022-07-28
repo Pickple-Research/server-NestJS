@@ -19,6 +19,7 @@ import { CreditHistory } from "src/Schema";
 import { ParticipatedResearchInfo } from "src/Schema/User/Embedded";
 import { ResearchParticipantInfo } from "src/Schema/Research/Embedded";
 import { JwtUserInfo } from "src/Object/Type";
+import { CreditHistoryType } from "src/Object/Enum";
 import { ResearchParticiateBodyDto } from "src/Dto";
 import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import {
@@ -168,8 +169,9 @@ export class ResearchPatchController {
     const creditHistory: CreditHistory = {
       userId: req.user.userId,
       reason: researchTitle,
-      type: "리서치 참여",
+      type: CreditHistoryType.RESEARCH_PARTICIPATE,
       scale: researchCredit,
+      isIncome: true,
       balance: userCredit + researchCredit,
       createdAt: currentISOTime,
     };

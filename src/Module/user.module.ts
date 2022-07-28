@@ -18,6 +18,7 @@ import {
   MongoResearchModule,
   MongoVoteModule,
   MongoPartnerModule,
+  MongoSurBayModule,
 } from "src/Mongo";
 
 /**
@@ -43,6 +44,7 @@ import {
     MongoResearchModule,
     MongoVoteModule,
     MongoPartnerModule,
+    MongoSurBayModule,
     //* provider 로 포함시킨 AuthService 가 jwtService 를 사용하고 있으므로 JwtModule 을 imports 합니다.
     JwtModule.register({
       secret: process.env.JWT_SECRET,

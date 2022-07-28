@@ -26,11 +26,9 @@ import {
   NicknameDuplicateException,
   UserNotFoundException,
   EmailNotAuthorizedException,
-  WrongPasswordException,
   AlreadyParticipatedResearchException,
   AlreadyParticipatedVoteException,
 } from "src/Exception";
-import { getKeccak512Hash } from "src/Util";
 
 @Injectable()
 export class MongoUserFindService {
@@ -71,7 +69,9 @@ export class MongoUserFindService {
    * @author 현웅
    */
   async checkNicknameDuplicated(nickname: string) {
-    const user = await this.User.findOne({ nickname }).lean();
+    const user = await this.User.findOne({ nickname })
+      .select({ _id: 1 })
+      .lean();
     if (user) throw new NicknameDuplicateException();
     return;
   }
@@ -86,40 +86,6 @@ export class MongoUserFindService {
       .select({ authorized: 1 })
       .lean();
     if (!user || !user.authorized) throw new EmailNotAuthorizedException();
-    return;
-  }
-
-  /**
-   * 주어진 이메일과 비밀번호를 사용해 로그인이 가능한지 확인합니다.
-   * 해당 이메일을 사용하는 유저가 없는 경우,
-   * 혹은 비밀번호가 다른 경우 오류를 일으킵니다.
-   * @param email
-   * @param password
-   * @author 현웅
-   */
-  async authenticate(email: string, password: string) {
-    //* 유저 데이터 탐색
-    const user = await this.User.findOne({ email }).select({ _id: 1 }).lean();
-
-    //* 유저가 존재하지 않는 경우
-    if (!user) throw new UserNotFoundException();
-
-    const userSecurity = await this.UserSecurity.findOne({ userId: user._id })
-      .select({
-        password: 1,
-        salt: 1,
-      })
-      .lean();
-
-    //* 주어진 비밀번호 해쉬
-    const hashedPassword = getKeccak512Hash(
-      password + userSecurity.salt,
-      parseInt(process.env.PEPPER),
-    );
-
-    //* 비밀번호가 일치하지 않는 경우
-    if (hashedPassword !== userSecurity.password)
-      throw new WrongPasswordException();
     return;
   }
 
@@ -215,6 +181,27 @@ export class MongoUserFindService {
 
     if (user) return user;
     return null;
+  }
+
+  /**
+   * 이메일을 인자로 받아 해당 이메일을 사용하는 유저의 비밀번호와 salt 를 반환합니다.
+   * @author 현웅
+   */
+  async getUserSecurityByEmail(email: string) {
+    const user = await this.User.findOne({
+      email,
+    })
+      .select({ _id: 1 })
+      .lean();
+
+    if (!user) throw new UserNotFoundException();
+
+    return await this.UserSecurity.findById(user._id)
+      .select({
+        password: 1,
+        salt: 1,
+      })
+      .lean();
   }
 
   /**
