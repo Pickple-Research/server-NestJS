@@ -22,14 +22,17 @@ export class ResearchDeleteController {
   @Delete("")
   async deleteResearch(
     @Request() req: { user: JwtUserInfo },
-    @Headers("research_id") researchId: string,
+    @Headers() header: { research_id: string },
   ) {
-    console.log(`ongoing delete researchId: ${researchId}`);
-    console.log(`type: ${typeof researchId}`);
+    console.log(`header:`);
+    console.dir(header);
     const researchSession = await this.researchConnection.startSession();
     await tryMultiTransaction(async () => {
       await this.researchDeleteService.deleteResearch(
-        { userId: req.user.userId, researchId: researchId.toString().trim() },
+        {
+          userId: req.user.userId,
+          researchId: header.research_id.toString().trim(),
+        },
         researchSession,
       );
     }, [researchSession]);
