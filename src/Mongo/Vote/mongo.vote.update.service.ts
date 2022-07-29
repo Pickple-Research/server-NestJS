@@ -157,4 +157,24 @@ export class MongoVoteUpdateService {
       })
       .lean();
   }
+
+  /**
+   * @Transaction
+   * 투표를 수정합니다.
+   * @return 업데이트된 투표 정보
+   * @author 현웅
+   */
+  async updateVote(
+    param: { voteId: string; vote: Partial<Vote> },
+    session: ClientSession,
+  ) {
+    const vote = await this.Vote.findById(param.voteId).lean();
+
+    const updatedVote = { ...vote, ...param.vote };
+
+    return await this.Vote.findByIdAndUpdate(param.voteId, updatedVote, {
+      session,
+      returnOriginal: false,
+    });
+  }
 }

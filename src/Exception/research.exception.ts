@@ -4,7 +4,7 @@ import { Status400Exception, Status404Exception } from "./Status";
  * 리서치 삭제 시도 중 참여자가 생겨 삭제할 수 없는 경우 사용합니다.
  * @author 현웅
  */
-export class UnableToDeleteResearchException extends Status400Exception {
+export class UnableToModifyResearchException extends Status400Exception {
   constructor(newMessage?: string) {
     super({
       customMessage: newMessage

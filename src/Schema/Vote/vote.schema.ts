@@ -21,6 +21,9 @@ export class Vote {
   @Prop({ required: true }) // 투표 제목
   title: string;
 
+  @Prop({ required: true }) // 투표 카테고리
+  category: string;
+
   @Prop({ required: true }) // 투표 내용
   content: string;
 

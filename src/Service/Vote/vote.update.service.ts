@@ -1,7 +1,7 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { ClientSession } from "mongoose";
 import { MongoVoteFindService, MongoVoteUpdateService } from "src/Mongo";
-import { VoteParticipantInfo } from "src/Schema";
+import { Vote, VoteParticipantInfo } from "src/Schema";
 
 @Injectable()
 export class VoteUpdateService {
@@ -72,5 +72,34 @@ export class VoteUpdateService {
       },
     );
     return updatedVote;
+  }
+
+  /**
+   * @Transaction
+   * 투표 콘텐츠를 수정합니다.
+   * 이 때, 투표 수정을 요청한 유저가 투표 작성자가 아닌 경우 에러를 일으킵니다.
+   * @return 수정된 투표 정보
+   * @author 현웅
+   */
+  async updateVote(
+    param: { userId: string; voteId: string; vote: Partial<Vote> },
+    session: ClientSession,
+  ) {
+    //* 투표 수정을 요청한 유저가 투표 작성자인지 확인
+    const checkIsAuthor = this.mongoVoteFindService.isVoteAuthor({
+      userId: param.userId,
+      voteId: param.voteId,
+    });
+    //* 투표 내용을 수정
+    const updateVote = this.mongoVoteUpdateService.updateVote(
+      { voteId: param.voteId, vote: param.vote },
+      session,
+    );
+    //* 위 두 함수를 동시에 실행하고 수정된 투표 정보를 반환
+    return await Promise.all([checkIsAuthor, updateVote]).then(
+      ([_, updatedVote]) => {
+        return updatedVote;
+      },
+    );
   }
 }

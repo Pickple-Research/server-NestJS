@@ -21,6 +21,9 @@ export class Research {
   @Prop({ required: true }) // 리서치 제목
   title: string;
 
+  @Prop() // 리서치 카테고리
+  category?: string;
+
   @Prop({ required: true }) // 설문지 폼 url
   link: string;
 
