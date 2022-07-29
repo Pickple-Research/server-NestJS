@@ -162,4 +162,27 @@ export class MongoResearchUpdateService {
     });
     return;
   }
+
+  /**
+   * @Transaction
+   * 리서치를 수정합니다.
+   * @author 현웅
+   */
+  async updateResearch(
+    param: { researchId: string; research: Partial<Research> },
+    session: ClientSession,
+  ) {
+    const research = await this.Research.findById(param.researchId).lean();
+
+    const updatedResearch = { ...research, ...param.research };
+
+    return await this.Research.findByIdAndUpdate(
+      param.researchId,
+      updatedResearch,
+      {
+        session,
+        returnOriginal: false,
+      },
+    );
+  }
 }

@@ -22,6 +22,9 @@ export class VoteCreateBodyDto {
   title: string;
 
   @IsString()
+  category: string;
+
+  @IsString()
   content: string;
 
   @IsArray()
@@ -80,6 +83,18 @@ export class VoteReplyCreateBodyDto {
 export class VoteReportBodyDto {
   @IsString()
   voteId: string;
+
+  @IsString()
+  content: string;
+}
+
+/**
+ * 투표 정보 수정시 Body에 포함되어야 하는 정보들
+ * @author 현웅
+ */
+export class VoteUpdateBodyDto {
+  @IsString()
+  title: string;
 
   @IsString()
   content: string;

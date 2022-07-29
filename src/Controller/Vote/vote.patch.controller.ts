@@ -12,7 +12,7 @@ import { UserUpdateService, VoteUpdateService } from "src/Service";
 import { MongoUserUpdateService, MongoVoteUpdateService } from "src/Mongo";
 import { ParticipatedVoteInfo } from "src/Schema/User/Embedded";
 import { VoteParticipantInfo } from "src/Schema/Vote/Embedded";
-import { VoteParticipateBodyDto } from "src/Dto";
+import { VoteParticipateBodyDto, VoteUpdateBodyDto } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
 import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import { MONGODB_USER_CONNECTION, MONGODB_VOTE_CONNECTION } from "src/Constant";
@@ -195,5 +195,27 @@ export class VotePatchController {
       );
       return updatedVote;
     }, [voteSession]);
+  }
+
+  /**
+   * @Transaction
+   * 투표 콘텐츠를 수정합니다.
+   * 수정할 수 있는 범위는 제목과 내용으로 제한되며,
+   * 수정을 요청한 유저가 투표 작성자가 아닌 경우 에러를 일으킵니다.
+   * @return 수정된 투표 정보
+   * @author 현웅
+   */
+  @Patch(":voteId")
+  async updateVote(
+    @Request() req: { user: JwtUserInfo },
+    @Param("voteId") voteId: string,
+    @Body() body: VoteUpdateBodyDto,
+  ) {
+    const voteSession = await this.voteConnection.startSession();
+
+    return await this.voteUpdateService.updateVote(
+      { userId: req.user.userId, voteId, vote: body },
+      voteSession,
+    );
   }
 }

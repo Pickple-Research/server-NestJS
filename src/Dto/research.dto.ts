@@ -27,6 +27,10 @@ export class ResearchCreateBodyDto {
   @IsString() // 리서치 제목
   title: string;
 
+  @IsString() // 리서치 카테고리
+  @IsOptional()
+  category: string;
+
   @IsString() // 설문지 폼 url
   link: string;
 
@@ -123,6 +127,22 @@ export class ResearchReportBodyDto {
 
   @IsString()
   content: string;
+}
+
+/**
+ * 리서치 수정시 Body에 포함되어야 하는 정보들
+ * @author 현웅
+ */
+export class ResearchUpdateBodyDto {
+  @IsString()
+  title: string;
+
+  @IsString()
+  content: string;
+
+  @IsString()
+  @IsOptional()
+  deadline: string;
 }
 
 /**

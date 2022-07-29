@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
+import { Model } from "mongoose";
 import {
   Research,
   ResearchDocument,
@@ -16,7 +16,7 @@ import {
 import {
   NotResearchAuthorException,
   ResearchNotFoundException,
-  UnableToDeleteResearchException,
+  UnableToModifyResearchException,
 } from "src/Exception";
 
 @Injectable()
@@ -33,20 +33,6 @@ export class MongoResearchFindService {
     @InjectModel(ResearchUser.name)
     private readonly ResearchUser: Model<ResearchUserDocument>,
   ) {}
-
-  async getResearchAuthorId(researchId: string) {
-    const research = await this.Research.findById(researchId)
-      .select({ authorId: 1 })
-      .lean();
-    return research.authorId;
-  }
-
-  async getResearchParticipantsNum(researchId: string) {
-    const research = await this.Research.findById(researchId)
-      .select({ participantsNum: 1 })
-      .lean();
-    return research.participantsNum;
-  }
 
   /**
    * 인자로 받은 유저 _id 가 리서치 작성자 _id 와 일치하는지 확인합니다.
@@ -66,19 +52,18 @@ export class MongoResearchFindService {
   }
 
   /**
-   * 리서치 참여자 수가 0명으로, 삭제 가능한지 확인합니다.
+   * 리서치 참여자 수가 0명으로, 수정/삭제 가능한지 확인합니다.
    * 0명이 아닌 경우 에러를 발생시킵니다.
    * @author 현웅
    */
-  async ableToDeleteResearch(researchId: string) {
-    // const research = await this.Research.findById({ _id: researchId })
+  async isAbleToModifyResearch(researchId: string) {
     const research = await this.Research.findById(researchId)
       .select({ participantsNum: 1 })
       .lean();
 
     if (!research) throw new ResearchNotFoundException();
     if (research.participantsNum !== 0) {
-      throw new UnableToDeleteResearchException();
+      throw new UnableToModifyResearchException();
     }
     return;
   }

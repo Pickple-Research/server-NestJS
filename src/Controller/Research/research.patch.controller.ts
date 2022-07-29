@@ -8,7 +8,7 @@ import {
 } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { UserUpdateService } from "src/Service";
+import { UserUpdateService, ResearchUpdateService } from "src/Service";
 import {
   MongoUserFindService,
   MongoUserUpdateService,
@@ -20,7 +20,7 @@ import { ParticipatedResearchInfo } from "src/Schema/User/Embedded";
 import { ResearchParticipantInfo } from "src/Schema/Research/Embedded";
 import { JwtUserInfo } from "src/Object/Type";
 import { CreditHistoryType } from "src/Object/Enum";
-import { ResearchParticiateBodyDto } from "src/Dto";
+import { ResearchParticiateBodyDto, ResearchUpdateBodyDto } from "src/Dto";
 import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import {
   MONGODB_USER_CONNECTION,
@@ -35,6 +35,7 @@ import {
 export class ResearchPatchController {
   constructor(
     private readonly userUpdateService: UserUpdateService,
+    private readonly researchUpdateService: ResearchUpdateService,
 
     @InjectConnection(MONGODB_USER_CONNECTION)
     private readonly userConnection: Connection,
@@ -242,6 +243,30 @@ export class ResearchPatchController {
   async closeResearch(@Param() param: { researchId: string }) {
     return await this.mongoResearchUpdateService.closeResearch(
       param.researchId,
+    );
+  }
+
+  /**
+   * @Transaction
+   * 리서치를 수정합니다.
+   * @return 수정된 리서치 정보
+   * @author 현웅
+   */
+  @Patch(":researchId")
+  async updateResearch(
+    @Request() req: { user: JwtUserInfo },
+    @Param() param: { researchId: string },
+    @Body() body: ResearchUpdateBodyDto,
+  ) {
+    const researchSession = await this.researchConnection.startSession();
+
+    return await this.researchUpdateService.updateResearch(
+      {
+        userId: req.user.userId,
+        researchId: param.researchId,
+        research: body,
+      },
+      researchSession,
     );
   }
 }
