@@ -68,74 +68,15 @@ export class ResearchPostController {
    * @author 현웅
    */
   @Post("")
-  async createResearch(
+  async createResearchWithoutImages(
     @Request() req: { user: JwtUserInfo },
     @Body() body: ResearchCreateBodyDto,
   ) {
-    //* 유저가 가진 credit 을 가져옵니다
-    const userCredit = await this.mongoUserFindService.getUserCredit(
-      req.user.userId,
-    );
-    //* 필요한 데이터 형태를 미리 만들어둡니다.
-    //* 리서치 생성에 필요한 크레딧
-    const requiredCredit =
-      //* 소요시간에 필요한 크레딧
-      CREDIT_PER_MINUTE * body.estimatedTime +
-      //* 추가 리서치 지급에 필요한 크레딧
-      body.extraCredit * body.extraCreditRecieverNum +
-      //* 연령 스크리닝에 필요한 크레딧
-      (body.targetAgeGroups.length !== 0 ? 5 : 0);
-
-    //* 이 때, 유저의 크레딧이 충분한지 확인하고 충분하지 않으면 에러를 일으킵니다.
-    if (userCredit < requiredCredit) throw new NotEnoughCreditException();
-
-    //* 현재 시간
-    const currentTime = getCurrentISOTime();
-    //* 새로운 리서치 정보
-    const research: Research = {
-      ...body,
-      authorId: req.user.userId,
-      credit: CREDIT_PER_MINUTE * body.estimatedTime,
-      pulledupAt: currentTime,
-      createdAt: currentTime,
-    };
-    //* CreditHistory 정보
-    const creditHistory: CreditHistory = {
+    return await this.createResearch({
       userId: req.user.userId,
-      reason: body.title,
-      type: CreditHistoryType.RESEARCH_UPLOAD,
-      scale: -1 * requiredCredit,
-      isIncome: false,
-      balance: userCredit + -1 * requiredCredit,
-      createdAt: currentTime,
-    };
-
-    //* User DB, Research DB 세션을 시작합니다.
-    const userSession = await this.userConnection.startSession();
-    const researchSession = await this.researchConnection.startSession();
-
-    return await tryMultiTransaction(async () => {
-      //TODO: Promise.all 로 처리
-      //* 리서치/리서치 참여 현황 데이터를 만듭니다
-      const createNewResearch = this.mongoResearchCreateService.createResearch(
-        { research, files: {} },
-        researchSession,
-      );
-
-      //* CreditHistory 정보를 User DB 에 반영합니다.
-      const createNewCreditHistory =
-        this.mongoUserCreateService.createCreditHistory(
-          { userId: req.user.userId, creditHistory },
-          userSession,
-        );
-
-      return await Promise.all([
-        createNewResearch,
-        createNewCreditHistory,
-      ]).then(([newResearch, newCreditHistory]) => {
-        return { newResearch, newCreditHistory };
-      });
-    }, [userSession, researchSession]);
+      body,
+      files: {},
+    });
   }
 
   /**
@@ -169,30 +110,57 @@ export class ResearchPostController {
       images?: Express.Multer.File[];
     },
   ) {
+    return await this.createResearch({
+      userId: req.user.userId,
+      body,
+      files,
+    });
+  }
+
+  /**
+   * 리서치를 업로드합니다.
+   * 이미지가 포함된 경우, 포함되지 않은 경우 모두를 포괄합니다.
+   * @author 현웅
+   */
+  async createResearch(param: {
+    userId: string;
+    body: ResearchCreateBodyDto;
+    files: {
+      thumbnail?: Express.Multer.File[];
+      images?: Express.Multer.File[];
+    };
+  }) {
     //* 유저가 가진 credit 을 가져옵니다
     const userCredit = await this.mongoUserFindService.getUserCredit(
-      req.user.userId,
+      param.userId,
     );
     //* 필요한 데이터 형태를 미리 만들어둡니다.
-    const requiredCredit = CREDIT_PER_MINUTE * body.estimatedTime;
+    //* 리서치 생성에 필요한 크레딧
+    const requiredCredit =
+      //* 소요시간에 필요한 크레딧
+      CREDIT_PER_MINUTE * param.body.estimatedTime +
+      //* 추가 리서치 지급에 필요한 크레딧
+      param.body.extraCredit * param.body.extraCreditRecieverNum +
+      //* 연령 스크리닝에 필요한 크레딧
+      (param.body.targetAgeGroups.length !== 0 ? 5 : 0);
 
     //* 이 때, 유저의 크레딧이 충분한지 확인하고 충분하지 않으면 에러를 일으킵니다.
     if (userCredit < requiredCredit) throw new NotEnoughCreditException();
 
+    //* 현재 시간
     const currentTime = getCurrentISOTime();
     //* 새로운 리서치 정보
     const research: Research = {
-      ...body,
-      authorId: req.user.userId,
-      credit: CREDIT_PER_MINUTE * body.estimatedTime,
+      ...param.body,
+      authorId: param.userId,
+      credit: CREDIT_PER_MINUTE * param.body.estimatedTime,
       pulledupAt: currentTime,
       createdAt: currentTime,
     };
     //* CreditHistory 정보
-    //TODO: ExtraCredit 에 따른 credit 도 반영해야 함
     const creditHistory: CreditHistory = {
-      userId: req.user.userId,
-      reason: body.title,
+      userId: param.userId,
+      reason: param.body.title,
       type: CreditHistoryType.RESEARCH_UPLOAD,
       scale: -1 * requiredCredit,
       isIncome: false,
@@ -205,19 +173,25 @@ export class ResearchPostController {
     const researchSession = await this.researchConnection.startSession();
 
     return await tryMultiTransaction(async () => {
-      const newResearch = await this.mongoResearchCreateService.createResearch(
-        { research, files },
+      //* 리서치, 리서치 참여 현황 Document 를 만듭니다
+      const createNewResearch = this.mongoResearchCreateService.createResearch(
+        { research, files: param.files },
         researchSession,
       );
 
       //* CreditHistory 정보를 User DB 에 반영합니다.
-      const newCreditHistory =
-        await this.mongoUserCreateService.createCreditHistory(
-          { userId: req.user.userId, creditHistory },
+      const createNewCreditHistory =
+        this.mongoUserCreateService.createCreditHistory(
+          { userId: param.userId, creditHistory },
           userSession,
         );
 
-      return { newResearch, newCreditHistory };
+      return await Promise.all([
+        createNewResearch,
+        createNewCreditHistory,
+      ]).then(([newResearch, newCreditHistory]) => {
+        return { newResearch, newCreditHistory };
+      });
     }, [userSession, researchSession]);
   }
 

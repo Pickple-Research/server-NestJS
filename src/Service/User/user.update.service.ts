@@ -54,6 +54,8 @@ export class UserUpdateService {
     await Promise.all([checkAlreadyParticipated, updateUser]);
 
     //* CreditHistory 를 생성하고 User 의 credit 에 반영한 후 해당 CreditHistory 반환
+    //! 이 함수와 위의 updateUser 함수는 같은 session 에 종속되어 있으므로
+    //! 동일한 Promise.all 에서 실행시키면 안 되고 순차적으로 실행시켜야 합니다.
     return await this.mongoUserCreateService.createCreditHistory(
       {
         userId: param.userId,
