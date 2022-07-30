@@ -14,6 +14,9 @@ export class User {
   @Prop({ enum: AccountType, required: true }) // 계정 회원가입 타입: 이메일, 카카오, 구글, 네이버
   accountType: AccountType;
 
+  @Prop({}) // FCM 토큰
+  fcmToken?: string;
+
   @Prop({ unique: true, trim: true }) // 이메일
   email: string;
 
@@ -25,6 +28,9 @@ export class User {
 
   @Prop({ default: 1 }) // 등급
   grade?: number;
+
+  @Prop({ default: false }) // 계정 정지 여부
+  blocked?: boolean;
 
   @Prop({ required: true }) // 회원가입 일자
   createdAt: string;

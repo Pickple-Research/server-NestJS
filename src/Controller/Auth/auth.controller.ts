@@ -10,6 +10,7 @@ import {
 import { Public } from "src/Security/Metadata";
 import {
   LoginBodyDto,
+  JwtLoginBodyDto,
   AuthCodeVerificationBodyDto,
   ChangePasswordBodyDto,
   SendPasswordResetAuthCodeBodyDto,
@@ -59,18 +60,31 @@ export class AuthController {
       },
     );
 
+    //* Fcm 토큰 업데이트
+    const updateFcmToken = this.authService.updateFcmToken({
+      email: body.email,
+      fcmToken: body.fcmToken,
+    });
     //* UserInfo 를 바탕으로 유저가 조회/스크랩/참여/업로드한 리서치, 투표 정보 반환
-    const userActivities = await this.userFindService.getUserActivities({
+    const getUserActivities = await this.userFindService.getUserActivities({
       userId: userInfo.user._id,
       userResearch: userInfo.userResearch,
       userVote: userInfo.userVote,
     });
-
     //* JWT 새로 발급
-    const jwt = await this.authService.issueJWT({
+    const issueJwt = await this.authService.issueJWT({
       userId: userInfo.user._id,
       userNickname: userInfo.user.nickname,
       userEmail: userInfo.user.email,
+    });
+
+    //* 위 세 함수를 동시에 실행
+    const { userActivities, jwt } = await Promise.all([
+      updateFcmToken,
+      getUserActivities,
+      issueJwt,
+    ]).then(([_, userActivities, jwt]) => {
+      return { userActivities, jwt };
     });
 
     //* 가져온 정보를 모두 반환
@@ -84,18 +98,42 @@ export class AuthController {
    * @author 현웅
    */
   @Post("login/jwt")
-  async loginWithJwt(@Request() req: { user: JwtUserInfo }) {
+  async loginWithJwt(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: JwtLoginBodyDto,
+  ) {
+    //* UserPrivacy, UserSecurity 를 제외한 정보 반환
     const userInfo = await this.mongoUserFindService.getUserInfoById(
       req.user.userId,
     );
 
-    const jwt = await this.authService.issueJWT({
+    //* Fcm 토큰 업데이트
+    const updateFcmToken = this.authService.updateFcmToken({
+      userId: req.user.userId,
+      fcmToken: body.fcmToken,
+    });
+    //* UserInfo 를 바탕으로 유저가 조회/스크랩/참여/업로드한 리서치, 투표 정보 반환
+    const getUserActivities = this.userFindService.getUserActivities({
+      userId: userInfo.user._id,
+      userResearch: userInfo.userResearch,
+      userVote: userInfo.userVote,
+    });
+    //* JWT 새로 발급
+    const issueJwt = this.authService.issueJWT({
       userId: userInfo.user._id,
       userNickname: userInfo.user.nickname,
       userEmail: userInfo.user.email,
     });
+    //* 위 세 함수 동시에 실행
+    const { userActivities, jwt } = await Promise.all([
+      updateFcmToken,
+      getUserActivities,
+      issueJwt,
+    ]).then(([_, userActivities, jwt]) => {
+      return { userActivities, jwt };
+    });
 
-    return { jwt, ...userInfo };
+    return { jwt, userInfo, userActivities };
   }
 
   /**
