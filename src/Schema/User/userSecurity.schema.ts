@@ -15,6 +15,12 @@ export class UserSecurity {
 
   @Prop() // 이메일을 통한 비밀번호 재설정 시 사용하는 6자리 인증번호
   authCode?: string;
+
+  @Prop({ default: false }) // 비밀번호 재설정 인증번호 인증 여부
+  verified?: boolean;
+
+  @Prop() // 인증 코드 만료 시간
+  codeExpiredAt?: string;
 }
 
 export const UserSecuritySchema = SchemaFactory.createForClass(UserSecurity);

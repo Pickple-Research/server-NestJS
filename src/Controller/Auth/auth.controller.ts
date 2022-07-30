@@ -1,4 +1,6 @@
 import { Controller, Inject, Request, Body, Post } from "@nestjs/common";
+import { InjectConnection } from "@nestjs/mongoose";
+import { Connection } from "mongoose";
 import { AuthService, UserFindService } from "src/Service";
 import {
   MongoUserFindService,
@@ -6,14 +8,25 @@ import {
   MongoSurBayService,
 } from "src/Mongo";
 import { Public } from "src/Security/Metadata";
-import { LoginBodyDto, AuthCodeVerificationBodyDto } from "src/Dto";
+import {
+  LoginBodyDto,
+  AuthCodeVerificationBodyDto,
+  ChangePasswordBodyDto,
+  SendPasswordResetAuthCodeBodyDto,
+  ResetPasswordBodyDto,
+} from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
+import { tryMultiTransaction, getISOTimeAfterGivenMinutes } from "src/Util";
+import { MONGODB_USER_CONNECTION } from "src/Constant";
 
 @Controller("auth")
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly userFindService: UserFindService,
+
+    @InjectConnection(MONGODB_USER_CONNECTION)
+    private readonly userConnection: Connection,
   ) {}
 
   @Inject() private readonly mongoUserFindService: MongoUserFindService;
@@ -107,17 +120,78 @@ export class AuthController {
   async verifyEmailUser(@Body() body: AuthCodeVerificationBodyDto) {
     //* 입력한 인증 번호가 다르거나
     //* 해당 이메일을 사용하는 유저가 존재하지 않으면 에러를 일으킵니다.
-    return await this.mongoUserUpdateService.checkUnauthorizedUserCode({
+    return await this.mongoUserUpdateService.verifyUnauthorizedUserCode({
       email: body.email,
       code: body.code,
     });
   }
 
   /**
-   * refresh 토큰을 받아 Jwt를 발급합니다.
+   * 기존 비밀번호를 이용해 비밀번호를 재설정합니다.
+   * @author 현웅
+   */
+  @Post("password/change")
+  async changePassword(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: ChangePasswordBodyDto,
+  ) {
+    return await this.authService.changePassword({
+      userId: req.user.userId,
+      password: body.password,
+      newPassword: body.newPassword,
+    });
+  }
+
+  /**
+   * 기존 비밀번호를 잊어버린 경우) 이메일로 인증번호를 전송합니다.
    * @author 현웅
    */
   @Public()
-  @Post("refresh")
-  async refreshJwt(refreshToken: string) {}
+  @Post("password/code")
+  async sendPasswordResetAuthCode(
+    @Body() body: SendPasswordResetAuthCodeBodyDto,
+  ) {
+    const userSession = await this.userConnection.startSession();
+
+    const authCode = (
+      "00000" + Math.floor(Math.random() * 1_000_000).toString()
+    ).slice(-6);
+
+    return await tryMultiTransaction(async () => {
+      await this.authService.sendPasswordResetAuthCode(
+        {
+          email: body.email,
+          authCode,
+          codeExpiredAt: getISOTimeAfterGivenMinutes(60),
+        },
+        userSession,
+      );
+    }, [userSession]);
+  }
+
+  /**
+   * 기존 비밀번호를 잊어버린 경우) 전송된 인증번호를 검증합니다.
+   * @author 현웅
+   */
+  @Public()
+  @Post("password/code/verify")
+  async verifyPasswordResetAuthCode(@Body() body: AuthCodeVerificationBodyDto) {
+    return await this.authService.verifyPasswordResetAuthCode({
+      email: body.email,
+      code: body.code,
+    });
+  }
+
+  /**
+   * 기존 비밀번호를 잊어버린 경우, 이메일 인증을 진행한 후 비밀번호를 재설정합니다.
+   * @author 현웅
+   */
+  @Public()
+  @Post("password/reset")
+  async resetPassword(@Body() body: ResetPasswordBodyDto) {
+    return await this.authService.resetPassword({
+      email: body.email,
+      newPassword: body.newPassword,
+    });
+  }
 }

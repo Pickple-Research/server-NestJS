@@ -53,6 +53,16 @@ export class MongoUserFindService {
   ) {}
 
   /**
+   * 주어진 이메일을 사용하는 유저의 _id 를 반환합니다
+   * @author 현웅
+   */
+  async getUserIdByEmail(email: string) {
+    const user = await this.User.findOne({ email }).select({ _id: 1 }).lean();
+    if (!user) throw new UserNotFoundException();
+    return user._id;
+  }
+
+  /**
    * 인자로 받은 이메일로 가입된 정규 유저가 있는지 확인하고
    * 이미 존재한다면, 에러를 발생시킵니다.
    * @author 현웅
@@ -184,7 +194,20 @@ export class MongoUserFindService {
   }
 
   /**
-   * 이메일을 인자로 받아 해당 이메일을 사용하는 유저의 비밀번호와 salt 를 반환합니다.
+   * 인자로 받은 _id 를 사용하는 유저의 비밀번호와 salt 를 반환합니다.
+   * @author 현웅
+   */
+  async getUserSecurityById(userId: string) {
+    return await this.UserSecurity.findById(userId)
+      .select({
+        password: 1,
+        salt: 1,
+      })
+      .lean();
+  }
+
+  /**
+   * 이메일을 인자로 받아 해당 이메일을 사용하는 유저의 _id, 비밀번호와 salt 를 반환합니다.
    * @author 현웅
    */
   async getUserSecurityByEmail(email: string) {
@@ -196,12 +219,7 @@ export class MongoUserFindService {
 
     if (!user) throw new UserNotFoundException();
 
-    return await this.UserSecurity.findById(user._id)
-      .select({
-        password: 1,
-        salt: 1,
-      })
-      .lean();
+    return await this.UserSecurity.findById(user._id).lean();
   }
 
   /**

@@ -91,6 +91,21 @@ export class WrongPasswordException extends Status401Exception {
 }
 
 /**
+ * 비밀번호 재설정 시도 시, 이메일 인증이 이루어지지 않은 경우 사용합니다.
+ * 기본 message: `이메일 인증이 이뤄지지 않았습니다`
+ * @author 현웅
+ */
+export class EmailNotVerifiedException extends Status401Exception {
+  constructor(newMessage?: string) {
+    super({
+      customMessage: newMessage
+        ? newMessage
+        : `이메일 인증이 이뤄지지 않았습니다`,
+    });
+  }
+}
+
+/**
  * Jwt가 만료되었거나 잘못된 형식인 경우 사용합니다.
  * 기본 message: `토큰이 만료되었거나 올바르지 않습니다`
  * @author 현웅

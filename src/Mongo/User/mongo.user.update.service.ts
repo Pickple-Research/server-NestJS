@@ -12,6 +12,8 @@ import {
   UserPropertyDocument,
   UserResearch,
   UserResearchDocument,
+  UserSecurity,
+  UserSecurityDocument,
   UserVote,
   UserVoteDocument,
   // Embedded
@@ -36,6 +38,8 @@ export class MongoUserUpdateService {
     private readonly UserProperty: Model<UserPropertyDocument>,
     @InjectModel(UserResearch.name)
     private readonly UserResearch: Model<UserResearchDocument>,
+    @InjectModel(UserSecurity.name)
+    private readonly UserSecurity: Model<UserSecurityDocument>,
     @InjectModel(UserVote.name)
     private readonly UserVote: Model<UserVoteDocument>,
   ) {}
@@ -47,7 +51,7 @@ export class MongoUserUpdateService {
    * 인증번호가 일치하면 인증 여부를 true로 변경합니다.
    * @author 현웅
    */
-  async checkUnauthorizedUserCode(param: { email: string; code: string }) {
+  async verifyUnauthorizedUserCode(param: { email: string; code: string }) {
     const unauthorizedUser = await this.UnauthorizedUser.findOne({
       email: param.email,
     })
@@ -73,6 +77,62 @@ export class MongoUserUpdateService {
       { email: param.email },
       { $set: { authorized: true } },
     );
+    return;
+  }
+
+  /**
+   * 기존 비밀번호를 통해 비밀번호를 변경합니다.
+   * @author 현웅
+   */
+  async changePassword(param: { userId: string; newPassword: string }) {
+    await this.UserSecurity.findByIdAndUpdate(param.userId, {
+      $set: { password: param.newPassword },
+    });
+    return;
+  }
+
+  /**
+   * 기존 비밀번호를 잊어버린 경우)
+   * 비밀번호 재설정 인증 코드를 업데이트합니다.
+   * @author 현웅
+   */
+  async updateAuthCode(
+    param: { userId: string; authCode: string; codeExpiredAt: string },
+    session: ClientSession,
+  ) {
+    return await this.UserSecurity.findByIdAndUpdate(
+      param.userId,
+      {
+        $set: {
+          verified: false,
+          authCode: param.authCode,
+          codeExpiredAt: param.codeExpiredAt,
+        },
+      },
+      { session },
+    );
+  }
+
+  /**
+   * 기존 비밀번호를 잊어버린 경우)
+   * 비밀번호 재설정 인증 코드가 검증되었음을 설정합니다.
+   * @author 현웅
+   */
+  async updateVerifiedFlag(userId: string) {
+    return await this.UserSecurity.findByIdAndUpdate(userId, {
+      $set: { verified: true },
+    });
+  }
+
+  /**
+   * 기존 비밀번호를 잊어버린 경우)
+   * 이메일 인증 후 비밀번호를 재설정하고, 이메일 인증 완료 플래그를 false 로 설정합니다.
+   * @author 현웅
+   */
+  async resetPassword(param: { userId: string; newPassword: string }) {
+    await this.UserSecurity.findByIdAndUpdate(param.userId, {
+      $set: { password: param.newPassword, verified: false },
+    });
     return;
   }
 
