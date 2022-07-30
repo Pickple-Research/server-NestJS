@@ -95,7 +95,7 @@ export class MongoVoteFindService {
   }
 
   /**
-   * 주어진 투표 _id을 기준으로 하여 과거의 투표 10개를 찾고 반환합니다.
+   * 주어진 투표 _id을 기준으로 하여 과거의 투표 20개를 찾고 반환합니다.
    * @author 현웅
    */
   async getOlderVotes(voteId: string, limit: number = 20) {

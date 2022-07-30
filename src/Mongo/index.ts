@@ -11,6 +11,7 @@ export * from "./Feedback/mongo.feedback.find.service";
 export * from "./Feedback/mongo.feedback.module";
 
 // Notice
+export * from "./Notice/mongo.notice.create.service";
 export * from "./Notice/mongo.notice.find.service";
 export * from "./Notice/mongo.notice.module";
 

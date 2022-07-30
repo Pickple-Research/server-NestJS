@@ -125,7 +125,7 @@ export class MongoResearchFindService {
   }
 
   /**
-   * 주어진 리서치 pulledupAt을 기준으로 하여 과거의 리서치 10개를 찾고 반환합니다.
+   * 주어진 리서치 pulledupAt을 기준으로 하여 과거의 리서치 20개를 찾고 반환합니다.
    * @author 현웅
    */
   async getOlderResearches(pulledupAt: string, limit: number = 20) {

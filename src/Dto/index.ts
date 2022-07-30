@@ -6,6 +6,7 @@
  */
 
 export * from "./auth.dto";
+export * from "./notice.dto";
 export * from "./partner.dto";
 export * from "./research.dto";
 export * from "./user.dto";

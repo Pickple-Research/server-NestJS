@@ -1,6 +1,7 @@
 import { Controller, Inject, Request, Body, Post } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
+import { Vote, VoteComment, VoteReply } from "src/Schema";
 import { MongoVoteFindService, MongoVoteCreateService } from "src/Mongo";
 import {
   VoteCreateBodyDto,
@@ -10,7 +11,11 @@ import {
   VoteMypageBodyDto,
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
-import { tryTransaction, tryMultiTransaction } from "src/Util";
+import {
+  tryTransaction,
+  tryMultiTransaction,
+  getCurrentISOTime,
+} from "src/Util";
 import { MONGODB_VOTE_CONNECTION } from "src/Constant";
 // import { getDummyVotes } from "src/Dummy";
 
@@ -38,9 +43,16 @@ export class VotePostController {
     @Body() body: VoteCreateBodyDto,
   ) {
     const voteSession = await this.voteConnection.startSession();
+
+    const vote: Vote = {
+      ...body,
+      authorId: req.user.userId,
+      createdAt: getCurrentISOTime(),
+    };
+
     return await tryMultiTransaction(async () => {
       const newVote = await this.mongoVoteCreateService.createVote(
-        { vote: { authorId: req.user.userId, ...body } },
+        { vote },
         voteSession,
       );
       return newVote;
@@ -60,16 +72,17 @@ export class VotePostController {
   ) {
     const voteSession = await this.voteConnection.startSession();
 
+    const comment: VoteComment = {
+      voteId: body.voteId,
+      authorId: req.user.userId,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+
     return await tryTransaction(async () => {
       const { updatedVote, newComment } =
         await this.mongoVoteCreateService.createVoteComment(
-          {
-            comment: {
-              voteId: body.voteId,
-              authorId: req.user.userId,
-              content: body.content,
-            },
-          },
+          { comment },
           voteSession,
         );
       return { updatedVote, newComment };
@@ -89,17 +102,18 @@ export class VotePostController {
   ) {
     const voteSession = await this.voteConnection.startSession();
 
+    const reply: VoteReply = {
+      voteId: body.voteId,
+      commentId: body.commentId,
+      authorId: req.user.userId,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+
     return await tryTransaction(async () => {
       const { updatedVote, newReply } =
         await this.mongoVoteCreateService.createVoteReply(
-          {
-            reply: {
-              voteId: body.voteId,
-              commentId: body.commentId,
-              authorId: req.user.userId,
-              content: body.content,
-            },
-          },
+          { reply },
           voteSession,
         );
       return { updatedVote, newReply };

@@ -15,6 +15,7 @@ export * from "./Feedback/feedback.get.controller";
 
 //Notice
 export * from "./Notice/notice.get.controller";
+export * from "./Notice/notice.post.controller";
 
 //Partner
 export * from "./Partner/partner.get.controller";

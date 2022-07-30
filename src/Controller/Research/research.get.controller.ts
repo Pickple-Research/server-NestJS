@@ -22,7 +22,7 @@ export class ResearchGetController {
   }
 
   /**
-   * 주어진 리서치 pulledupAt 을 기준으로 하여 더 최근의 리서치 10개를 찾고 반환합니다.
+   * 주어진 리서치 pulledupAt 을 기준으로 하여 더 최근의 리서치 모두 찾고 반환합니다.
    * @author 현웅
    */
   @Public()
@@ -32,7 +32,7 @@ export class ResearchGetController {
   }
 
   /**
-   * 주어진 리서치 pulledupAt 을 기준으로 하여 과거의 리서치 10개를 찾고 반환합니다.
+   * 주어진 리서치 pulledupAt 을 기준으로 하여 과거의 리서치 20개를 찾고 반환합니다.
    * @author 현웅
    */
   @Public()

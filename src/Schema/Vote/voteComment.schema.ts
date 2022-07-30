@@ -25,7 +25,7 @@ export class VoteComment {
   content: string;
 
   @Prop({}) // 작성 날짜
-  createdAt?: string;
+  createdAt: string;
 
   @Prop({
     type: [{ type: MongooseSchema.Types.ObjectId, ref: "VoteReply" }],

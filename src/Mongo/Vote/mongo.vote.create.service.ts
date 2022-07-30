@@ -106,7 +106,6 @@ export class MongoVoteCreateService {
         {
           ...param.comment,
           author: param.comment.authorId,
-          createdAt: getCurrentISOTime(),
         },
       ],
       { session },
@@ -147,7 +146,6 @@ export class MongoVoteCreateService {
         {
           ...param.reply,
           author: param.reply.authorId,
-          createdAt: getCurrentISOTime(),
         },
       ],
       { session },
@@ -189,6 +187,7 @@ export class MongoVoteCreateService {
         voteId: param.voteId,
         voteTitle: vote.title,
         content: param.content,
+        createdAt: getCurrentISOTime(),
       },
     ]);
 
