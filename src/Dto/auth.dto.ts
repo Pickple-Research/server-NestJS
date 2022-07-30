@@ -1,9 +1,10 @@
-import { IsString } from "class-validator";
+import { IsString, IsOptional } from "class-validator";
 
 /**
  * 로그인 요청시 Body에 포함되어야 하는 정보들입니다.
  * @param email
  * @param password
+ * @param fcmToken (optional)
  * @author 현웅
  */
 export class LoginBodyDto {
@@ -12,6 +13,21 @@ export class LoginBodyDto {
 
   @IsString()
   password: string;
+
+  @IsString()
+  @IsOptional()
+  fcmToken?: string;
+}
+
+/**
+ * Jwt 를 이용한 자동 로그인 요청시 Body에 포함되어야 하는 정보들입니다.
+ * @param fcmToken (optional)
+ * @author 현웅
+ */
+export class JwtLoginBodyDto {
+  @IsString()
+  @IsOptional()
+  fcmToken?: string;
 }
 
 /**

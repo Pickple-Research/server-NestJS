@@ -81,6 +81,17 @@ export class MongoUserUpdateService {
   }
 
   /**
+   * 인자로 주어진 userId 를 사용하는 유저의 Fcm 토큰을 업데이트합니다.
+   * @author 현웅
+   */
+  async updateFcmToken(param: { userId: string; fcmToken?: string }) {
+    if (!param.fcmToken) return;
+    return await this.User.findByIdAndUpdate(param.userId, {
+      $set: { fcmToken: param.fcmToken },
+    });
+  }
+
+  /**
    * 기존 비밀번호를 통해 비밀번호를 변경합니다.
    * @author 현웅
    */

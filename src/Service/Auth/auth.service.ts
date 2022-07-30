@@ -60,6 +60,36 @@ export class AuthService {
   }
 
   /**
+   * 로그인 시 fcm 토큰이 같이 전달되는 경우 유저 데이터에 저장합니다.
+   * @author 현웅
+   */
+  async updateFcmToken(
+    param:
+      | { email: string; fcmToken?: string }
+      | { userId: string; fcmToken?: string },
+  ) {
+    //* fcm 토큰이 없는 경우, 곧바로 반환
+    if (!param.fcmToken) return;
+
+    //* userId 대신 email 이 주어진 경우 (일반 로그인)
+    if ("email" in param) {
+      const userId = await this.mongoUserFindService.getUserIdByEmail(
+        param.email,
+      );
+      await this.mongoUserUpdateService.updateFcmToken({
+        userId,
+        fcmToken: param.fcmToken,
+      });
+      return;
+    }
+    //* userId 가 주어진 경우 (자동 로그인)
+    await this.mongoUserUpdateService.updateFcmToken({
+      userId: param.userId,
+      fcmToken: param.fcmToken,
+    });
+  }
+
+  /**
    * 주어진 비밀번호와 salt 를 이용해 암호화된 비밀번호를 반환합니다.
    * @author 현웅
    */
