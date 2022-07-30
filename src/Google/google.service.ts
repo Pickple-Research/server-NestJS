@@ -38,6 +38,7 @@ export class GoogleService {
     await transporter
       .sendMail(message)
       .then((info) => {
+        // console.log(info.messageId);
         return;
       })
       .catch((err) => {

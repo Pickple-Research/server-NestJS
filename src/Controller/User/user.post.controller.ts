@@ -77,7 +77,7 @@ export class UserPostController {
       email: body.email,
       authorized: false,
       authorizationCode: authCode,
-      codeExpiredAt: getISOTimeAfterGivenMinutes(15),
+      codeExpiredAt: getISOTimeAfterGivenMinutes(60),
       createdAt: getCurrentISOTime(),
     };
 
@@ -108,7 +108,7 @@ export class UserPostController {
     const voteSession = await this.voteConnection.startSession();
 
     const salt = getSalt();
-    const hashedPassword = await this.authService.getHashPassword(
+    const hashedPassword = await this.authService.getHashedPassword(
       body.password,
       salt,
     );
@@ -173,7 +173,7 @@ export class UserPostController {
     const surBaySession = await this.surBayConnection.startSession();
 
     const salt = getSalt();
-    const hashedPassword = await this.authService.getHashPassword(
+    const hashedPassword = await this.authService.getHashedPassword(
       body.password,
       salt,
     );
