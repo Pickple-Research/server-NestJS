@@ -27,7 +27,7 @@ export class ResearchReply {
   content: string;
 
   @Prop({ required: true }) // 작성 날짜
-  createdAt?: string;
+  createdAt: string;
 }
 
 export const ResearchReplySchema = SchemaFactory.createForClass(ResearchReply);

@@ -79,16 +79,16 @@ export class MongoResearchCreateService {
     //* 인자로 주어진 Session을 이용해 진행합니다.
 
     //* 먼저 주어진 리서치 정보에 누락된 필수정보인 author 에
-    //*   authorId 를 추가한 Research 정보를 만들고, 해당 정보로 리서치를 생성합니다.
+    //*   authorId 값을 넣은 Research 정보를 만들고, 해당 정보로 리서치를 생성합니다.
     //* (author 는 ResearchUser 타입을 갖고 있기에,
-    //*   Research 객체를 만들 때 author property에 string 타입을 넣으면 에러가 납니다.)
-    //* 리서치 진행자 _id와 생성 시간과 마감일자를 추가하여 리서치를 만들어둡니다.
+    //*   Research 객체를 만들 때 author 에 string 타입인 authorId 를 곧바로 넣으면 에러가 납니다.)
     //* 이 행위는 session에 종속됩니다.
     const newResearches = await this.Research.create(
       [{ ...param.research, author: param.research.authorId }],
       { session },
     );
 
+    //* 새로운 리서치 정보를 반환할 때 author 정보를 같이 주기 위해 populate 시킵니다
     const newResearch = await newResearches[0].populate({
       path: "author",
       model: this.ResearchUser,
@@ -160,7 +160,6 @@ export class MongoResearchCreateService {
         {
           ...param.comment,
           author: param.comment.authorId,
-          createdAt: getCurrentISOTime(),
         },
       ],
       { session },
@@ -204,7 +203,6 @@ export class MongoResearchCreateService {
         {
           ...param.reply,
           author: param.reply.authorId,
-          createdAt: getCurrentISOTime(),
         },
       ],
       { session },
@@ -246,6 +244,7 @@ export class MongoResearchCreateService {
         researchId: param.researchId,
         researchTitle: research.title,
         content: param.content,
+        createdAt: getCurrentISOTime(),
       },
     ]);
     return;

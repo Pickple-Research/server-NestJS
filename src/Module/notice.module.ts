@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
-import { NoticeGetController } from "../Controller";
-import { NoticeFindService } from "../Service";
-import { MongoNoticeModule } from "../Mongo";
+import { NoticeGetController, NoticePostController } from "src/Controller";
+import { NoticeFindService } from "src/Service";
+import { MongoNoticeModule } from "src/Mongo";
 
 @Module({
-  controllers: [NoticeGetController],
+  controllers: [NoticeGetController, NoticePostController],
   providers: [NoticeFindService],
   imports: [MongoNoticeModule],
 })

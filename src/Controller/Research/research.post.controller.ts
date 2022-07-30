@@ -10,7 +10,12 @@ import {
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
-import { Research, CreditHistory } from "src/Schema";
+import {
+  Research,
+  ResearchComment,
+  ResearchReply,
+  CreditHistory,
+} from "src/Schema";
 import {
   MongoUserFindService,
   MongoUserCreateService,
@@ -227,10 +232,11 @@ export class ResearchPostController {
     @Request() req: { user: JwtUserInfo },
     @Body() body: ResearchCommentCreateBodyDto,
   ) {
-    const comment = {
+    const comment: ResearchComment = {
       researchId: body.researchId,
       authorId: req.user.userId,
       content: body.content,
+      createdAt: getCurrentISOTime(),
     };
 
     const researchSession = await this.researchConnection.startSession();
@@ -257,11 +263,12 @@ export class ResearchPostController {
     @Request() req: { user: JwtUserInfo },
     @Body() body: ResearchReplyCreateBodyDto,
   ) {
-    const reply = {
+    const reply: ResearchReply = {
       researchId: body.researchId,
       commentId: body.commentId,
       authorId: req.user.userId,
       content: body.content,
+      createdAt: getCurrentISOTime(),
     };
 
     const researchSession = await this.researchConnection.startSession();

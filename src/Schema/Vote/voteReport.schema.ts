@@ -24,6 +24,9 @@ export class VoteReport {
 
   @Prop() // 신고 내용
   content: string;
+
+  @Prop() // 신고 날짜
+  createdAt: string;
 }
 
 export const VoteReportSchema = SchemaFactory.createForClass(VoteReport);
