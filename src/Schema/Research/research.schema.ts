@@ -67,7 +67,7 @@ export class Research {
   extraCreditRecieverNum?: number;
 
   @Prop() // 마감일
-  deadline?: string;
+  deadline: string;
 
   //! 끌올한 날짜. 리서치는 _id가 아니라 이 일자를 기준으로 노출됩니다.
   //* 끌올하기 전에는 생성일과 같습니다.

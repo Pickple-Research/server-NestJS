@@ -11,21 +11,28 @@ import { Connection } from "mongoose";
 import { UserUpdateService, ResearchUpdateService } from "src/Service";
 import {
   MongoUserFindService,
+  MongoUserCreateService,
   MongoUserUpdateService,
   MongoResearchFindService,
   MongoResearchUpdateService,
 } from "src/Mongo";
-import { CreditHistory } from "src/Schema";
+import { Research, CreditHistory } from "src/Schema";
 import { ParticipatedResearchInfo } from "src/Schema/User/Embedded";
 import { ResearchParticipantInfo } from "src/Schema/Research/Embedded";
 import { JwtUserInfo } from "src/Object/Type";
 import { CreditHistoryType } from "src/Object/Enum";
-import { ResearchParticiateBodyDto, ResearchUpdateBodyDto } from "src/Dto";
+import {
+  ResearchParticiateBodyDto,
+  ResearchPullupBodyDto,
+  ResearchUpdateBodyDto,
+} from "src/Dto";
 import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import {
   MONGODB_USER_CONNECTION,
   MONGODB_RESEARCH_CONNECTION,
+  RESEARCH_PULLUP_CREDIT,
 } from "src/Constant";
+import { NotEnoughCreditException } from "src/Exception";
 
 /**
  * 리서치 데이터에 대한 Patch 메소드 요청을 관리합니다.
@@ -44,6 +51,7 @@ export class ResearchPatchController {
   ) {}
 
   @Inject() private readonly mongoUserFindService: MongoUserFindService;
+  @Inject() private readonly mongoUserCreateService: MongoUserCreateService;
   @Inject() private readonly mongoUserUpdateService: MongoUserUpdateService;
   @Inject()
   private readonly mongoResearchFindService: MongoResearchFindService;
@@ -137,19 +145,17 @@ export class ResearchPatchController {
   @Patch("participate/:researchId")
   async participateResearch(
     @Request() req: { user: JwtUserInfo },
-    @Param() param: { researchId: string },
+    @Param("researchId") researchId: string,
     @Body() body: ResearchParticiateBodyDto,
   ) {
     //* 유저가 가진 credit, 리서치 참여시 제공 credit, 리서치 제목 을 가져옵니다
     const getUserCredit = this.mongoUserFindService.getUserCredit(
       req.user.userId,
     );
-    const getResearchTitle = this.mongoResearchFindService.getResearchTitle(
-      param.researchId,
-    );
-    const getResearchCredit = this.mongoResearchFindService.getResearchCredit(
-      param.researchId,
-    );
+    const getResearchTitle =
+      this.mongoResearchFindService.getResearchTitle(researchId);
+    const getResearchCredit =
+      this.mongoResearchFindService.getResearchCredit(researchId);
 
     const { userCredit, researchTitle, researchCredit } = await Promise.all([
       getUserCredit,
@@ -163,7 +169,7 @@ export class ResearchPatchController {
     const currentISOTime = getCurrentISOTime();
     //* 리서치 참여 정보
     const participatedResearchInfo: ParticipatedResearchInfo = {
-      researchId: param.researchId,
+      researchId,
       participatedAt: currentISOTime,
     };
     //* CreditHistory 정보
@@ -198,16 +204,14 @@ export class ResearchPatchController {
         },
         userSession,
       );
-
       //* ResearchParticipation 에 참여자 정보 추가
       const updateResearch = this.mongoResearchUpdateService.updateParticipant(
         {
           participantInfo: researchParticipationInfo,
-          researchId: param.researchId,
+          researchId,
         },
         researchSession,
       );
-
       //* 위 두 함수를 동시에 실행하고,
       //* 새로운 CreditHistory와 업데이트 된 리서치 정보를 가져옵니다.
       const { newCreditHitory, updatedResearch } = await Promise.all([
@@ -223,27 +227,85 @@ export class ResearchPatchController {
   }
 
   /**
+   * @Transaction
    * 리서치를 끌올합니다.
-   * TODO: CreditHistory 생성 및 추가
-   * @return 업데이트된 리서치 정보
+   * @return 생성된 크레딧 사용내역, 끌올된 리서치 정보
    * @author 현웅
    */
   @Patch("pullup/:researchId")
-  async pullupResearch(@Param() param: { researchId: string }) {
-    return await this.mongoResearchUpdateService.pullupResearch(
-      param.researchId,
-    );
-  }
+  async pullupResearch(
+    @Request() req: { user: JwtUserInfo },
+    @Param("researchId") researchId: string,
+    @Body() body: ResearchPullupBodyDto,
+  ) {
+    const userSession = await this.userConnection.startSession();
+    const researchSession = await this.researchConnection.startSession();
 
-  /**
-   * 리서치를 종료합니다.
-   * @author 현웅
-   */
-  @Patch("close/:researchId")
-  async closeResearch(@Param() param: { researchId: string }) {
-    return await this.mongoResearchUpdateService.closeResearch(
-      param.researchId,
+    //* 유저가 가진 크레딧, 리서치 제목을 가져옵니다
+    const getUserCredit = this.mongoUserFindService.getUserCredit(
+      req.user.userId,
     );
+    const getResearchTitle =
+      this.mongoResearchFindService.getResearchTitle(researchId);
+
+    const { userCredit, researchTitle } = await Promise.all([
+      getUserCredit,
+      getResearchTitle,
+    ]).then(([userCredit, researchTitle]) => {
+      return { userCredit, researchTitle };
+    });
+
+    //* 리서치 끌올을 위한 크레딧이 부족한 경우: 에러
+    if (userCredit < RESEARCH_PULLUP_CREDIT)
+      throw new NotEnoughCreditException();
+
+    //* 필요한 데이터 형태를 미리 만들어둡니다.
+    //* 현재 시간 (끌올 일시, 크레딧 사용내역 생성 일시)
+    const currentISOTime = getCurrentISOTime();
+    //* 끌올될 리서치 정보
+    const research: Partial<Research> = {
+      ...body, // '수정 후 끌올' 인 경우, 제목/내용/마감일이 포함되어 있습니다
+      pulledupAt: currentISOTime,
+    };
+    //* CreditHistory 정보
+    const creditHistory: CreditHistory = {
+      userId: req.user.userId,
+      reason: researchTitle,
+      type: CreditHistoryType.RESEARCH_PULLUP,
+      scale: -1 * RESEARCH_PULLUP_CREDIT,
+      isIncome: false,
+      balance: userCredit - RESEARCH_PULLUP_CREDIT,
+      createdAt: currentISOTime,
+    };
+
+    return await tryMultiTransaction(async () => {
+      //* 크레딧 사용내역을 생성하고 유저의 크레딧을 차감합니다.
+      const updateUser = this.mongoUserCreateService.createCreditHistory(
+        {
+          userId: req.user.userId,
+          creditHistory,
+        },
+        userSession,
+      );
+      //* 리서치 정보를 업데이트합니다.
+      const updateResearch = this.researchUpdateService.pullupResearch(
+        {
+          userId: req.user.userId,
+          researchId,
+          research,
+        },
+        researchSession,
+      );
+      //* 위 두 함수를 동시에 실행하고 생성된 크레딧 사용내역과 끌올된 리서치 정보를 반환합니다.
+      const { newCreditHitory, updatedResearch } = await Promise.all([
+        updateUser,
+        updateResearch,
+      ]).then(([newCreditHitory, updatedResearch]) => {
+        return { newCreditHitory, updatedResearch };
+      });
+
+      return { newCreditHitory, updatedResearch };
+    }, [userSession, researchSession]);
   }
 
   /**
@@ -267,6 +329,18 @@ export class ResearchPatchController {
         research: body,
       },
       researchSession,
+    );
+  }
+
+  /**
+   * 리서치를 마감합니다.
+   * TODO: 추가 크레딧이 걸린 리서치인 경우 분배
+   * @author 현웅
+   */
+  @Patch("close/:researchId")
+  async closeResearch(@Param() param: { researchId: string }) {
+    return await this.mongoResearchUpdateService.closeResearch(
+      param.researchId,
     );
   }
 }

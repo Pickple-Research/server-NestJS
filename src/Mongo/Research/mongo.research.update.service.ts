@@ -10,7 +10,6 @@ import {
   ResearchUser,
   ResearchUserDocument,
 } from "src/Schema";
-import { getFutureDateFromGivenDate } from "src/Util";
 import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
 
 /**
@@ -142,14 +141,21 @@ export class MongoResearchUpdateService {
 
   /**
    * 리서치를 끌올합니다.
+   * @return 끌올된 리서치 정보
    * @author 현웅
    */
-  async pullupResearch(researchId: string) {
-    const research = await this.Research.findById(researchId);
-    const updatedDeadline = getFutureDateFromGivenDate(research.deadline, 2);
-    research.deadline = updatedDeadline;
-    research.save();
-    return;
+  async pullupResearch(
+    param: { researchId: string; research: Partial<Research> },
+    session: ClientSession,
+  ) {
+    const research = await this.Research.findById(param.researchId).lean();
+    const updatedResearch = { ...research, ...param.research };
+
+    return await this.Research.findByIdAndUpdate(
+      param.researchId,
+      updatedResearch,
+      { session, returnOriginal: false },
+    ).lean();
   }
 
   /**
