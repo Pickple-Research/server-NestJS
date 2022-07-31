@@ -139,7 +139,7 @@ export class ResearchPatchController {
    * @Transaction
    * 리서치에 참여합니다.
    * 조회, 스크랩과 다르게 데이터 정합성이 필요하므로 Transaction을 활용해야합니다.
-   * @return 리서치 참여 정보, 업데이트 된 리서치 정보
+   * @return (리서치 참여 정보, 크레딧 변동내역, 업데이트 된 리서치 정보) | 크레딧 변동내역
    * @author 현웅
    */
   @Patch("participate/:researchId")
@@ -164,6 +164,21 @@ export class ResearchPatchController {
     ]).then(([userCredit, researchTitle, researchCredit]) => {
       return { userCredit, researchTitle, researchCredit };
     });
+
+    /**
+     * 참여하는 동안 리서치가 삭제된 경우,
+     * 해당 상황을 처리하는 함수를 호출해 응답합니다.
+     * @return 새로운 크레딧 변동내역
+     */
+    if (researchTitle === null || researchCredit === null) {
+      const newCreditHitory = await this.participateDeletedResearch({
+        userId: req.user.userId,
+        userCredit,
+        researchTitle: body.title,
+        researchCredit: body.credit,
+      });
+      return { newCreditHitory };
+    }
 
     //* 필요한 데이터 형태를 미리 만들어둡니다.
     const currentISOTime = getCurrentISOTime();
@@ -213,7 +228,7 @@ export class ResearchPatchController {
         researchSession,
       );
       //* 위 두 함수를 동시에 실행하고,
-      //* 새로운 CreditHistory와 업데이트 된 리서치 정보를 가져옵니다.
+      //* 새로운 크레딧 변동내역과 업데이트 된 리서치 정보를 가져옵니다.
       const { newCreditHitory, updatedResearch } = await Promise.all([
         updateUser,
         updateResearch,
@@ -221,9 +236,47 @@ export class ResearchPatchController {
         return { newCreditHitory, updatedResearch };
       });
 
-      //* 최종적으로 리서치 참여 정보, 새로 생성된 CreditHistory, 최신 리서치 정보를 반환합니다.
+      //* 최종적으로 리서치 참여 정보, 새로 생성된 크레딧 변동내역, 최신 리서치 정보를 반환합니다.
       return { participatedResearchInfo, newCreditHitory, updatedResearch };
     }, [userSession, researchSession]);
+  }
+
+  /**
+   * @Transaction
+   * 참여한 리서치가 이미 삭제된 경우,
+   * 리서치 참여정보나 리서치 참여자 정보는 업데이트하지 않고
+   * 크레딧 사용내역만 추가하고 반환합니다.
+   * @return 새로운 크레딧 변동내역
+   * @author 현웅
+   */
+  async participateDeletedResearch(param: {
+    userId: string;
+    userCredit: number;
+    researchTitle: string;
+    researchCredit: number;
+  }) {
+    const creditHistory: CreditHistory = {
+      userId: param.userId,
+      reason: param.researchTitle,
+      type: CreditHistoryType.DELETED_RESEARCH_PARTICIPATE,
+      scale: param.researchCredit,
+      isIncome: true,
+      balance: param.userCredit + param.researchCredit,
+      createdAt: getCurrentISOTime(),
+    };
+
+    const userSession = await this.userConnection.startSession();
+
+    const newCreditHitory =
+      await this.mongoUserCreateService.createCreditHistory(
+        {
+          userId: param.userId,
+          creditHistory,
+        },
+        userSession,
+      );
+
+    return newCreditHitory;
   }
 
   /**
@@ -333,14 +386,23 @@ export class ResearchPatchController {
   }
 
   /**
+   * @Transaction
    * 리서치를 마감합니다.
    * TODO: 추가 크레딧이 걸린 리서치인 경우 분배
    * @author 현웅
    */
   @Patch("close/:researchId")
-  async closeResearch(@Param() param: { researchId: string }) {
-    return await this.mongoResearchUpdateService.closeResearch(
-      param.researchId,
-    );
+  async closeResearch(
+    @Request() req: { user: JwtUserInfo },
+    @Param("researchId") researchId: string,
+  ) {
+    const researchSession = await this.researchConnection.startSession();
+
+    return await tryMultiTransaction(async () => {
+      return await this.researchUpdateService.closeResearch(
+        { userId: req.user.userId, researchId },
+        researchSession,
+      );
+    }, [researchSession]);
   }
 }

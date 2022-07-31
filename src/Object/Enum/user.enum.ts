@@ -35,8 +35,16 @@ export enum AccountType {
  * @author 현웅
  */
 export enum CreditHistoryType {
+  // 리서치 참여
   RESEARCH_PARTICIPATE = "RESEARCH_PARTICIPATE",
+  // 삭제된 리서치에 참여
+  DELETED_RESEARCH_PARTICIPATE = "DELETED_RESEARCH_PARTICIPATE",
+  // 리서치 업로드
   RESEARCH_UPLOAD = "RESEARCH_UPLOAD",
+  // 리서치 끌올
   RESEARCH_PULLUP = "RESEARCH_PULLUP",
+  // 리서치 추가 증정 크레딧 당첨
+  WIN_RESEARCH_EXTRA_CREDIT = "WIN_RESEARCH_EXTRA_CREDIT",
+  // SurBay 사용자 기존 크레딧 이관
   MIGRATE = "MIGRATE",
 }

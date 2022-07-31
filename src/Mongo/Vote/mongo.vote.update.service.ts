@@ -175,6 +175,11 @@ export class MongoVoteUpdateService {
     return await this.Vote.findByIdAndUpdate(param.voteId, updatedVote, {
       session,
       returnOriginal: false,
-    });
+    })
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
+      .lean();
   }
 }

@@ -117,7 +117,7 @@ export class MongoUserCreateService {
   /**
    * @Transaction
    * 크레딧 사용내역을 새로 만들고 User 의 credit 정보에 반영합니다.
-   * @return 새로 만들어진 CreditHistory 정보
+   * @return 새로운 크레딧 변동내역
    * @author 현웅
    */
   async createCreditHistory(
