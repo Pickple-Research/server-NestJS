@@ -46,6 +46,11 @@ export class MongoUserDeleteService {
   ) {}
 
   /**
+   * _id 를 통해 이메일 미인증 유저 데이터를 삭제합니다.
+   * @author 현웅
+   */
+
+  /**
    * 이메일 미인증 유저 데이터를 삭제합니다.
    * @author 현웅
    */

@@ -70,23 +70,27 @@ export class MongoResearchFindService {
 
   /**
    * 리서치 제목을 반환합니다.
+   * 리서치가 존재하지 않는 경우 null 을 반환합니다.
    * @author 현웅
    */
   async getResearchTitle(researchId: string) {
     const research = await this.Research.findById(researchId)
       .select({ title: 1 })
       .lean();
+    if (!research) return null;
     return research.title;
   }
 
   /**
    * 리서치 참여시 제공 크레딧을 반환합니다.
+   * 리서치가 존재하지 않는 경우 null 을 반환합니다.
    * @author 현웅
    */
   async getResearchCredit(researchId: string) {
     const research = await this.Research.findById(researchId)
       .select({ credit: 1 })
       .lean();
+    if (!research) return null;
     return research.credit;
   }
 

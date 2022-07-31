@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Schema as MongooseSchema, Types } from "mongoose";
+import { Document, Schema as MongooseSchema } from "mongoose";
 import { ResearchUser } from "./researchUser.schema";
-import { ResearchPurpose, Category } from "src/Object/Enum";
+import { Category } from "src/Object/Enum";
 
 /**
  * 리서치 기본 정보 스키마입니다.
@@ -61,10 +61,10 @@ export class Research {
   credit: number;
 
   @Prop() // 참여시 추가 제공 크레딧 (추첨자에게만 제공)
-  extraCredit?: number;
+  extraCredit: number;
 
   @Prop() // 추가 제공 크레딧 추첨 수령자 수
-  extraCreditRecieverNum?: number;
+  extraCreditRecieverNum: number;
 
   @Prop() // 마감일
   deadline: string;

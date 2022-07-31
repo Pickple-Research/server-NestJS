@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { InjectModel, InjectConnection } from "@nestjs/mongoose";
-import { Model, Connection, ClientSession } from "mongoose";
+import { InjectModel } from "@nestjs/mongoose";
+import { Model, ClientSession } from "mongoose";
 import {
   Research,
   ResearchDocument,
@@ -10,7 +10,6 @@ import {
   ResearchUser,
   ResearchUserDocument,
 } from "src/Schema";
-import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
 
 /**
  * 리서치 데이터를 수정하는 서비스 집합입니다
@@ -25,9 +24,6 @@ export class MongoResearchUpdateService {
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
     @InjectModel(ResearchUser.name)
     private readonly ResearchUser: Model<ResearchUserDocument>,
-
-    @InjectConnection(MONGODB_RESEARCH_CONNECTION)
-    private readonly connection: Connection,
   ) {}
 
   /**
@@ -155,23 +151,37 @@ export class MongoResearchUpdateService {
       param.researchId,
       updatedResearch,
       { session, returnOriginal: false },
-    ).lean();
+    )
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
+      .lean();
   }
 
   /**
-   * 리서치를 종료합니다.
+   * @Transaction
+   * 리서치를 마감합니다.
+   * @return 마감된 리서치 정보
    * @author 현웅
    */
-  async closeResearch(researchId: string) {
-    await this.Research.findByIdAndUpdate(researchId, {
-      $set: { closed: true },
-    });
-    return;
+  async closeResearch(param: { researchId: string }, session: ClientSession) {
+    return await this.Research.findByIdAndUpdate(
+      param.researchId,
+      { $set: { closed: true } },
+      { session, returnOriginal: false },
+    )
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
+      .lean();
   }
 
   /**
    * @Transaction
    * 리서치를 수정합니다.
+   * @return 수정된 리서치 정보
    * @author 현웅
    */
   async updateResearch(
@@ -189,6 +199,11 @@ export class MongoResearchUpdateService {
         session,
         returnOriginal: false,
       },
-    );
+    )
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
+      .lean();
   }
 }

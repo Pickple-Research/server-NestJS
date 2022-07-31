@@ -83,4 +83,37 @@ export class ResearchUpdateService {
       },
     );
   }
+
+  /**
+   * @Transaction
+   * 리서치를 마감합니다.
+   * 이 때, 리서치 마감을 요청한 유저가 리서치 작성자가 아닌 경우 에러를 일으킵니다.
+   * TODO: 또한 마감된 리서치가 추가 크레딧을 증정하는 경우, 리서치 참여자들을 무작위 추첨한 후 추가 크레딧을 증정합니다.
+   * @return 마감된 리서치 정보
+   * @author 현웅
+   */
+  async closeResearch(
+    param: { userId: string; researchId: string },
+    session: ClientSession,
+  ) {
+    //* 리서치 마감을 요청한 유저가 리서치 작성자인지 확인
+    const checkIsAuthor = this.mongoResearchFindService.isResearchAuthor({
+      userId: param.userId,
+      researchId: param.researchId,
+    });
+    //* 리서치 마감
+    const closeResearch = this.mongoResearchUpdateService.closeResearch(
+      { researchId: param.researchId },
+      session,
+    );
+    //* 위 두 함수를 동시에 실행하고 마감된 리서치 정보를 반환
+    const updatedResearch = await Promise.all([
+      checkIsAuthor,
+      closeResearch,
+    ]).then(([_, updatedResearch]) => {
+      return updatedResearch;
+    });
+
+    return updatedResearch;
+  }
 }
