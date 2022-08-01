@@ -14,12 +14,8 @@ import {
   UserPrivacyDocument,
   UserProperty,
   UserPropertyDocument,
-  UserResearch,
-  UserResearchDocument,
   UserSecurity,
   UserSecurityDocument,
-  UserVote,
-  UserVoteDocument,
 } from "src/Schema";
 
 @Injectable()
@@ -37,12 +33,8 @@ export class MongoUserDeleteService {
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
     private readonly UserProperty: Model<UserPropertyDocument>,
-    @InjectModel(UserResearch.name)
-    private readonly UserResearch: Model<UserResearchDocument>,
     @InjectModel(UserSecurity.name)
     private readonly UserSecurity: Model<UserSecurityDocument>,
-    @InjectModel(UserVote.name)
-    private readonly UserVote: Model<UserVoteDocument>,
   ) {}
 
   /**
@@ -66,7 +58,7 @@ export class MongoUserDeleteService {
 
   /**
    * 인자로 받은 _id를 사용하는 유저의 모든 데이터를 삭제합니다.
-   * UserPrivacy, UserResearch, UserVote 및 크레딧 내역을 모두 삭제하되,
+   * UserNotice, UserPrivacy, UserSecurity 및 크레딧 내역과 알림을 모두 삭제하되,
    * UserProperty는 데이터 분석을 위해 남겨둡니다.
    * @author 현웅
    */
@@ -74,9 +66,7 @@ export class MongoUserDeleteService {
     await this.User.findByIdAndDelete(param.userId, { session });
     await this.UserNotice.findByIdAndDelete(param.userId, { session });
     await this.UserPrivacy.findByIdAndDelete(param.userId, { session });
-    await this.UserResearch.findByIdAndDelete(param.userId, { session });
     await this.UserSecurity.findByIdAndDelete(param.userId, { session });
-    await this.UserVote.findByIdAndDelete(param.userId, { session });
     await this.CreditHistory.deleteMany({ userId: param.userId }, { session });
     // await this.Notification.deleteMany(
     //   { userId: param.userId },

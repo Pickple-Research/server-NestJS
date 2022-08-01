@@ -10,6 +10,8 @@ import {
   VoteParticipationDocument,
   VoteReply,
   VoteReplyDocument,
+  VoteScrap,
+  VoteScrapDocument,
   VoteUser,
   VoteUserDocument,
 } from "src/Schema";
@@ -24,6 +26,8 @@ export class MongoVoteDeleteService {
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
     @InjectModel(VoteReply.name)
     private readonly VoteReply: Model<VoteReplyDocument>,
+    @InjectModel(VoteScrap.name)
+    private readonly VoteScrap: Model<VoteScrapDocument>,
     @InjectModel(VoteUser.name)
     private readonly VoteUser: Model<VoteUserDocument>,
   ) {}
@@ -50,39 +54,27 @@ export class MongoVoteDeleteService {
   async deleteVoteById(param: { voteId: string }, session: ClientSession) {
     //* 투표 삭제
     await this.Vote.findByIdAndDelete(param.voteId, { session });
-
-    //* 투표 참여자 정보 삭제 및 정보 가져오기
-    const voteParticipation = await this.VoteParticipation.findByIdAndDelete(
-      param.voteId,
-      { session },
-    )
-      .select({ comments: 1 })
-      .populate({
-        path: "comments",
-        model: this.VoteComment,
-        select: "replies",
-      })
-      .lean();
-
-    //* 모든 댓글 _id와 대댓글 _id를 추출
-    const commentIds = voteParticipation.comments.map((comment) => {
-      return comment["_id"];
-    });
-    const replyIds = voteParticipation.comments
-      .map((comment) => {
-        return comment.replies.map((replyId) => {
-          return replyId;
-        });
-      })
-      .flat();
-
-    //* 댓글과 대댓글 모두 삭제
-    await this.VoteComment.deleteMany(
-      { _id: { $in: commentIds } },
+    //* 투표 참여 정보 삭제
+    await this.VoteParticipation.deleteMany(
+      { voteId: param.voteId },
       { session },
     );
-    await this.VoteReply.deleteMany({ _id: { $in: replyIds } }, { session });
-
+    //* 투표 스크랩 정보 삭제
+    await this.VoteScrap.deleteMany({ voteId: param.voteId }, { session });
+    //* 댓글과 대댓글 모두 삭제
+    await this.VoteComment.deleteMany({ voteId: param.voteId }, { session });
+    await this.VoteReply.deleteMany({ voteId: param.voteId }, { session });
     return;
+  }
+
+  /**
+   * 투표 스크랩 취소시: 투표 스크랩 정보를 삭제합니다.
+   * @author 현웅
+   */
+  async deleteVoteScrap(param: { userId: string; voteId: string }) {
+    return await this.VoteScrap.findOneAndDelete({
+      userId: param.userId,
+      voteId: param.voteId,
+    });
   }
 }

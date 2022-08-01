@@ -9,7 +9,6 @@ import {
   VoteUser,
   VoteUserDocument,
 } from "src/Schema";
-import { VoteParticipantInfo } from "src/Schema/Vote/Embedded";
 
 @Injectable()
 export class MongoVoteUpdateService {
@@ -22,31 +21,24 @@ export class MongoVoteUpdateService {
   ) {}
 
   /**
-   * 투표 조회자 정보를 추가합니다.
+   * 투표 조회수를 1 늘립니다.
    * @author 현웅
    */
-  async updateView(param: { userId: string; voteId: string }) {
-    const updateVote = this.Vote.findByIdAndUpdate(param.voteId, {
+  async updateView(param: { voteId: string }) {
+    return await this.Vote.findByIdAndUpdate(param.voteId, {
       $inc: { viewsNum: 1 },
     });
-    const updateParticipation = this.VoteParticipation.findByIdAndUpdate(
-      param.voteId,
-      { $addToSet: { viewedUserIds: param.userId } },
-    );
-
-    await Promise.all([updateVote, updateParticipation]);
-    return;
   }
 
   /**
-   * 스크랩 수를 1 늘리고 스크랩한 유저 _id를 참여 정보에 추가합니다.
-   * @return 업데이트 된 투표 정보
+   * 투표 스크랩 수를 1 늘리거나 줄입니다.
+   * @return 업데이트된 투표 정보
    * @author 현웅
    */
-  async updateScrap(param: { userId: string; voteId: string }) {
-    const updateVote = this.Vote.findByIdAndUpdate(
+  async updateScrap(param: { voteId: string; unscrap: boolean }) {
+    const updatedVote = await this.Vote.findByIdAndUpdate(
       param.voteId,
-      { $inc: { scrapsNum: 1 } },
+      { $inc: { scrapsNum: param.unscrap ? -1 : 1 } },
       { returnOriginal: false },
     )
       .populate({
@@ -54,17 +46,7 @@ export class MongoVoteUpdateService {
         model: this.VoteUser,
       })
       .lean();
-    const updateParticipation = this.VoteParticipation.findByIdAndUpdate(
-      param.voteId,
-      { $addToSet: { scrappedUserIds: param.userId } },
-    );
 
-    const updatedVote = await Promise.all([
-      updateVote,
-      updateParticipation,
-    ]).then(([updatedVote, _]) => {
-      return updatedVote;
-    });
     return updatedVote;
   }
 
@@ -99,14 +81,14 @@ export class MongoVoteUpdateService {
   }
 
   /**
-   * 투표에 참여한 유저 정보를 추가하고 투표 참여자 값을 1 증가시킵니다.
+   * 투표 참여자 값을 1 증가시키고 투표 결과값을 업데이트합니다.
    *
    * @see https://stackoverflow.com/questions/21035603/mongo-node-syntax-for-inc-when-number-is-associated-with-dynamic-field-name
    * @return 업데이트된 투표 정보
    * @author 현웅
    */
   async updateParticipant(
-    param: { voteId: string; participantInfo: VoteParticipantInfo },
+    param: { voteId: string; selectedOptionIndexes: number[] },
     session?: ClientSession,
   ) {
     //* $inc 쿼리가 동적으로 생성되어야 하므로, 쿼리문 상수를 만듭니다
@@ -115,7 +97,7 @@ export class MongoVoteUpdateService {
     /**
      * { $inc: { result.0: 1, result.1: 1 ... }}
      */
-    param.participantInfo.selectedOptionIndexes.forEach((optionIndex) => {
+    param.selectedOptionIndexes.forEach((optionIndex) => {
       incQuery[`result.${optionIndex}`] = 1;
     });
 
@@ -129,12 +111,6 @@ export class MongoVoteUpdateService {
         model: this.VoteUser,
       })
       .lean();
-
-    await this.VoteParticipation.findByIdAndUpdate(
-      param.voteId,
-      { $addToSet: { participantInfos: param.participantInfo } },
-      { session },
-    );
 
     return updatedVote;
   }

@@ -21,12 +21,8 @@ import {
   UserPrivacySchema,
   UserProperty,
   UserPropertySchema,
-  UserResearch,
-  UserResearchSchema,
   UserSecurity,
   UserSecuritySchema,
-  UserVote,
-  UserVoteSchema,
 } from "src/Schema";
 import { MONGODB_USER_CONNECTION } from "src/Constant";
 
@@ -51,9 +47,7 @@ import { MONGODB_USER_CONNECTION } from "src/Constant";
         { name: UserNotice.name, schema: UserNoticeSchema },
         { name: UserPrivacy.name, schema: UserPrivacySchema },
         { name: UserProperty.name, schema: UserPropertySchema },
-        { name: UserResearch.name, schema: UserResearchSchema },
         { name: UserSecurity.name, schema: UserSecuritySchema },
-        { name: UserVote.name, schema: UserVoteSchema },
       ],
       MONGODB_USER_CONNECTION,
     ),

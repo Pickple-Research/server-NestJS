@@ -4,7 +4,6 @@ import {
   MongoResearchFindService,
   MongoVoteFindService,
 } from "src/Mongo";
-import { UserResearch, UserVote } from "src/Schema";
 
 @Injectable()
 export class UserFindService {
@@ -15,64 +14,90 @@ export class UserFindService {
   @Inject() private readonly mongoVoteFindService: MongoVoteFindService;
 
   /**
-   * 유저의 크레딧 사용내역과
-   * 스크랩/참여/업로드한 리서치/투표 정보를 가져옵니다.
+   * 로그인 시 실행됩니다. 아래 정보들을 찾아서 반환합니다:
+   * 1. 유저의 크레딧 사용내역, 유저 알림, (CreditHistories, Notifications)
+   * 2. 리서치 스크랩/참여 정보, 투표 스크랩/참여 정보,
+   *   (ResearchScraps, ResearchParticipations, VoteScraps, VoteParticipations)
+   * 3. 스크랩/참여한 리서치와 투표의 실제 정보 (2. 정보를 바탕으로 검색)
+   * 4. 유저가 업로드한 리서치와 투표 정보
    * @author 현웅
    */
-  async getUserActivities(param: {
-    userId: string;
-    userResearch: UserResearch;
-    userVote: UserVote;
-  }) {
+  async getUserActivities(param: { userId: string }) {
     const getCreditHistories = this.mongoUserFindService.getCreditHisories(
       param.userId,
     );
-    const getScrappedResearches = this.mongoResearchFindService.getResearches(
-      param.userResearch.scrappedResearchIds.slice(0, 20),
-    );
-    const getParticipatedResearches =
-      this.mongoResearchFindService.getResearches(
-        param.userResearch.participatedResearchInfos
-          .slice(0, 20)
-          .map((info) => info.researchId),
-      );
+    // const getNotifications = this.mongoUserFindService.getNotifications(
+    //   param.userId,
+    // );
+    const getResearchScraps =
+      this.mongoResearchFindService.getUserResearchScraps(param.userId);
+    const getResearchParticipations =
+      this.mongoResearchFindService.getUserResearchParticipations(param.userId);
     const getUploadedResearches =
       this.mongoResearchFindService.getUploadedResearches(param.userId);
-    const getScrappedVotes = this.mongoVoteFindService.getVotes(
-      param.userVote.scrappedVoteIds.slice(0, 20),
+    const getVoteScraps = this.mongoVoteFindService.getUserVoteScraps(
+      param.userId,
     );
-    const getParticipatedVotes = this.mongoVoteFindService.getVotes(
-      param.userVote.participatedVoteInfos
-        .slice(0, 20)
-        .map((info) => info.voteId),
-    );
+    const getVoteParticipations =
+      this.mongoVoteFindService.getUserVoteParticipations(param.userId);
     const getUploadedVotes = this.mongoVoteFindService.getUploadedVotes(
       param.userId,
     );
 
     const [
       creditHistories,
-      scrappedResearches,
-      participatedResearches,
+      researchScraps,
+      researchParticipations,
       uploadedResearches,
-      scrappedVotes,
-      participatedVotes,
+      voteScraps,
+      voteParticipations,
       uploadedVotes,
     ] = await Promise.all([
       getCreditHistories,
+      getResearchScraps,
+      getResearchParticipations,
+      getUploadedResearches,
+      getVoteScraps,
+      getVoteParticipations,
+      getUploadedVotes,
+    ]);
+
+    //* ResearchScraps, ResearchParticipations, VoteScraps, VoteParticipations 는 실제 정보로 다시 반환
+    const getScrappedResearches = this.mongoResearchFindService.getResearches(
+      researchScraps.slice(0, 20).map((info) => info.researchId),
+    );
+    const getParticipatedResearches =
+      this.mongoResearchFindService.getResearches(
+        researchParticipations.slice(0, 20).map((info) => info.researchId),
+      );
+    const getScrappedVotes = this.mongoVoteFindService.getVotes(
+      voteScraps.slice(0, 20).map((info) => info.voteId),
+    );
+    const getParticipatedVotes = this.mongoVoteFindService.getVotes(
+      voteParticipations.slice(0, 20).map((info) => info.voteId),
+    );
+
+    const [
+      scrappedResearches,
+      participatedResearches,
+      scrappedVotes,
+      participatedVotes,
+    ] = await Promise.all([
       getScrappedResearches,
       getParticipatedResearches,
-      getUploadedResearches,
       getScrappedVotes,
       getParticipatedVotes,
-      getUploadedVotes,
     ]);
 
     return {
       creditHistories,
+      researchScraps,
+      researchParticipations,
       scrappedResearches,
       participatedResearches,
       uploadedResearches,
+      voteScraps,
+      voteParticipations,
       scrappedVotes,
       participatedVotes,
       uploadedVotes,

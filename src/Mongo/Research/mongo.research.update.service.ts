@@ -6,7 +6,6 @@ import {
   ResearchDocument,
   ResearchParticipation,
   ResearchParticipationDocument,
-  ResearchParticipantInfo,
   ResearchUser,
   ResearchUserDocument,
 } from "src/Schema";
@@ -27,31 +26,24 @@ export class MongoResearchUpdateService {
   ) {}
 
   /**
-   * 조회자 정보를 추가합니다.
+   * 리서치 조회수를 1 늘립니다.
    * @author 현웅
    */
-  async updateView(param: { userId: string; researchId: string }) {
-    const updateResearch = this.Research.findByIdAndUpdate(param.researchId, {
+  async updateView(param: { researchId: string }) {
+    return await this.Research.findByIdAndUpdate(param.researchId, {
       $inc: { viewsNum: 1 },
     });
-    const updateParticipation = this.ResearchParticipation.findByIdAndUpdate(
-      param.researchId,
-      { $addToSet: { viewedUserIds: param.userId } },
-    );
-
-    await Promise.all([updateResearch, updateParticipation]);
-    return;
   }
 
   /**
-   * 스크랩 수를 1 늘리고 유저 _id를 추가합니다.
+   * 리서치 스크랩 수를 1 늘리거나 줄입니다.
    * @return 업데이트된 리서치 정보
    * @author 현웅
    */
-  async updateScrap(param: { userId: string; researchId: string }) {
-    const updateResearch = this.Research.findByIdAndUpdate(
+  async updateScrap(param: { researchId: string; unscrap: boolean }) {
+    const updatedResearch = await this.Research.findByIdAndUpdate(
       param.researchId,
-      { $inc: { scrapsNum: 1 } },
+      { $inc: { scrapsNum: param.unscrap ? -1 : 1 } },
       { returnOriginal: false },
     )
       .populate({
@@ -60,59 +52,17 @@ export class MongoResearchUpdateService {
       })
       .lean();
 
-    const updateParticipation = this.ResearchParticipation.findByIdAndUpdate(
-      param.researchId,
-      { $addToSet: { scrappedUserIds: param.userId } },
-    );
-
-    const updatedResearch = await Promise.all([
-      updateResearch,
-      updateParticipation,
-    ]).then(([updatedResearch, _]) => {
-      return updatedResearch;
-    });
-    return updatedResearch;
-  }
-
-  /**
-   * 스크랩 수를 1 줄이고 스크랩 유저 _id를 제거합니다.
-   * @return 업데이트된 리서치 정보
-   * @author 현웅
-   */
-  async updateUnscrap(param: { userId: string; researchId: string }) {
-    const updateResearch = this.Research.findByIdAndUpdate(
-      param.researchId,
-      { $inc: { scrapsNum: -1 } },
-      { returnOriginal: false },
-    )
-      .populate({
-        path: "author",
-        model: this.ResearchUser,
-      })
-      .lean();
-
-    const updateParticipation = this.ResearchParticipation.findByIdAndUpdate(
-      param.researchId,
-      { $pull: { scrappedUserIds: param.userId } },
-    );
-
-    const updatedResearch = await Promise.all([
-      updateResearch,
-      updateParticipation,
-    ]).then(([updatedResearch, _]) => {
-      return updatedResearch;
-    });
     return updatedResearch;
   }
 
   /**
    * @Transaction
-   * 참여한 유저 정보를 추가합니다.
+   * 리서치 참여자 수를 증가시킵니다.
    * @return 참여 정보가 반영된 최신 리서치 정보
    * @author 현웅
    */
   async updateParticipant(
-    param: { participantInfo: ResearchParticipantInfo; researchId: string },
+    param: { researchId: string },
     session?: ClientSession,
   ) {
     const updatedResearch = await this.Research.findByIdAndUpdate(
@@ -125,13 +75,6 @@ export class MongoResearchUpdateService {
         model: this.ResearchUser,
       })
       .lean();
-
-    await this.ResearchParticipation.findByIdAndUpdate(
-      param.researchId,
-      { $push: { participantInfos: param.participantInfo } },
-      { session },
-    );
-
     return updatedResearch;
   }
 

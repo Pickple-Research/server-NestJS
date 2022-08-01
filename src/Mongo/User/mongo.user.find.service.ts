@@ -14,12 +14,8 @@ import {
   UserPrivacyDocument,
   UserProperty,
   UserPropertyDocument,
-  UserResearch,
-  UserResearchDocument,
   UserSecurity,
   UserSecurityDocument,
-  UserVote,
-  UserVoteDocument,
 } from "src/Schema";
 import {
   EmailDuplicateException,
@@ -44,12 +40,8 @@ export class MongoUserFindService {
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
     private readonly UserProperty: Model<UserPropertyDocument>,
-    @InjectModel(UserResearch.name)
-    private readonly UserResearch: Model<UserResearchDocument>,
     @InjectModel(UserSecurity.name)
     private readonly UserSecurity: Model<UserSecurityDocument>,
-    @InjectModel(UserVote.name)
-    private readonly UserVote: Model<UserVoteDocument>,
   ) {}
 
   /**
@@ -108,24 +100,14 @@ export class MongoUserFindService {
     const user = this.User.findById(userId).lean();
     const userNotice = this.UserNotice.findById(userId).lean();
     const userProperty = this.UserProperty.findById(userId).lean();
-    const userResearch = this.UserResearch.findById(userId).lean();
-    const userVote = this.UserVote.findById(userId).lean();
 
-    return await Promise.all([
-      user,
-      userNotice,
-      userProperty,
-      userResearch,
-      userVote,
-    ]).then(
+    return await Promise.all([user, userNotice, userProperty]).then(
       //* [user, userNotice, ...] 형태였던 반환값을 {user, userNotice, ...} 형태로 바꿔줍니다.
-      ([user, userNotice, userProperty, userResearch, userVote]) => {
+      ([user, userNotice, userProperty]) => {
         return {
           user,
           userNotice,
           userProperty,
-          userResearch,
-          userVote,
         };
       },
     );
@@ -260,6 +242,7 @@ export class MongoUserFindService {
       .lean();
   }
 
+  //TODO: mongo.user.find 가 아니라 mongo.research.find 에서 처리하는 게 더 적절해 보임
   /**
    * 유저가 리서치에 참여한 적이 있는지 확인합니다.
    * 유저 정보가 존재하지 않거나 리서치에 참여한 적이 있는 경우 에러를 일으킵니다.
@@ -271,51 +254,34 @@ export class MongoUserFindService {
     userId: string;
     researchId: string;
   }) {
-    const userResearch = await this.UserResearch.findOne({
-      _id: param.userId,
-    })
-      .select({ participatedResearchInfos: 1 })
-      .lean();
-
-    //* 유저 정보가 존재하지 않는 경우
-    if (!userResearch) {
-      throw new UserNotFoundException();
-    }
-
-    //* 참여한 리서치 목록에 researchId가 포함되어 있는 경우
-    if (
-      userResearch.participatedResearchInfos.some((researchInfo) => {
-        return researchInfo.researchId === param.researchId;
-      })
-    ) {
-      throw new AlreadyParticipatedResearchException();
-    }
+    //* ResearchParticipation 정보가 존재하는 경우
+    // if (
+    //   userResearch.participatedResearchInfos.some((researchInfo) => {
+    //     return researchInfo.researchId === param.researchId;
+    //   })
+    // ) {
+    //   throw new AlreadyParticipatedResearchException();
+    // }
     return;
   }
 
+  //TODO: mongo.user.find 가 아니라 mongo.vote.find 에서 처리하는 게 더 적절해 보임
   /**
    * 유저가 투표에 참여한 적이 있는지 확인합니다.
    * 참여한 적이 있는 경우, 에러를 발생시킵니다.
+   * @param userId 유저 _id
+   * @param voteId 투표 _id
    * @author 현웅
    */
   async didUserParticipatedVote(param: { userId: string; voteId: string }) {
-    const userVote = await this.UserVote.findOne({
-      _id: param.userId,
-    })
-      .select({ participatedVoteInfos: 1 })
-      .lean();
-
-    //* 유저 정보가 존재하지 않는 경우
-    if (!userVote) throw new UserNotFoundException();
-
-    //* 참여한 투표 정보 목록에 voteId를 포함한 데이터가 있는 경우
-    if (
-      userVote.participatedVoteInfos.some((voteInfo) => {
-        return voteInfo.voteId === param.voteId;
-      })
-    ) {
-      throw new AlreadyParticipatedVoteException();
-    }
+    //* ResearchParticipation 정보가 존재하는 경우
+    // if (
+    //   userVote.participatedVoteInfos.some((voteInfo) => {
+    //     return voteInfo.voteId === param.voteId;
+    //   })
+    // ) {
+    //   throw new AlreadyParticipatedVoteException();
+    // }
 
     return;
   }

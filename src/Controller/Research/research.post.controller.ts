@@ -80,7 +80,6 @@ export class ResearchPostController {
   }
 
   /**
-   * ! 배포 전에 이미지 없이 로드하는 방식과 로직 똑같은지 반드시 확인
    * 이미지 파일이 포함된 새로운 리서치를 생성합니다.
    * (로직은 createResearch와 동일합니다)
    * 이미지는 S3 버킷에 업로드됩니다.
@@ -173,7 +172,7 @@ export class ResearchPostController {
     const researchSession = await this.researchConnection.startSession();
 
     return await tryMultiTransaction(async () => {
-      //* 리서치, 리서치 참여 현황 Document 를 만듭니다
+      //* 리서치 데이터를 만듭니다
       const createNewResearch = this.mongoResearchCreateService.createResearch(
         { research, files: param.files },
         researchSession,

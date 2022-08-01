@@ -15,7 +15,7 @@ export class Research {
   }) // 리서치 업로더 정보 (authorId와는 별개로 populate하여 사용)
   author?: ResearchUser;
 
-  @Prop({ required: true }) // 리서치 업로더 _id
+  @Prop({ required: true, index: true }) // 리서치 업로더 _id
   authorId: string;
 
   @Prop({ required: true }) // 리서치 제목

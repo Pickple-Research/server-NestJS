@@ -15,6 +15,8 @@ import {
   VoteReplySchema,
   VoteReport,
   VoteReportSchema,
+  VoteScrap,
+  VoteScrapSchema,
   VoteUser,
   VoteUserSchema,
 } from "src/Schema";
@@ -35,6 +37,7 @@ import { MONGODB_VOTE_CONNECTION } from "src/Constant";
         { name: VoteParticipation.name, schema: VoteParticipationSchema },
         { name: VoteReply.name, schema: VoteReplySchema },
         { name: VoteReport.name, schema: VoteReportSchema },
+        { name: VoteScrap.name, schema: VoteScrapSchema },
         { name: VoteUser.name, schema: VoteUserSchema },
       ],
       MONGODB_VOTE_CONNECTION,
