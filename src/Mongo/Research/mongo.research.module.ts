@@ -18,6 +18,8 @@ import {
   ResearchReplySchema,
   ResearchReport,
   ResearchReportSchema,
+  ResearchScrap,
+  ResearchScrapSchema,
   ResearchUser,
   ResearchUserSchema,
 } from "src/Schema";
@@ -50,6 +52,10 @@ import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
         {
           name: ResearchReport.name,
           schema: ResearchReportSchema,
+        },
+        {
+          name: ResearchScrap.name,
+          schema: ResearchScrapSchema,
         },
         {
           name: ResearchUser.name,

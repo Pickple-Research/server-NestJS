@@ -7,7 +7,7 @@ import { Document } from "mongoose";
  */
 @Schema()
 export class CreditHistory {
-  @Prop({ required: true }) // 유저 _id
+  @Prop({ required: true, index: true }) // 유저 _id
   userId: string;
 
   @Prop({ required: true }) // 변동 사유 (줄글)
@@ -26,7 +26,7 @@ export class CreditHistory {
   balance?: number;
 
   @Prop({ required: true }) // 변동 일시
-  createdAt?: string;
+  createdAt: string;
 }
 
 export const CreditHistorySchema = SchemaFactory.createForClass(CreditHistory);

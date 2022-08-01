@@ -11,7 +11,7 @@ export class VoteReply {
   @Prop({ required: true }) // 투표 _id
   voteId: string;
 
-  @Prop({ required: true }) // 댓글 _id
+  @Prop({ required: true, index: true }) // 댓글 _id
   commentId: string;
 
   @Prop({

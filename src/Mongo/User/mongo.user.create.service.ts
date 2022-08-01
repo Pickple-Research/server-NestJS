@@ -16,12 +16,8 @@ import {
   UserPrivacyDocument,
   UserProperty,
   UserPropertyDocument,
-  UserResearch,
-  UserResearchDocument,
   UserSecurity,
   UserSecurityDocument,
-  UserVote,
-  UserVoteDocument,
 } from "src/Schema";
 
 /**
@@ -44,12 +40,8 @@ export class MongoUserCreateService {
     private readonly UserPrivacy: Model<UserPrivacyDocument>,
     @InjectModel(UserProperty.name)
     private readonly UserProperty: Model<UserPropertyDocument>,
-    @InjectModel(UserResearch.name)
-    private readonly UserResearch: Model<UserResearchDocument>,
     @InjectModel(UserSecurity.name)
     private readonly UserSecurity: Model<UserSecurityDocument>,
-    @InjectModel(UserVote.name)
-    private readonly UserVote: Model<UserVoteDocument>,
   ) {}
 
   /**
@@ -72,7 +64,7 @@ export class MongoUserCreateService {
   /**
    * @Transaction
    * 메일 인증이 완료된 정규 유저를 생성합니다.
-   * UserProperty, UserPrivacy, UserSecurity, UserResearch, UserVote Document도 함께 만듭니다.
+   * UserProperty, UserPrivacy, UserSecurity Document도 함께 만듭니다.
    * @return 새로운 정규 유저 정보 중 ResearchUser 및 VoteUser 에 저장할 유저 정보 Object
    * @author 현웅
    */
@@ -107,8 +99,6 @@ export class MongoUserCreateService {
       { session },
     );
     await this.UserNotice.create([{ _id: newUserId }], { session });
-    await this.UserResearch.create([{ _id: newUserId }], { session });
-    await this.UserVote.create([{ _id: newUserId }], { session });
 
     //* 새로운 유저 정보를 반환합니다.
     return newUsers[0].toObject();

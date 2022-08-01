@@ -10,6 +10,8 @@ import {
   VoteParticipationDocument,
   VoteReply,
   VoteReplyDocument,
+  VoteScrap,
+  VoteScrapDocument,
   VoteUser,
   VoteUserDocument,
 } from "src/Schema";
@@ -30,6 +32,8 @@ export class MongoVoteFindService {
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
     @InjectModel(VoteReply.name)
     private readonly VoteReply: Model<VoteReplyDocument>,
+    @InjectModel(VoteScrap.name)
+    private readonly VoteScrap: Model<VoteScrapDocument>,
     @InjectModel(VoteUser.name)
     private readonly VoteUser: Model<VoteUserDocument>,
   ) {}
@@ -122,30 +126,25 @@ export class MongoVoteFindService {
    * @author 현웅
    */
   async getVoteComments(voteId: string) {
-    const voteParticipation = await this.VoteParticipation.findById(voteId)
-      .select({ comments: 1 })
-      .populate({
-        path: "comments",
-        model: this.VoteComment,
-        populate: [
-          {
+    const voteComments = await this.VoteComment.find({ voteId })
+      .populate([
+        {
+          path: "author",
+          model: this.VoteUser,
+        },
+        {
+          path: "replies",
+          model: this.VoteReply,
+          populate: {
             path: "author",
             model: this.VoteUser,
           },
-          {
-            path: "replies",
-            model: this.VoteReply,
-            populate: {
-              path: "author",
-              model: this.VoteUser,
-            },
-          },
-        ],
-      })
+        },
+      ])
+      .sort({ _id: -1 })
       .lean();
 
-    if (!voteParticipation) return null;
-    return voteParticipation.comments;
+    return voteComments;
   }
 
   /**
@@ -180,6 +179,24 @@ export class MongoVoteFindService {
         voteIds.indexOf(a._id.toString()) - voteIds.indexOf(b._id.toString())
       );
     });
+  }
+
+  /**
+   * 특정 유저가 스크랩한 투표 스크랩 정보를 모두 가져옵니다.
+   * @author 현웅
+   */
+  async getUserVoteScraps(userId: string) {
+    return await this.VoteScrap.find({ userId }).sort({ _id: -1 }).lean();
+  }
+
+  /**
+   * 특정 유저가 참여한 투표 참여 정보를 모두 가져옵니다.
+   * @author 현웅
+   */
+  async getUserVoteParticipations(userId: string) {
+    return await this.VoteParticipation.find({ userId })
+      .sort({ _id: -1 })
+      .lean();
   }
 
   /**

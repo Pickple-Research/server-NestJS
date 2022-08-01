@@ -11,6 +11,8 @@ import {
   ResearchParticipationDocument,
   ResearchReply,
   ResearchReplyDocument,
+  ResearchScrap,
+  ResearchScrapDocument,
   ResearchUser,
   ResearchUserDocument,
 } from "src/Schema";
@@ -27,6 +29,8 @@ export class MongoResearchDeleteService {
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
     @InjectModel(ResearchReply.name)
     private readonly ResearchReply: Model<ResearchReplyDocument>,
+    @InjectModel(ResearchScrap.name)
+    private readonly ResearchScrap: Model<ResearchScrapDocument>,
     @InjectModel(ResearchUser.name)
     private readonly ResearchUser: Model<ResearchUserDocument>,
 
@@ -57,44 +61,39 @@ export class MongoResearchDeleteService {
     param: { researchId: string },
     session: ClientSession,
   ) {
-    //* 리서치 기본 데이터를 삭제합니다.
+    //* 리서치 삭제
     await this.Research.findByIdAndDelete(param.researchId, { session });
-
-    //* 리서치 참여자 정보를 삭제하며 댓글 및 대댓글 정보를 모두 가져옵니다.
-    const researchParticipation =
-      await this.ResearchParticipation.findByIdAndDelete(param.researchId, {
-        session,
-      })
-        .select({ comments: 1 })
-        .populate({
-          path: "comments",
-          model: this.ResearchComment,
-          select: "replies",
-        })
-        .lean();
-
-    //* 모든 댓글 _id와 대댓글 _id를 추출
-    const commentIds = researchParticipation.comments.map((comment) => {
-      return comment["_id"];
-    });
-    const replyIds = researchParticipation.comments
-      .map((comment) => {
-        return comment.replies.map((reply) => {
-          return reply["_id"];
-        });
-      })
-      .flat();
-
+    //* 리서치 참여 정보 삭제
+    await this.ResearchParticipation.deleteMany(
+      { researchId: param.researchId },
+      { session },
+    );
+    //* 리서치 스크랩 정보 삭제
+    await this.ResearchScrap.deleteMany(
+      { researchId: param.researchId },
+      { session },
+    );
     //* 댓글과 대댓글 모두 삭제
     await this.ResearchComment.deleteMany(
-      { _id: { $in: commentIds } },
+      { researchId: param.researchId },
       { session },
     );
     await this.ResearchReply.deleteMany(
-      { _id: { $in: replyIds } },
+      { researchId: param.researchId },
       { session },
     );
 
     return;
+  }
+
+  /**
+   * 리서치 스크랩 취소시: 리서치 스크랩 정보를 삭제합니다.
+   * @author 현웅
+   */
+  async deleteResearchScrap(param: { userId: string; researchId: string }) {
+    return await this.ResearchScrap.findOneAndDelete({
+      userId: param.userId,
+      researchId: param.researchId,
+    });
   }
 }

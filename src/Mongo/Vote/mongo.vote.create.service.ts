@@ -12,6 +12,8 @@ import {
   VoteReplyDocument,
   VoteReport,
   VoteReportDocument,
+  VoteScrap,
+  VoteScrapDocument,
   VoteUser,
   VoteUserDocument,
 } from "src/Schema";
@@ -29,6 +31,8 @@ export class MongoVoteCreateService {
     private readonly VoteReply: Model<VoteReplyDocument>,
     @InjectModel(VoteReport.name)
     private readonly VoteReport: Model<VoteReportDocument>,
+    @InjectModel(VoteScrap.name)
+    private readonly VoteScrap: Model<VoteScrapDocument>,
     @InjectModel(VoteUser.name)
     private readonly VoteUser: Model<VoteUserDocument>,
   ) {}
@@ -76,9 +80,36 @@ export class MongoVoteCreateService {
       path: "author",
       model: this.VoteUser,
     });
-    await this.VoteParticipation.create([{ _id: newVote._id }], { session });
 
     return newVote.toObject();
+  }
+
+  /**
+   * 투표 스크랩시: 투표 스크랩 정보를 생성합니다.
+   * @return 생성된 투표 스크랩 정보
+   * @author 현웅
+   */
+  async createVoteScrap(param: { voteScrap: VoteScrap }) {
+    const newVoteScrapes = await this.VoteScrap.create([param.voteScrap]);
+    return newVoteScrapes[0].toObject();
+  }
+
+  /**
+   * 투표 참여시: 투표 참여 정보를 만듭니다.
+   * @return 생성된 투표 참여 정보
+   * @author 현웅
+   */
+  async createVoteParticipation(
+    param: {
+      voteParticipation: VoteParticipation;
+    },
+    session: ClientSession,
+  ) {
+    const newVoteParticipations = await this.VoteParticipation.create(
+      [param.voteParticipation],
+      { session },
+    );
+    return newVoteParticipations[0].toObject();
   }
 
   /**
@@ -101,6 +132,7 @@ export class MongoVoteCreateService {
         model: this.VoteUser,
       })
       .lean();
+
     const newComments = await this.VoteComment.create(
       [
         {
@@ -108,11 +140,6 @@ export class MongoVoteCreateService {
           author: param.comment.authorId,
         },
       ],
-      { session },
-    );
-    await this.VoteParticipation.findByIdAndUpdate(
-      param.comment.voteId,
-      { $push: { comments: newComments[0]._id } },
       { session },
     );
 

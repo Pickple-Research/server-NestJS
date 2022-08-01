@@ -15,6 +15,8 @@ import {
   ResearchReplyDocument,
   ResearchReport,
   ResearchReportDocument,
+  ResearchScrap,
+  ResearchScrapDocument,
   ResearchUser,
   ResearchUserDocument,
 } from "src/Schema";
@@ -33,6 +35,8 @@ export class MongoResearchCreateService {
     private readonly ResearchReply: Model<ResearchReplyDocument>,
     @InjectModel(ResearchReport.name)
     private readonly ResearchReport: Model<ResearchReportDocument>,
+    @InjectModel(ResearchScrap.name)
+    private readonly ResearchScrap: Model<ResearchScrapDocument>,
     @InjectModel(ResearchUser.name)
     private readonly ResearchUser: Model<ResearchUserDocument>,
 
@@ -94,12 +98,6 @@ export class MongoResearchCreateService {
       model: this.ResearchUser,
     });
 
-    //* 생성된 리서치 _id 를 공유하는 ResearchParticipation 을 생성합니다.
-    //* (조회/스크랩/참여한 유저 _id 및 참여 데이터가 이 곳에 추가됩니다.)
-    await this.ResearchParticipation.create([{ _id: newResearch._id }], {
-      session,
-    });
-
     //* 첨부된 파일들을 S3 버킷에 올릴 수 있는 형태로 변환한 후 배열에 저장합니다.
     const uploadingObjects: S3UploadingObject[] = [];
 
@@ -136,6 +134,36 @@ export class MongoResearchCreateService {
   }
 
   /**
+   * 리서치 스크랩시: 리서치 스크랩 정보를 생성합니다.
+   * @return 생성된 리서치 스크랩 정보
+   * @author 현웅
+   */
+  async createResearchScrap(param: { researchScrap: ResearchScrap }) {
+    const newResearchScrapes = await this.ResearchScrap.create([
+      param.researchScrap,
+    ]);
+    return newResearchScrapes[0].toObject();
+  }
+
+  /**
+   * 리서치 참여시: 리서치 참여 정보를 만듭니다.
+   * @return 생성된 리서치 참여 정보
+   * @author 현웅
+   */
+  async createResearchParticipation(
+    param: {
+      researchParticipation: ResearchParticipation;
+    },
+    session: ClientSession,
+  ) {
+    const newResearchParticipations = await this.ResearchParticipation.create(
+      [param.researchParticipation],
+      { session },
+    );
+    return newResearchParticipations[0].toObject();
+  }
+
+  /**
    * @Transaction
    * 리서치 댓글을 작성합니다.
    * @return 업데이트된 리서치 정보와 생성된 리서치 댓글
@@ -155,6 +183,7 @@ export class MongoResearchCreateService {
         model: this.ResearchUser,
       })
       .lean();
+
     const newComments = await this.ResearchComment.create(
       [
         {
@@ -162,11 +191,6 @@ export class MongoResearchCreateService {
           author: param.comment.authorId,
         },
       ],
-      { session },
-    );
-    await this.ResearchParticipation.findByIdAndUpdate(
-      param.comment.researchId,
-      { $push: { comments: newComments[0]._id } },
       { session },
     );
 

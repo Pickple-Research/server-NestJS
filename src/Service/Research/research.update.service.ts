@@ -2,9 +2,11 @@ import { Injectable, Inject } from "@nestjs/common";
 import { ClientSession } from "mongoose";
 import {
   MongoResearchFindService,
+  MongoResearchCreateService,
   MongoResearchUpdateService,
+  MongoResearchDeleteService,
 } from "src/Mongo";
-import { Research } from "src/Schema";
+import { Research, ResearchScrap, ResearchParticipation } from "src/Schema";
 
 /**
  * 리서치 관련 데이터가 수정되는 경우
@@ -17,7 +19,96 @@ export class ResearchUpdateService {
   @Inject()
   private readonly mongoResearchFindService: MongoResearchFindService;
   @Inject()
+  private readonly mongoResearchCreateService: MongoResearchCreateService;
+  @Inject()
   private readonly mongoResearchUpdateService: MongoResearchUpdateService;
+  @Inject()
+  private readonly mongoResearchDeleteService: MongoResearchDeleteService;
+
+  /**
+   * 리서치를 스크랩합니다.
+   * 리서치 스크랩 수를 증가시키고 새로운 리서치 스크랩 정보를 생성합니다.
+   * @return 업데이트된 리서치 정보, 생성된 리서치 스크랩 정보
+   * @author 현웅
+   */
+  async scrapResearch(param: {
+    researchId: string;
+    researchScrap: ResearchScrap;
+  }) {
+    //* 리서치 스크랩 수 증가
+    const updateResearch = this.mongoResearchUpdateService.updateScrap({
+      researchId: param.researchId,
+      unscrap: false,
+    });
+    //* 리서치 스크랩 정보 생성
+    const createResearchScrap =
+      this.mongoResearchCreateService.createResearchScrap({
+        researchScrap: param.researchScrap,
+      });
+    //* 두 함수 동시 실행
+    return await Promise.all([updateResearch, createResearchScrap]).then(
+      ([updatedResearch, newResearchScrap]) => {
+        return { updatedResearch, newResearchScrap };
+      },
+    );
+  }
+
+  /**
+   * 리서치 스크랩을 취소합니다.
+   * 리서치 스크랩 수를 감소시키고 리서치 스크랩 정보를 삭제합니다.
+   * @return 업데이트된 리서치 정보
+   * @author 현웅
+   */
+  async unscrapResearch(param: { userId: string; researchId: string }) {
+    //* 리서치 스크랩 수 감소
+    const updateResearch = this.mongoResearchUpdateService.updateScrap({
+      researchId: param.researchId,
+      unscrap: true,
+    });
+    //* 리서치 스크랩 정보 삭제
+    const deleteResearchScrap =
+      this.mongoResearchDeleteService.deleteResearchScrap({
+        userId: param.userId,
+        researchId: param.researchId,
+      });
+    //* 두 함수 동시 실행
+    return await Promise.all([updateResearch, deleteResearchScrap]).then(
+      ([updatedResearch, _]) => {
+        return updatedResearch;
+      },
+    );
+  }
+
+  /**
+   * 리서치에 참여합니다.
+   * 리서치 참여자 수를 증가시키고 리서치 참여 정보를 생성합니다.
+   * @return 업데이트된 리서치 정보, 생성된 리서치 참여 정보
+   * @author 현웅
+   */
+  async participateResearch(
+    param: { researchId: string; researchParticipation: ResearchParticipation },
+    session: ClientSession,
+  ) {
+    //* 리서치 참여자 수 1 증가
+    const updatedResearch =
+      await this.mongoResearchUpdateService.updateParticipant(
+        {
+          researchId: param.researchId,
+        },
+        session,
+      );
+    //* 새로운 리서치 참여 정보 생성
+    const newResearchParticipation =
+      await this.mongoResearchCreateService.createResearchParticipation(
+        {
+          researchParticipation: param.researchParticipation,
+        },
+        session,
+      );
+    //* 위 두 함수를 순차적으로 시행하고 해당 결과를 반환
+    //! (두 함수는 같은 세션에 종속되어 있으므로 Promise.all 로 동시에 실행시키면 안 됩니다.)
+    return { updatedResearch, newResearchParticipation };
+  }
 
   /**
    * @Transaction

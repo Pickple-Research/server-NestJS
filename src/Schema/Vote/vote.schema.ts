@@ -15,7 +15,7 @@ export class Vote {
   }) // 투표 업로더 정보 (authorId와는 별개로 populate하여 사용)
   author?: VoteUser;
 
-  @Prop({ required: true }) // 업로더 _id
+  @Prop({ required: true, index: true }) // 업로더 _id
   authorId: string;
 
   @Prop({ required: true }) // 투표 제목

@@ -9,7 +9,7 @@ import { VoteReply } from "./voteReply.schema";
  */
 @Schema()
 export class VoteComment {
-  @Prop({ required: true }) // 투표 _id
+  @Prop({ required: true, index: true }) // 투표 _id
   voteId: string;
 
   @Prop({

@@ -1,7 +1,12 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { ClientSession } from "mongoose";
-import { MongoVoteFindService, MongoVoteUpdateService } from "src/Mongo";
-import { Vote, VoteParticipantInfo } from "src/Schema";
+import {
+  MongoVoteFindService,
+  MongoVoteCreateService,
+  MongoVoteUpdateService,
+  MongoVoteDeleteService,
+} from "src/Mongo";
+import { Vote, VoteScrap, VoteParticipation } from "src/Schema";
 
 @Injectable()
 export class VoteUpdateService {
@@ -10,39 +15,103 @@ export class VoteUpdateService {
   @Inject()
   private readonly mongoVoteFindService: MongoVoteFindService;
   @Inject()
+  private readonly mongoVoteCreateService: MongoVoteCreateService;
+  @Inject()
   private readonly mongoVoteUpdateService: MongoVoteUpdateService;
+  @Inject()
+  private readonly mongoVoteDeleteService: MongoVoteDeleteService;
+
+  /**
+   * 투표를 스크랩합니다.
+   * 투표 스크랩 수를 증가시키고 새로운 투표 스크랩 정보를 생성합니다.
+   * @return 업데이트된 투표 정보, 생성된 투표 스크랩 정보
+   * @author 현웅
+   */
+  async scrapVote(param: { voteId: string; voteScrap: VoteScrap }) {
+    //* 투표 스크랩 수 증가
+    const updateVote = this.mongoVoteUpdateService.updateScrap({
+      voteId: param.voteId,
+      unscrap: false,
+    });
+    //* 투표 스크랩 정보 생성
+    const createVoteScrap = this.mongoVoteCreateService.createVoteScrap({
+      voteScrap: param.voteScrap,
+    });
+    //* 두 함수 동시 실행
+    return await Promise.all([updateVote, createVoteScrap]).then(
+      ([updatedVote, newVoteScrap]) => {
+        return { updatedVote, newVoteScrap };
+      },
+    );
+  }
+
+  /**
+   * 투표 스크랩을 취소합니다.
+   * 투표 스크랩 수를 감소시키고 투표 스크랩 정보를 삭제합니다.
+   * @return 업데이트된 투표 정보
+   * @author 현웅
+   */
+  async unscrapVote(param: { userId: string; voteId: string }) {
+    //* 투표 스크랩 수 감소
+    const updateVote = this.mongoVoteUpdateService.updateScrap({
+      voteId: param.voteId,
+      unscrap: true,
+    });
+    //* 투표 스크랩 정보 삭제
+    const deleteVoteScrap = this.mongoVoteDeleteService.deleteVoteScrap({
+      userId: param.userId,
+      voteId: param.voteId,
+    });
+    //* 두 함수 동시 실행
+    return await Promise.all([updateVote, deleteVoteScrap]).then(
+      ([updatedVote, _]) => {
+        return updatedVote;
+      },
+    );
+  }
 
   /**
    * @Transaction
-   * 참여한 유저 정보를 추가합니다.
+   * 투표에 참여합니다.
    * 참여 정보가 유효한지 (선택지 인덱스가 유효한지) 확인하고,
    * 그렇지 않은 경우 에러를 일으킵니다.
-   * @return 참여 정보가 반영된 최신 투표 정보
+   * @return 참여 정보가 반영된 최신 투표 정보, 생성된 투표 참여 정보
    * @author 현웅
    */
-  async updateParticipant(
-    param: { voteId: string; voteParticipantInfo: VoteParticipantInfo },
+  async participateVote(
+    param: { voteId: string; voteParticipation: VoteParticipation },
     session: ClientSession,
   ) {
     //* 선택지 index가 유효한 범위 내에 있는지 확인
     const checkIndexesValid = this.mongoVoteFindService.isOptionIndexesValid(
       param.voteId,
-      param.voteParticipantInfo.selectedOptionIndexes,
+      param.voteParticipation.selectedOptionIndexes,
     );
-    //* 투표 참여자 정보를 VoteParticipation 에 추가하고
-    //* 참여자 수를 1 증가시킵니다.
-    const updateParticipant = this.mongoVoteUpdateService.updateParticipant(
-      { voteId: param.voteId, participantInfo: param.voteParticipantInfo },
+    //* 투표 참여자 수 1 증가, 투표 결과값 반영
+    const updateVote = this.mongoVoteUpdateService.updateParticipant(
+      {
+        voteId: param.voteId,
+        selectedOptionIndexes: param.voteParticipation.selectedOptionIndexes,
+      },
       session,
     );
+    //* 위 두 함수를 동시에 실행
+    const updatedVote = await Promise.all([checkIndexesValid, updateVote]).then(
+      ([_, updatedVote]) => {
+        return updatedVote;
+      },
+    );
 
-    const updatedVote = await Promise.all([
-      checkIndexesValid,
-      updateParticipant,
-    ]).then(([_, updatedVote]) => {
-      return updatedVote;
-    });
-    return updatedVote;
+    //* 새로운 투표 참여 정보 생성
+    //! 이 함수가 종속된 session은 updateVote 함수가 종속된 session 과 동일하므로
+    //! 같은 Promise.all 로 동시에 실행시킬 수 없습니다.
+    const newVoteParticipation =
+      await this.mongoVoteCreateService.createVoteParticipation(
+        { voteParticipation: param.voteParticipation },
+        session,
+      );
+
+    return { updatedVote, newVoteParticipation };
   }
 
   /**

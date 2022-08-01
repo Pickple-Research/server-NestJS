@@ -17,8 +17,8 @@ export class User {
   @Prop({}) // FCM 토큰
   fcmToken?: string;
 
-  @Prop({ unique: true, trim: true }) // 이메일
-  email: string;
+  @Prop({ unique: true, sparse: true, trim: true }) // 이메일 (소셜 로그인을 이용하는 경우, 존재하지 않을 수도 있음)
+  email?: string;
 
   @Prop({ unique: true, trim: true }) // 닉네임
   nickname: string;

@@ -10,6 +10,8 @@ import {
   ResearchParticipationDocument,
   ResearchReply,
   ResearchReplyDocument,
+  ResearchScrap,
+  ResearchScrapDocument,
   ResearchUser,
   ResearchUserDocument,
 } from "src/Schema";
@@ -30,6 +32,8 @@ export class MongoResearchFindService {
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
     @InjectModel(ResearchReply.name)
     private readonly ResearchReply: Model<ResearchReplyDocument>,
+    @InjectModel(ResearchScrap.name)
+    private readonly ResearchScrap: Model<ResearchScrapDocument>,
     @InjectModel(ResearchUser.name)
     private readonly ResearchUser: Model<ResearchUserDocument>,
   ) {}
@@ -166,31 +170,25 @@ export class MongoResearchFindService {
    * @author 현웅
    */
   async getResearchComments(researchId: string) {
-    const researchParticipation = await this.ResearchParticipation.findById(
-      researchId,
-    )
+    const researchComments = await this.ResearchComment.find({ researchId })
       .select({ comments: 1 })
-      .populate({
-        path: "comments",
-        model: this.ResearchComment,
-        populate: [
-          {
+      .populate([
+        {
+          path: "author",
+          model: this.ResearchUser,
+        },
+        {
+          path: "replies",
+          model: this.ResearchReply,
+          populate: {
             path: "author",
             model: this.ResearchUser,
           },
-          {
-            path: "replies",
-            model: this.ResearchReply,
-            populate: {
-              path: "author",
-              model: this.ResearchUser,
-            },
-          },
-        ],
-      })
+        },
+      ])
+      .sort({ _id: -1 })
       .lean();
-    if (!researchParticipation) return null;
-    return researchParticipation.comments;
+    return researchComments;
   }
 
   /**
@@ -216,6 +214,24 @@ export class MongoResearchFindService {
         researchIds.indexOf(b._id.toString())
       );
     });
+  }
+
+  /**
+   * 특정 유저가 스크랩한 리서치 스크랩 정보를 모두 가져옵니다.
+   * @author 현웅
+   */
+  async getUserResearchScraps(userId: string) {
+    return await this.ResearchScrap.find({ userId }).sort({ _id: -1 }).lean();
+  }
+
+  /**
+   * 특정 유저가 참여한 리서치 참여 정보를 모두 가져옵니다.
+   * @author 현웅
+   */
+  async getUserResearchParticipations(userId: string) {
+    return await this.ResearchParticipation.find({ userId })
+      .sort({ _id: -1 })
+      .lean();
   }
 
   /**

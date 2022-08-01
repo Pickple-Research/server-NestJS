@@ -9,7 +9,7 @@ import { ResearchReply } from "./researchReply.schema";
  */
 @Schema()
 export class ResearchComment {
-  @Prop({ required: true }) // 리서치 _id
+  @Prop({ required: true, index: true }) // 리서치 _id
   researchId: string;
 
   @Prop({

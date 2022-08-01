@@ -16,9 +16,13 @@ import {
   MongoResearchFindService,
   MongoResearchUpdateService,
 } from "src/Mongo";
-import { Research, CreditHistory } from "src/Schema";
-import { ParticipatedResearchInfo } from "src/Schema/User/Embedded";
-import { ResearchParticipantInfo } from "src/Schema/Research/Embedded";
+import {
+  Research,
+  ResearchScrap,
+  ResearchParticipation,
+  CreditHistory,
+} from "src/Schema";
+import { Public } from "src/Security/Metadata";
 import { JwtUserInfo } from "src/Object/Type";
 import { CreditHistoryType } from "src/Object/Enum";
 import {
@@ -62,49 +66,36 @@ export class ResearchPatchController {
    * 리서치를 조회합니다.
    * @author 현웅
    */
+  @Public()
   @Patch("view/:researchId")
-  async viewResearch(
-    @Request() req: { user: JwtUserInfo },
-    @Param() param: { researchId: string },
-  ) {
-    const updateUser = this.mongoUserUpdateService.viewResearch({
-      userId: req.user.userId,
+  async viewResearch(@Param() param: { researchId: string }) {
+    return await this.mongoResearchUpdateService.updateView({
       researchId: param.researchId,
     });
-    const updateResearch = this.mongoResearchUpdateService.updateView({
-      userId: req.user.userId,
-      researchId: param.researchId,
-    });
-    await Promise.all([updateUser, updateResearch]);
-    return;
   }
 
   /**
    * 리서치를 스크랩합니다.
-   * @return 업데이트된 리서치 정보
+   * @return 업데이트된 리서치 정보, 생성된 리서치 스크랩 정보
    * @author 현웅
    */
   @Patch("scrap/:researchId")
   async scrapResearch(
     @Request() req: { user: JwtUserInfo },
-    @Param() param: { researchId: string },
+    @Param("researchId") researchId: string,
   ) {
-    const updateUser = this.mongoUserUpdateService.scrapResearch({
+    const researchScrap: ResearchScrap = {
       userId: req.user.userId,
-      researchId: param.researchId,
-    });
-    const updateResearch = this.mongoResearchUpdateService.updateScrap({
-      userId: req.user.userId,
-      researchId: param.researchId,
-    });
+      researchId,
+      createdAt: getCurrentISOTime(),
+    };
 
-    const updatedResearch = await Promise.all([
-      updateUser,
-      updateResearch,
-    ]).then(([_, updatedResearch]) => {
-      return updatedResearch;
-    });
-    return updatedResearch;
+    const { updatedResearch, newResearchScrap } =
+      await this.researchUpdateService.scrapResearch({
+        researchId,
+        researchScrap,
+      });
+    return { updatedResearch, newResearchScrap };
   }
 
   /**
@@ -117,20 +108,9 @@ export class ResearchPatchController {
     @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
   ) {
-    const updateUser = this.mongoUserUpdateService.unscrapResearch({
+    const updatedResearch = await this.researchUpdateService.unscrapResearch({
       userId: req.user.userId,
       researchId: param.researchId,
-    });
-    const updateResearch = this.mongoResearchUpdateService.updateUnscrap({
-      userId: req.user.userId,
-      researchId: param.researchId,
-    });
-
-    const updatedResearch = await Promise.all([
-      updateUser,
-      updateResearch,
-    ]).then(([_, updatedResearch]) => {
-      return updatedResearch;
     });
     return updatedResearch;
   }
@@ -139,7 +119,7 @@ export class ResearchPatchController {
    * @Transaction
    * 리서치에 참여합니다.
    * 조회, 스크랩과 다르게 데이터 정합성이 필요하므로 Transaction을 활용해야합니다.
-   * @return (리서치 참여 정보, 크레딧 변동내역, 업데이트 된 리서치 정보) | 크레딧 변동내역
+   * @return (업데이트 된 리서치 정보, 생성된 리서치 참여 정보, 생성된 크레딧 변동내역 ) | 크레딧 변동내역
    * @author 현웅
    */
   @Patch("participate/:researchId")
@@ -183,11 +163,13 @@ export class ResearchPatchController {
     //* 필요한 데이터 형태를 미리 만들어둡니다.
     const currentISOTime = getCurrentISOTime();
     //* 리서치 참여 정보
-    const participatedResearchInfo: ParticipatedResearchInfo = {
+    const researchParticipation: ResearchParticipation = {
       researchId,
-      participatedAt: currentISOTime,
+      userId: req.user.userId,
+      consumedTime: body.consummedTime,
+      createdAt: currentISOTime,
     };
-    //* CreditHistory 정보
+    //* 크레딧 변동내역 정보
     const creditHistory: CreditHistory = {
       userId: req.user.userId,
       reason: researchTitle,
@@ -197,55 +179,48 @@ export class ResearchPatchController {
       balance: userCredit + researchCredit,
       createdAt: currentISOTime,
     };
-    //* 리서치 참여자 정보
-    const researchParticipationInfo: ResearchParticipantInfo = {
-      userId: req.user.userId,
-      consumedTime: body.consummedTime,
-      participatedAt: currentISOTime,
-    };
 
     //* User DB, Research DB에 대한 Session을 시작합니다.
     const userSession = await this.userConnection.startSession();
     const researchSession = await this.researchConnection.startSession();
 
     return await tryMultiTransaction(async () => {
-      //* 유저의 리서치 참여 정보에 리서치 참여 정보 추가,
-      //* CreditHistory 생성 및 추가
-      const updateUser = this.userUpdateService.participateResearch(
-        {
-          userId: req.user.userId,
-          participatedResearchInfo,
-          creditHistory,
-        },
-        userSession,
-      );
-      //* ResearchParticipation 에 참여자 정보 추가
-      const updateResearch = this.mongoResearchUpdateService.updateParticipant(
-        {
-          participantInfo: researchParticipationInfo,
-          researchId,
-        },
+      //* 리서치 참여자 수를 증가시키고 새로운 리서치 참여 정보를 생성합니다.
+      const updateResearch = this.researchUpdateService.participateResearch(
+        { researchId, researchParticipation },
         researchSession,
       );
-      //* 위 두 함수를 동시에 실행하고,
-      //* 새로운 크레딧 변동내역과 업데이트 된 리서치 정보를 가져옵니다.
-      const { newCreditHitory, updatedResearch } = await Promise.all([
-        updateUser,
-        updateResearch,
-      ]).then(([newCreditHitory, updatedResearch]) => {
-        return { newCreditHitory, updatedResearch };
-      });
+      //* 크레딧 변동내역 생성 및 추가
+      const updateUser = this.mongoUserCreateService.createCreditHistory(
+        { userId: req.user.userId, creditHistory },
+        userSession,
+      );
+      //* 위 두 함수를 동시에 실행하고
+      //* 업데이트된 리서치 정보, 생성된 리서치 참여 정보, 새로 생성된 크레딧 변동내역을 가져온 후 반환합니다.
+      const { updatedResearch, newResearchParticipation, newCreditHitory } =
+        await Promise.all([updateResearch, updateUser]).then(
+          ([
+            { updatedResearch, newResearchParticipation },
+            newCreditHitory,
+          ]) => {
+            return {
+              updatedResearch,
+              newResearchParticipation,
+              newCreditHitory,
+            };
+          },
+        );
 
-      //* 최종적으로 리서치 참여 정보, 새로 생성된 크레딧 변동내역, 최신 리서치 정보를 반환합니다.
-      return { participatedResearchInfo, newCreditHitory, updatedResearch };
+      //* 최종적으로 업데이트된 리서치 정보, 생성된 리서치 참여 정보, 새로 생성된 크레딧 변동내역을 반환합니다.
+      return { updatedResearch, newResearchParticipation, newCreditHitory };
     }, [userSession, researchSession]);
   }
 
   /**
    * @Transaction
    * 참여한 리서치가 이미 삭제된 경우,
-   * 리서치 참여정보나 리서치 참여자 정보는 업데이트하지 않고
-   * 크레딧 사용내역만 추가하고 반환합니다.
+   * 리서치 정보를 업데이트 하거나 리서치 참여 정보를 생성하는 과정은 생략하고
+   * 크레딧 사용내역만 생성 후 반환합니다.
    * @return 새로운 크레딧 변동내역
    * @author 현웅
    */

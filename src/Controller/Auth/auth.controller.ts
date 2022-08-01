@@ -44,18 +44,18 @@ export class AuthController {
   @Public()
   @Post("login")
   async login(@Body() body: LoginBodyDto) {
+    //* User, UserNotice, userProperty 정보 반환
+    const getUserInfo = this.mongoUserFindService.getUserInfoByEmail(
+      body.email,
+    );
     //* 이메일과 비밀번호가 유효한지 확인
     const authenticate = this.authService.authenticate(
       body.email,
       body.password,
     );
-    //* UserPrivacy, UserSecurity 를 제외한 정보 반환
-    const getUserInfo = this.mongoUserFindService.getUserInfoByEmail(
-      body.email,
-    );
     //* 위 두 함수를 동시에 실행
-    const userInfo = await Promise.all([authenticate, getUserInfo]).then(
-      ([_, userInfo]) => {
+    const userInfo = await Promise.all([getUserInfo, authenticate]).then(
+      ([userInfo, _]) => {
         return userInfo;
       },
     );
@@ -65,11 +65,9 @@ export class AuthController {
       email: body.email,
       fcmToken: body.fcmToken,
     });
-    //* UserInfo 를 바탕으로 유저가 조회/스크랩/참여/업로드한 리서치, 투표 정보 반환
+    //* 유저의 모든 활동 데이터 반환
     const getUserActivities = await this.userFindService.getUserActivities({
       userId: userInfo.user._id,
-      userResearch: userInfo.userResearch,
-      userVote: userInfo.userVote,
     });
     //* JWT 새로 발급
     const issueJwt = await this.authService.issueJWT({
@@ -102,7 +100,7 @@ export class AuthController {
     @Request() req: { user: JwtUserInfo },
     @Body() body: JwtLoginBodyDto,
   ) {
-    //* UserPrivacy, UserSecurity 를 제외한 정보 반환
+    //* User, UserNotice, userProperty 정보 반환
     const userInfo = await this.mongoUserFindService.getUserInfoById(
       req.user.userId,
     );
@@ -112,11 +110,9 @@ export class AuthController {
       userId: req.user.userId,
       fcmToken: body.fcmToken,
     });
-    //* UserInfo 를 바탕으로 유저가 조회/스크랩/참여/업로드한 리서치, 투표 정보 반환
+    //* 유저의 모든 활동 데이터 반환
     const getUserActivities = this.userFindService.getUserActivities({
       userId: userInfo.user._id,
-      userResearch: userInfo.userResearch,
-      userVote: userInfo.userVote,
     });
     //* JWT 새로 발급
     const issueJwt = this.authService.issueJWT({

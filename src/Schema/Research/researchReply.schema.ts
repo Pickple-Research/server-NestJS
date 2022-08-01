@@ -11,7 +11,7 @@ export class ResearchReply {
   @Prop({ required: true }) // 리서치 _id
   researchId: string;
 
-  @Prop({ required: true }) // 댓글 _id
+  @Prop({ required: true, index: true }) // 댓글 _id
   commentId: string;
 
   @Prop({
