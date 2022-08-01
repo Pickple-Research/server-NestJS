@@ -186,7 +186,7 @@ export class MongoResearchFindService {
           },
         },
       ])
-      .sort({ _id: -1 })
+      .sort({ _id: 1 })
       .lean();
     return researchComments;
   }
