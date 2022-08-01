@@ -54,6 +54,36 @@ export class MongoVoteFindService {
   }
 
   /**
+   * 인자로 받은 유저 _id 가 투표 댓글 작성자 _id 와 일치하는지 확인합니다.
+   * 일치하지 않는 경우, 에러를 발생시킵니다.
+   * @author 현웅
+   */
+  async isVoteCommentAuthor(param: { userId: string; commentId: string }) {
+    const voteComment = await this.VoteComment.findById(param.commentId)
+      .select({ authorId: 1 })
+      .lean();
+    if (voteComment.authorId !== param.userId) {
+      throw new NotVoteAuthorException();
+    }
+    return;
+  }
+
+  /**
+   * 인자로 받은 유저 _id 가 투표 대댓글 작성자 _id 와 일치하는지 확인합니다.
+   * 일치하지 않는 경우, 에러를 발생시킵니다.
+   * @author 현웅
+   */
+  async isVoteReplyAuthor(param: { userId: string; replyId: string }) {
+    const voteReply = await this.VoteReply.findById(param.replyId)
+      .select({ authorId: 1 })
+      .lean();
+    if (voteReply.authorId !== param.userId) {
+      throw new NotVoteAuthorException();
+    }
+    return;
+  }
+
+  /**
    * 투표 참여자 수가 10명 미만으로, 수정/삭제 가능한지 확인합니다.
    * 10명 이상인 경우 에러를 발생시킵니다.
    * @author 현웅
@@ -122,11 +152,10 @@ export class MongoVoteFindService {
 
   /**
    * 투표 댓글을 모두 가져옵니다.
-   * 투표가 삭제된 경우 null 을 반환합니다.
    * @author 현웅
    */
   async getVoteComments(voteId: string) {
-    const voteComments = await this.VoteComment.find({ voteId })
+    return await this.VoteComment.find({ voteId })
       .populate([
         {
           path: "author",
@@ -143,8 +172,6 @@ export class MongoVoteFindService {
       ])
       .sort({ _id: 1 })
       .lean();
-
-    return voteComments;
   }
 
   /**

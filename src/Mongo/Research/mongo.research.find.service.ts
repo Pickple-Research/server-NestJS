@@ -56,6 +56,36 @@ export class MongoResearchFindService {
   }
 
   /**
+   * 인자로 받은 유저 _id 가 리서치 댓글 작성자 _id 와 일치하는지 확인합니다.
+   * 일치하지 않는 경우, 에러를 발생시킵니다.
+   * @author 현웅
+   */
+  async isResearchCommentAuthor(param: { userId: string; commentId: string }) {
+    const researchComment = await this.ResearchComment.findById(param.commentId)
+      .select({ authorId: 1 })
+      .lean();
+    if (researchComment.authorId !== param.userId) {
+      throw new NotResearchAuthorException();
+    }
+    return;
+  }
+
+  /**
+   * 인자로 받은 유저 _id 가 리서치 대댓글 작성자 _id 와 일치하는지 확인합니다.
+   * 일치하지 않는 경우, 에러를 발생시킵니다.
+   * @author 현웅
+   */
+  async isResearchReplyAuthor(param: { userId: string; replyId: string }) {
+    const researchReply = await this.ResearchReply.findById(param.replyId)
+      .select({ authorId: 1 })
+      .lean();
+    if (researchReply.authorId !== param.userId) {
+      throw new NotResearchAuthorException();
+    }
+    return;
+  }
+
+  /**
    * 리서치 참여자 수가 0명으로, 수정/삭제 가능한지 확인합니다.
    * 0명이 아닌 경우 에러를 발생시킵니다.
    * @author 현웅
@@ -166,12 +196,10 @@ export class MongoResearchFindService {
 
   /**
    * 리서치 댓글을 모두 가져옵니다.
-   * 리서치가 삭제된 경우, null 을 반환합니다.
    * @author 현웅
    */
   async getResearchComments(researchId: string) {
-    const researchComments = await this.ResearchComment.find({ researchId })
-      .select({ comments: 1 })
+    return await this.ResearchComment.find({ researchId })
       .populate([
         {
           path: "author",
@@ -188,7 +216,6 @@ export class MongoResearchFindService {
       ])
       .sort({ _id: 1 })
       .lean();
-    return researchComments;
   }
 
   /**

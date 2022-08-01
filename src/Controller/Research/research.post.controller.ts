@@ -247,13 +247,13 @@ export class ResearchPostController {
     const researchSession = await this.researchConnection.startSession();
 
     return await tryMultiTransaction(async () => {
-      const { updatedReserach, newReply } =
+      const { updatedResearch, newReply } =
         await this.mongoResearchCreateService.createResearchReply(
           { reply },
           researchSession,
         );
 
-      return { updatedReserach, newReply };
+      return { updatedResearch, newReply };
     }, [researchSession]);
   }
 
