@@ -212,7 +212,7 @@ export class MongoResearchCreateService {
     param: { reply: ResearchReply },
     session?: ClientSession,
   ) {
-    const updatedReserach = await this.Research.findByIdAndUpdate(
+    const updatedResearch = await this.Research.findByIdAndUpdate(
       param.reply.researchId,
       { $inc: { commentsNum: 1 } },
       { session, returnOriginal: false },
@@ -242,7 +242,7 @@ export class MongoResearchCreateService {
       model: this.ResearchUser,
     });
 
-    return { updatedReserach, newReply: newReply.toObject() };
+    return { updatedResearch, newReply: newReply.toObject() };
   }
 
   /**

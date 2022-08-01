@@ -24,6 +24,9 @@ export class VoteComment {
   @Prop({ required: true }) // 댓글 내용
   content: string;
 
+  @Prop({ default: false }) // 삭제 여부
+  deleted?: boolean;
+
   @Prop({}) // 작성 날짜
   createdAt: string;
 

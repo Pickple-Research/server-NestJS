@@ -82,7 +82,90 @@ export class MongoResearchDeleteService {
       { researchId: param.researchId },
       { session },
     );
+    return;
+  }
 
+  /**
+   * @Transaction
+   * 리서치 댓글을 삭제합니다.
+   * 이 때, 해당 댓글에 대댓글이 달려있는 경우엔 deleted 플래그만 true 로 설정합니다.
+   * @author 현웅
+   */
+  async deleteResearchComment(
+    param: { researchId: string; commentId: string },
+    session: ClientSession,
+  ) {
+    //* 대상 댓글 조회
+    const comment = await this.ResearchComment.findById(param.commentId)
+      .select({ replies: 1 })
+      .lean();
+    //* 대댓글이 달려있지 않은 경우, 댓글 삭제 후 리서치 댓글 수 1 감소
+    if (comment.replies.length === 0) {
+      await this.ResearchComment.findByIdAndDelete(param.commentId, {
+        session,
+      });
+      await this.Research.findByIdAndUpdate(
+        param.researchId,
+        {
+          $inc: { commentsNum: -1 },
+        },
+        { session },
+      );
+      return;
+    }
+    //* 그렇지 않은 경우, deleted 플래그만 true 로 설정
+    return await this.ResearchComment.findByIdAndUpdate(
+      param.commentId,
+      { $set: { deleted: true } },
+      { session },
+    );
+  }
+
+  /**
+   * @Transaction
+   * 리서치 대댓글을 삭제합니다.
+   * 이 때, 추가 대댓글이 달려있는 경우엔 deleted 플래그만 true 로 설정합니다.
+   * @author 현웅
+   */
+  async deleteResearchReply(
+    param: { researchId: string; commentId: string; replyId: string },
+    session: ClientSession,
+  ) {
+    //* 해당 대댓글의 부모 댓글 조회
+    const comment = await this.ResearchComment.findById(param.commentId)
+      .select({ replies: 1 })
+      .lean();
+    //* 대상 대댓글의 인덱스 조회
+    const replyIndex = comment.replies.findIndex(
+      (replyId) => replyId.toString() === param.replyId,
+    );
+
+    //* 대상 대댓글이 부모 댓글의 마지막 대댓글인 경우
+    //* 대댓글 삭제, 댓글에서 대댓글 id 삭제 후 리서치 댓글 수 1 감소
+    if (replyIndex === comment.replies.length - 1) {
+      await this.ResearchReply.findByIdAndDelete(param.replyId, {
+        session,
+      });
+      await this.ResearchComment.findByIdAndUpdate(
+        param.commentId,
+        { $pull: { replies: param.replyId } },
+        { session },
+      );
+      await this.Research.findByIdAndUpdate(
+        param.researchId,
+        {
+          $inc: { commentsNum: -1 },
+        },
+        { session },
+      );
+      return;
+    }
+    //* 그렇지 않은 경우, deleted 플래그만 true 로 설정
+    await this.ResearchReply.findByIdAndUpdate(
+      param.replyId,
+      { $set: { deleted: true } },
+      { session },
+    );
     return;
   }
 

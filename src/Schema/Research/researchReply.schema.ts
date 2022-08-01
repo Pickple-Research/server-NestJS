@@ -26,6 +26,9 @@ export class ResearchReply {
   @Prop({ required: true }) // 대댓글 내용
   content: string;
 
+  @Prop({ default: false }) // 삭제 여부
+  deleted?: boolean;
+
   @Prop({ required: true }) // 작성 날짜
   createdAt: string;
 }

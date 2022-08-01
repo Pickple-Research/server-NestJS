@@ -12,6 +12,7 @@ import { VoteOptionDto } from "src/Schema/Vote/Embedded";
 /**
  * 투표 생성 요청시 Body에 포함되어야 하는 정보들
  * @param title 투표 제목
+ * @param category 투표 카테고리
  * @param content 투표 내용
  * @param options 투표 선택지 배열
  * @param allowMultiChoice 중복선택 허용 여부
