@@ -19,9 +19,11 @@ import {
   tryMultiTransaction,
   getSalt,
   getCurrentISOTime,
+  getDateFromInput,
   getISOTimeAfterGivenMinutes,
 } from "src/Util";
 import { AccountType, UserType, CreditHistoryType } from "src/Object/Enum";
+import { NotValidBirthdayException } from "src/Exception";
 import {
   MONGODB_USER_CONNECTION,
   MONGODB_RESEARCH_CONNECTION,
@@ -112,6 +114,13 @@ export class UserPostController {
       body.password,
       salt,
     );
+    const birthday = getDateFromInput({
+      year: body.birthYear,
+      month: body.birthMonth,
+      day: body.birthDay,
+    });
+
+    if (birthday === null) throw new NotValidBirthdayException();
 
     const user: User = {
       userType: UserType.USER,
@@ -124,7 +133,7 @@ export class UserPostController {
     const userProperty = {
       agreeReceiveServiceInfo: body.agreeReceiveServiceInfo,
       gender: body.gender,
-      birthday: body.birthday,
+      birthday: birthday.toISOString(),
     };
     const userSecurity = { password: hashedPassword, salt };
 
@@ -177,6 +186,13 @@ export class UserPostController {
       body.password,
       salt,
     );
+    const birthday = getDateFromInput({
+      year: body.birthYear,
+      month: body.birthMonth,
+      day: body.birthDay,
+    });
+
+    if (birthday === null) throw new NotValidBirthdayException();
 
     //* 기존 회원의 포인트를 가져옵니다.
     const credit = await this.mongoSurBayService.getSurBayUserPoint(body.email);
@@ -193,7 +209,7 @@ export class UserPostController {
     const userProperty = {
       agreeReceiveServiceInfo: body.agreeReceiveServiceInfo,
       gender: body.gender,
-      birthday: body.birthday,
+      birthday: birthday.toISOString(),
     };
     const userSecurity = { password: hashedPassword, salt };
 
