@@ -1,4 +1,4 @@
-import { IsString, IsBoolean } from "class-validator";
+import { IsString, IsNumber, IsBoolean } from "class-validator";
 
 /**
  * 이메일을 사용한 최초 회원가입 요청시 (즉, 미인증 유저 생성시)
@@ -38,9 +38,17 @@ export class EmailUserSignupBodyDto {
   @IsString()
   nickname: string;
 
-  /** 생년월일 */
-  @IsString()
-  birthday: string;
+  /** 생년 */
+  @IsNumber()
+  birthYear: number;
+
+  /** 생월 */
+  @IsNumber()
+  birthMonth: number;
+
+  /** 생일 */
+  @IsNumber()
+  birthDay: number;
 
   /** 성별 */
   @IsString()

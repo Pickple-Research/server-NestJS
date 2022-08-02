@@ -19,6 +19,34 @@ export function didDatePassed(date: string | Date) {
 }
 
 /**
+ * 숫자 인자를 받아 두 자리로 변환합니다.
+ * @author 현웅
+ */
+export function digitStandizer(num: number) {
+  return num < 10 ? `0${num}` : num.toString();
+}
+
+/**
+ * 숫자 형태의 연, 월, 일을 인자로 받아 Date 로 변환해 반환합니다.
+ * 유효한 날짜가 아닌 경우 null 을 반환합니다.
+ * @author 현웅
+ */
+export function getDateFromInput(param: {
+  year: number;
+  month: number;
+  day: number;
+}) {
+  const date = new Date(
+    `${param.year.toString()}-${digitStandizer(param.month)}-${digitStandizer(
+      param.day,
+    )}`,
+  );
+
+  if (date instanceof Date && !isNaN(date.getTime())) return date;
+  return null;
+}
+
+/**
  * 인자로 받은 분 수 만큼의 미래 한국 시간을 ISO 타입으로 반환합니다.
  * 인자가 주어지지 않으면 30분 뒤의 시간을 반환합니다.
  * @author 현웅
