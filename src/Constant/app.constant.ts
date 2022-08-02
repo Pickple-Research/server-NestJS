@@ -5,7 +5,11 @@ import * as winston from "winston";
  * CORS 허용 주소들
  * @author 현웅
  */
-export const CORS_ORIGINS = ["https://r2c-pickpleresearch.web.app"];
+export const CORS_ORIGINS = [
+  "https://pickpleresearch.com",
+  "https://r2c-pickpleresearch.web.app",
+  "https://r2c-pickpleresearch.firebaseapp.com",
+];
 
 /**
  * 복수의 DB 연결을 구별하기 위한 이름들
