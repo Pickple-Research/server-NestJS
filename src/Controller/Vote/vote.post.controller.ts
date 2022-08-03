@@ -1,4 +1,4 @@
-import { Controller, Inject, Request, Body, Post } from "@nestjs/common";
+import { Controller, Inject, Request, Param, Body, Post } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { Vote, VoteComment, VoteReply } from "src/Schema";
@@ -6,7 +6,6 @@ import { MongoVoteFindService, MongoVoteCreateService } from "src/Mongo";
 import {
   VoteCreateBodyDto,
   VoteCommentCreateBodyDto,
-  VoteReplyCreateBodyDto,
   VoteReportBodyDto,
   VoteMypageBodyDto,
 } from "src/Dto";
@@ -65,15 +64,16 @@ export class VotePostController {
    * @return 업데이트된 투표 정보와 생성된 투표 댓글
    * @author 현웅
    */
-  @Post("comments")
+  @Post(":voteId/comments")
   async uploadVoteComment(
     @Request() req: { user: JwtUserInfo },
+    @Param("voteId") voteId: string,
     @Body() body: VoteCommentCreateBodyDto,
   ) {
     const voteSession = await this.voteConnection.startSession();
 
     const comment: VoteComment = {
-      voteId: body.voteId,
+      voteId,
       authorId: req.user.userId,
       content: body.content,
       createdAt: getCurrentISOTime(),
@@ -95,16 +95,18 @@ export class VotePostController {
    * @return 업데이트된 투표 정보와 생성된 투표 대댓글
    * @author 현웅
    */
-  @Post("replies")
+  @Post(":voteId/comments/:commentId/replies")
   async uploadVoteReply(
     @Request() req: { user: JwtUserInfo },
-    @Body() body: VoteReplyCreateBodyDto,
+    @Param("voteId") voteId: string,
+    @Param("commentId") commentId: string,
+    @Body() body: VoteCommentCreateBodyDto,
   ) {
     const voteSession = await this.voteConnection.startSession();
 
     const reply: VoteReply = {
-      voteId: body.voteId,
-      commentId: body.commentId,
+      voteId,
+      commentId,
       authorId: req.user.userId,
       content: body.content,
       createdAt: getCurrentISOTime(),
@@ -124,15 +126,16 @@ export class VotePostController {
    * 투표를 신고합니다.
    * @author 현웅
    */
-  @Post("report")
+  @Post(":voteId/report")
   async reportVote(
     @Request() req: { user: JwtUserInfo },
+    @Param("voteId") voteId: string,
     @Body() body: VoteReportBodyDto,
   ) {
     return await this.mongoVoteCreateService.createVoteReport({
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      voteId: body.voteId,
+      voteId,
       content: body.content,
     });
   }

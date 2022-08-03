@@ -343,14 +343,14 @@ export class ResearchPatchController {
    * @author 현웅
    */
   @Patch(":researchId")
-  async updateResearch(
+  async editResearch(
     @Request() req: { user: JwtUserInfo },
     @Param() param: { researchId: string },
     @Body() body: ResearchUpdateBodyDto,
   ) {
     const researchSession = await this.researchConnection.startSession();
 
-    return await this.researchUpdateService.updateResearch(
+    return await this.researchUpdateService.editResearch(
       {
         userId: req.user.userId,
         researchId: param.researchId,

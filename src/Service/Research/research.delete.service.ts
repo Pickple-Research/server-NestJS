@@ -31,7 +31,7 @@ export class ResearchDeleteService {
 
     //* 리서치 삭제 요청 전에 리서치에 참여한 사람이 있는지 확인합니다.
     const checkAbleToDelete =
-      this.mongoResearchFindService.isAbleToModifyResearch(param.researchId);
+      this.mongoResearchFindService.isAbleToDeleteResearch(param.researchId);
 
     //* 리서치와 관련된 모든 정보를 삭제합니다.
     const deleteResearch = this.mongoResearchDeleteService.deleteResearchById(

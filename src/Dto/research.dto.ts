@@ -91,47 +91,21 @@ export class ResearchParticiateBodyDto {
 }
 
 /**
- * 리서치 댓글 생성 요청시 Body에 포함되어야 하는 정보들
- * @param researchId
+ * 리서치 (대)댓글 생성 요청시 Body에 포함되어야 하는 정보들
  * @param content
  * @author 현웅
  */
 export class ResearchCommentCreateBodyDto {
-  @IsString()
-  researchId: string;
-
-  @IsString()
-  content: string;
-}
-
-/**
- * 리서치 대댓글 생성 요청시 Body에 포함되어야 하는 정보들
- * @param researchId
- * @param commentId
- * @param content
- * @author 현웅
- */
-export class ResearchReplyCreateBodyDto {
-  @IsString()
-  researchId: string;
-
-  @IsString()
-  commentId: string;
-
   @IsString()
   content: string;
 }
 
 /**
  * 리서치 신고시 Body에 포함되어야 하는 정보들
- * @param researchId
  * @param content
  * @author 현웅
  */
 export class ResearchReportBodyDto {
-  @IsString()
-  researchId: string;
-
   @IsString()
   content: string;
 }

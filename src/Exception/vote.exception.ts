@@ -1,10 +1,10 @@
 import { Status400Exception, Status404Exception } from "./Status";
 
 /**
- * 투표 수정/삭제 시도 중 참여자가 생겨 삭제할 수 없는 경우 사용합니다.
+ * 투표 삭제 시도 중 참여자가 10명 이상이 되어 삭제할 수 없는 경우 사용합니다.
  * @author 현웅
  */
-export class UnableToModifyVoteException extends Status400Exception {
+export class UnableToDeleteVoteException extends Status400Exception {
   constructor(newMessage?: string) {
     super({
       customMessage: newMessage

@@ -127,7 +127,7 @@ export class MongoResearchUpdateService {
    * @return 수정된 리서치 정보
    * @author 현웅
    */
-  async updateResearch(
+  async editResearch(
     param: { researchId: string; research: Partial<Research> },
     session: ClientSession,
   ) {

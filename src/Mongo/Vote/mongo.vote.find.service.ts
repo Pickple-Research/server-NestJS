@@ -17,7 +17,7 @@ import {
 } from "src/Schema";
 import {
   NotVoteAuthorException,
-  UnableToModifyVoteException,
+  UnableToDeleteVoteException,
   SelectedOptionInvalidException,
   VoteNotFoundException,
 } from "src/Exception";
@@ -84,16 +84,16 @@ export class MongoVoteFindService {
   }
 
   /**
-   * 투표 참여자 수가 10명 미만으로, 수정/삭제 가능한지 확인합니다.
+   * 투표 참여자 수가 10명 미만으로, 삭제 가능한지 확인합니다.
    * 10명 이상인 경우 에러를 발생시킵니다.
    * @author 현웅
    */
-  async isAbleToModifyVote(voteId: string) {
+  async isAbleToDeleteVote(voteId: string) {
     const vote = await this.Vote.findById(voteId)
       .select({ participantsNum: 1 })
       .lean();
     if (vote.participantsNum >= 10) {
-      throw new UnableToModifyVoteException();
+      throw new UnableToDeleteVoteException();
     }
     return;
   }
@@ -111,6 +111,39 @@ export class MongoVoteFindService {
         model: this.VoteUser,
       })
       .lean();
+  }
+
+  /**
+   * HOT 투표를 가져옵니다.
+   * 기준은 최근 100건의 투표 참여 중 제일 많은 참여를 이끌어낸 투표입니다.
+   * @author 현웅
+   */
+  async getHotVote() {
+    const recentParticipations = await this.VoteParticipation.find()
+      .sort({ _id: -1 })
+      .limit(100)
+      .select({ voteId: 1 })
+      .lean();
+
+    const voteIds = recentParticipations.map(
+      (participation) => participation.voteId,
+    );
+
+    const voteIdOccurrences: { voteId: string; occur: number }[] = [];
+
+    for (const voteId of voteIds) {
+      const idIndex = voteIdOccurrences.findIndex(
+        (occur) => occur.voteId === voteId,
+      );
+      if (idIndex === -1) {
+        voteIdOccurrences.push({ voteId, occur: 1 });
+      } else {
+        voteIdOccurrences[idIndex].occur++;
+      }
+    }
+    voteIdOccurrences.sort((a, b) => b.occur - a.occur);
+
+    return await this.getVoteById(voteIdOccurrences[0].voteId);
   }
 
   /**

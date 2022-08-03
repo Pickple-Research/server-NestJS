@@ -149,7 +149,7 @@ export class ResearchUpdateService {
    * @return 수정된 리서치 정보
    * @author 현웅
    */
-  async updateResearch(
+  async editResearch(
     param: {
       userId: string;
       researchId: string;
@@ -163,7 +163,7 @@ export class ResearchUpdateService {
       researchId: param.researchId,
     });
     //* 리서치 내용을 수정
-    const updateResearch = this.mongoResearchUpdateService.updateResearch(
+    const updateResearch = this.mongoResearchUpdateService.editResearch(
       { researchId: param.researchId, research: param.research },
       session,
     );

@@ -26,7 +26,7 @@ export class VoteDeleteService {
       voteId: param.voteId,
     });
     //* 투표 삭제 요청 시기를 기준으로 참여자 수가 10명 보다 적은지 확인합니다.
-    const checkAbleToDelete = this.mongoVoteFindService.isAbleToModifyVote(
+    const checkAbleToDelete = this.mongoVoteFindService.isAbleToDeleteVote(
       param.voteId,
     );
     //* 투표와 관련된 모든 정보를 삭제합니다.
