@@ -17,7 +17,7 @@ import {
 } from "src/Schema";
 import {
   NotVoteAuthorException,
-  UnableToModifyVoteException,
+  UnableToDeleteVoteException,
   SelectedOptionInvalidException,
   VoteNotFoundException,
 } from "src/Exception";
@@ -84,16 +84,16 @@ export class MongoVoteFindService {
   }
 
   /**
-   * 투표 참여자 수가 10명 미만으로, 수정/삭제 가능한지 확인합니다.
+   * 투표 참여자 수가 10명 미만으로, 삭제 가능한지 확인합니다.
    * 10명 이상인 경우 에러를 발생시킵니다.
    * @author 현웅
    */
-  async isAbleToModifyVote(voteId: string) {
+  async isAbleToDeleteVote(voteId: string) {
     const vote = await this.Vote.findById(voteId)
       .select({ participantsNum: 1 })
       .lean();
     if (vote.participantsNum >= 10) {
-      throw new UnableToModifyVoteException();
+      throw new UnableToDeleteVoteException();
     }
     return;
   }

@@ -140,7 +140,7 @@ export class MongoVoteUpdateService {
    * @return 업데이트된 투표 정보
    * @author 현웅
    */
-  async updateVote(
+  async editVote(
     param: { voteId: string; vote: Partial<Vote> },
     session: ClientSession,
   ) {

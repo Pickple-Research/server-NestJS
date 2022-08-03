@@ -150,7 +150,7 @@ export class VoteUpdateService {
    * @return 수정된 투표 정보
    * @author 현웅
    */
-  async updateVote(
+  async editVote(
     param: { userId: string; voteId: string; vote: Partial<Vote> },
     session: ClientSession,
   ) {
@@ -160,7 +160,7 @@ export class VoteUpdateService {
       voteId: param.voteId,
     });
     //* 투표 내용을 수정
-    const updateVote = this.mongoVoteUpdateService.updateVote(
+    const updateVote = this.mongoVoteUpdateService.editVote(
       { voteId: param.voteId, vote: param.vote },
       session,
     );

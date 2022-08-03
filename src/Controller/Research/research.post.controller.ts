@@ -4,6 +4,7 @@ import {
   UseInterceptors,
   UploadedFiles,
   Request,
+  Param,
   Body,
   Post,
 } from "@nestjs/common";
@@ -30,7 +31,6 @@ import {
 import {
   ResearchCreateBodyDto,
   ResearchCommentCreateBodyDto,
-  ResearchReplyCreateBodyDto,
   ResearchReportBodyDto,
   ResearchMypageBodyDto,
 } from "src/Dto";
@@ -200,13 +200,14 @@ export class ResearchPostController {
    * @return 생성된 리서치 댓글
    * @author 현웅
    */
-  @Post("comments")
+  @Post(":researchId/comments")
   async uploadResearchComment(
     @Request() req: { user: JwtUserInfo },
+    @Param("researchId") researchId: string,
     @Body() body: ResearchCommentCreateBodyDto,
   ) {
     const comment: ResearchComment = {
-      researchId: body.researchId,
+      researchId,
       authorId: req.user.userId,
       content: body.content,
       createdAt: getCurrentISOTime(),
@@ -231,14 +232,16 @@ export class ResearchPostController {
    * @return 생성된 리서치 대댓글
    * @author 현웅
    */
-  @Post("replies")
+  @Post(":researchId/comments/:commentId/replies")
   async uploadResearchReply(
     @Request() req: { user: JwtUserInfo },
-    @Body() body: ResearchReplyCreateBodyDto,
+    @Param("researchId") researchId: string,
+    @Param("commentId") commentId: string,
+    @Body() body: ResearchCommentCreateBodyDto,
   ) {
     const reply: ResearchReply = {
-      researchId: body.researchId,
-      commentId: body.commentId,
+      researchId,
+      commentId,
       authorId: req.user.userId,
       content: body.content,
       createdAt: getCurrentISOTime(),
@@ -261,15 +264,16 @@ export class ResearchPostController {
    * 리서치를 신고합니다.
    * @author 현웅
    */
-  @Post("report")
+  @Post(":researchId/report")
   async reportResearch(
     @Request() req: { user: JwtUserInfo },
+    @Param("researchId") researchId: string,
     @Body() body: ResearchReportBodyDto,
   ) {
     return await this.mongoResearchCreateService.createResearchReport({
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      researchId: body.researchId,
+      researchId,
       content: body.content,
     });
   }
