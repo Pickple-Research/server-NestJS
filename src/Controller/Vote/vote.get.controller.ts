@@ -21,6 +21,17 @@ export class VoteGetController {
   }
 
   /**
+   * HOT 투표를 가져옵니다.
+   * 기준은 최근 100건의 투표 참여 중 제일 많은 참여를 이끌어낸 투표입니다.
+   * @author 현웅
+   */
+  @Public()
+  @Get("hot")
+  async getHotVote() {
+    return await this.mongoVoteFindService.getHotVote();
+  }
+
+  /**
    * 주어진 투표 _id을 기준으로 하여 더 최근의 투표를 모두 찾고 반환합니다.
    * @author 현웅
    */

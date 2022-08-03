@@ -114,6 +114,39 @@ export class MongoVoteFindService {
   }
 
   /**
+   * HOT 투표를 가져옵니다.
+   * 기준은 최근 100건의 투표 참여 중 제일 많은 참여를 이끌어낸 투표입니다.
+   * @author 현웅
+   */
+  async getHotVote() {
+    const recentParticipations = await this.VoteParticipation.find()
+      .sort({ _id: -1 })
+      .limit(100)
+      .select({ voteId: 1 })
+      .lean();
+
+    const voteIds = recentParticipations.map(
+      (participation) => participation.voteId,
+    );
+
+    const voteIdOccurrences: { voteId: string; occur: number }[] = [];
+
+    for (const voteId of voteIds) {
+      const idIndex = voteIdOccurrences.findIndex(
+        (occur) => occur.voteId === voteId,
+      );
+      if (idIndex === -1) {
+        voteIdOccurrences.push({ voteId, occur: 1 });
+      } else {
+        voteIdOccurrences[idIndex].occur++;
+      }
+    }
+    voteIdOccurrences.sort((a, b) => b.occur - a.occur);
+
+    return await this.getVoteById(voteIdOccurrences[0].voteId);
+  }
+
+  /**
    * 주어진 투표 _id을 기준으로 하여 더 최근의 투표를 모두 찾고 반환합니다.
    * @author 현웅
    */
