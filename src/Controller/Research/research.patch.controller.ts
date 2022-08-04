@@ -128,7 +128,7 @@ export class ResearchPatchController {
     @Param("researchId") researchId: string,
     @Body() body: ResearchParticiateBodyDto,
   ) {
-    //* 유저가 가진 credit, 리서치 참여시 제공 credit, 리서치 제목 을 가져옵니다
+    //* 유저가 가진 크레딧, 리서치 정보를 가져옵니다
     const getUserCredit = this.mongoUserFindService.getUserCredit(
       req.user.userId,
     );
@@ -151,13 +151,13 @@ export class ResearchPatchController {
      * @return 새로운 크레딧 변동내역
      */
     if (researchTitle === null || researchCredit === null) {
-      const newCreditHitory = await this.participateDeletedResearch({
+      const newCreditHistory = await this.participateDeletedResearch({
         userId: req.user.userId,
         userCredit,
         researchTitle: body.title,
         researchCredit: body.credit,
       });
-      return { newCreditHitory };
+      return { newCreditHistory };
     }
 
     //* 필요한 데이터 형태를 미리 만들어둡니다.
@@ -197,22 +197,22 @@ export class ResearchPatchController {
       );
       //* 위 두 함수를 동시에 실행하고
       //* 업데이트된 리서치 정보, 생성된 리서치 참여 정보, 새로 생성된 크레딧 변동내역을 가져온 후 반환합니다.
-      const { updatedResearch, newResearchParticipation, newCreditHitory } =
+      const { updatedResearch, newResearchParticipation, newCreditHistory } =
         await Promise.all([updateResearch, updateUser]).then(
           ([
             { updatedResearch, newResearchParticipation },
-            newCreditHitory,
+            newCreditHistory,
           ]) => {
             return {
               updatedResearch,
               newResearchParticipation,
-              newCreditHitory,
+              newCreditHistory,
             };
           },
         );
 
       //* 최종적으로 업데이트된 리서치 정보, 생성된 리서치 참여 정보, 새로 생성된 크레딧 변동내역을 반환합니다.
-      return { updatedResearch, newResearchParticipation, newCreditHitory };
+      return { updatedResearch, newResearchParticipation, newCreditHistory };
     }, [userSession, researchSession]);
   }
 
@@ -242,7 +242,7 @@ export class ResearchPatchController {
 
     const userSession = await this.userConnection.startSession();
 
-    const newCreditHitory =
+    const newCreditHistory =
       await this.mongoUserCreateService.createCreditHistory(
         {
           userId: param.userId,
@@ -251,7 +251,7 @@ export class ResearchPatchController {
         userSession,
       );
 
-    return newCreditHitory;
+    return newCreditHistory;
   }
 
   /**
@@ -266,26 +266,28 @@ export class ResearchPatchController {
     @Param("researchId") researchId: string,
     @Body() body: ResearchPullupBodyDto,
   ) {
-    const userSession = await this.userConnection.startSession();
-    const researchSession = await this.researchConnection.startSession();
-
-    //* 유저가 가진 크레딧, 리서치 제목을 가져옵니다
+    //* 유저가 가진 크레딧, 리서치 정보를 가져옵니다
     const getUserCredit = this.mongoUserFindService.getUserCredit(
       req.user.userId,
     );
-    const getResearchTitle =
-      this.mongoResearchFindService.getResearchTitle(researchId);
+    const getResearch =
+      this.mongoResearchFindService.getResearchById(researchId);
 
-    const { userCredit, researchTitle } = await Promise.all([
+    const { userCredit, previousResearch } = await Promise.all([
       getUserCredit,
-      getResearchTitle,
-    ]).then(([userCredit, researchTitle]) => {
-      return { userCredit, researchTitle };
+      getResearch,
+    ]).then(([userCredit, previousResearch]) => {
+      return { userCredit, previousResearch };
     });
 
+    //* 리서치 끌올에 필요한 크레딧 계산
+    const requiredCredit =
+      RESEARCH_PULLUP_CREDIT +
+      (body.extraCredit * body.extraCreditReceiverNum -
+        previousResearch.extraCreditReceiverNum * previousResearch.extraCredit);
+
     //* 리서치 끌올을 위한 크레딧이 부족한 경우: 에러
-    if (userCredit < RESEARCH_PULLUP_CREDIT)
-      throw new NotEnoughCreditException();
+    if (userCredit < requiredCredit) throw new NotEnoughCreditException();
 
     //* 필요한 데이터 형태를 미리 만들어둡니다.
     //* 현재 시간 (끌올 일시, 크레딧 사용내역 생성 일시)
@@ -298,13 +300,16 @@ export class ResearchPatchController {
     //* CreditHistory 정보
     const creditHistory: CreditHistory = {
       userId: req.user.userId,
-      reason: researchTitle,
+      reason: previousResearch.title,
       type: CreditHistoryType.RESEARCH_PULLUP,
-      scale: -1 * RESEARCH_PULLUP_CREDIT,
+      scale: -1 * requiredCredit,
       isIncome: false,
-      balance: userCredit - RESEARCH_PULLUP_CREDIT,
+      balance: userCredit - requiredCredit,
       createdAt: currentISOTime,
     };
+
+    const userSession = await this.userConnection.startSession();
+    const researchSession = await this.researchConnection.startSession();
 
     return await tryMultiTransaction(async () => {
       //* 크레딧 사용내역을 생성하고 유저의 크레딧을 차감합니다.
@@ -325,39 +330,131 @@ export class ResearchPatchController {
         researchSession,
       );
       //* 위 두 함수를 동시에 실행하고 생성된 크레딧 사용내역과 끌올된 리서치 정보를 반환합니다.
-      const { newCreditHitory, updatedResearch } = await Promise.all([
+      const { newCreditHistory, updatedResearch } = await Promise.all([
         updateUser,
         updateResearch,
-      ]).then(([newCreditHitory, updatedResearch]) => {
-        return { newCreditHitory, updatedResearch };
+      ]).then(([newCreditHistory, updatedResearch]) => {
+        return { newCreditHistory, updatedResearch };
       });
 
-      return { newCreditHitory, updatedResearch };
+      return { newCreditHistory, updatedResearch };
     }, [userSession, researchSession]);
   }
 
   /**
    * @Transaction
    * 리서치를 수정합니다.
-   * @return 수정된 리서치 정보
+   * @return 수정된 리서치 정보 (생성된 크레딧 사용내역)?
    * @author 현웅
    */
   @Patch(":researchId")
   async editResearch(
     @Request() req: { user: JwtUserInfo },
-    @Param() param: { researchId: string },
+    @Param("researchId") researchId: string,
     @Body() body: ResearchUpdateBodyDto,
   ) {
+    //* 유저가 가진 크레딧, 리서치 정보를 가져옵니다
+    const getUserCredit = this.mongoUserFindService.getUserCredit(
+      req.user.userId,
+    );
+    const getResearch =
+      this.mongoResearchFindService.getResearchById(researchId);
+
+    const { userCredit, previousResearch } = await Promise.all([
+      getUserCredit,
+      getResearch,
+    ]).then(([userCredit, previousResearch]) => {
+      return { userCredit, previousResearch };
+    });
+
+    //* 리서치 수정에 필요한 크레딧 계산
+    const requiredCredit =
+      body.extraCredit * body.extraCreditReceiverNum -
+      previousResearch.extraCreditReceiverNum * previousResearch.extraCredit;
+
+    //* 리서치 수정을 위한 크레딧이 부족한 경우: 에러
+    if (userCredit < requiredCredit) throw new NotEnoughCreditException();
+
+    //* 만약 리서치 수정에 추가로 크레딧이 소모되는 경우,
+    //* 크레딧 사용내역을 추가로 생성하여 반환합니다.
+    if (requiredCredit > 0) {
+      const creditHistory: CreditHistory = {
+        userId: req.user.userId,
+        reason: previousResearch.title,
+        type: CreditHistoryType.RESEARCH_EDIT,
+        scale: -1 * requiredCredit,
+        isIncome: false,
+        balance: userCredit - requiredCredit,
+        createdAt: getCurrentISOTime(),
+      };
+
+      return await this.editResearchWithExtraCredit({
+        userId: req.user.userId,
+        researchId,
+        research: body,
+        creditHistory,
+      });
+    }
+
+    //* 리서치 수정에 크레딧이 필요하지 않다면 리서치만 수정 후 수정된 리서치만 반환합니다.
     const researchSession = await this.researchConnection.startSession();
 
-    return await this.researchUpdateService.editResearch(
-      {
-        userId: req.user.userId,
-        researchId: param.researchId,
-        research: body,
-      },
-      researchSession,
-    );
+    return await tryMultiTransaction(async () => {
+      const updatedResearch = await this.researchUpdateService.editResearch(
+        {
+          userId: req.user.userId,
+          researchId,
+          research: body,
+        },
+        researchSession,
+      );
+
+      return { updatedResearch };
+    }, [researchSession]);
+  }
+
+  /**
+   * 리서치 수정 중 추가 증정 크레딧 조정을 위해 크레딧 소모가 발생하는 경우 호출됩니다.
+   * @return 생성된 크레딧 사용내역, 수정된 리서치 정보
+   * @author 현웅
+   */
+  async editResearchWithExtraCredit(param: {
+    userId: string;
+    researchId: string;
+    research: Partial<Research>;
+    creditHistory: CreditHistory;
+  }) {
+    const userSession = await this.userConnection.startSession();
+    const researchSession = await this.researchConnection.startSession();
+
+    return await tryMultiTransaction(async () => {
+      //* 크레딧 사용내역을 생성하고 유저의 크레딧을 차감합니다.
+      const updateUser = this.mongoUserCreateService.createCreditHistory(
+        {
+          userId: param.userId,
+          creditHistory: param.creditHistory,
+        },
+        userSession,
+      );
+      //* 리서치 정보를 수정합니다.
+      const updateResearch = this.researchUpdateService.editResearch(
+        {
+          userId: param.userId,
+          researchId: param.researchId,
+          research: param.research,
+        },
+        researchSession,
+      );
+      //* 위 두 함수를 동시에 실행하고 생성된 크레딧 사용내역과 끌올된 리서치 정보를 반환합니다.
+      const { newCreditHistory, updatedResearch } = await Promise.all([
+        updateUser,
+        updateResearch,
+      ]).then(([newCreditHistory, updatedResearch]) => {
+        return { newCreditHistory, updatedResearch };
+      });
+
+      return { newCreditHistory, updatedResearch };
+    }, [userSession, researchSession]);
   }
 
   /**
