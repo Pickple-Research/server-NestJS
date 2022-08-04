@@ -139,7 +139,7 @@ export class ResearchPostController {
       //* 소요시간에 필요한 크레딧
       CREDIT_PER_MINUTE * param.body.estimatedTime +
       //* 추가 리서치 지급에 필요한 크레딧
-      param.body.extraCredit * param.body.extraCreditRecieverNum +
+      param.body.extraCredit * param.body.extraCreditReceiverNum +
       //* 연령 스크리닝에 필요한 크레딧
       (param.body.targetAgeGroups.length !== 0 ? 5 : 0);
 

@@ -64,7 +64,7 @@ export class Research {
   extraCredit: number;
 
   @Prop() // 추가 제공 크레딧 추첨 수령자 수
-  extraCreditRecieverNum: number;
+  extraCreditReceiverNum: number;
 
   @Prop() // 마감일
   deadline: string;

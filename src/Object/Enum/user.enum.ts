@@ -41,6 +41,8 @@ export enum CreditHistoryType {
   DELETED_RESEARCH_PARTICIPATE = "DELETED_RESEARCH_PARTICIPATE",
   // 리서치 업로드
   RESEARCH_UPLOAD = "RESEARCH_UPLOAD",
+  // 리서치 수정
+  RESEARCH_EDIT = "RESEARCH_EDIT",
   // 리서치 끌올
   RESEARCH_PULLUP = "RESEARCH_PULLUP",
   // 리서치 추가 증정 크레딧 당첨
