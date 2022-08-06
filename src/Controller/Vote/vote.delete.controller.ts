@@ -1,10 +1,19 @@
-import { Controller, Request, Param, Headers, Delete } from "@nestjs/common";
+import {
+  Controller,
+  Request,
+  Param,
+  Headers,
+  Delete,
+  Inject,
+} from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
+import { MongoVoteDeleteService } from "src/Mongo";
 import { VoteDeleteService } from "src/Service";
 import { JwtUserInfo } from "src/Object/Type";
 import { tryMultiTransaction } from "src/Util";
 import { MONGODB_VOTE_CONNECTION } from "src/Constant";
+import { Public } from "src/Security/Metadata";
 
 @Controller("votes")
 export class VoteDeleteController {
@@ -14,6 +23,22 @@ export class VoteDeleteController {
     @InjectConnection(MONGODB_VOTE_CONNECTION)
     private readonly voteConnection: Connection,
   ) {}
+
+  @Inject()
+  private readonly mongoVoteDeleteService: MongoVoteDeleteService;
+
+  @Public()
+  @Delete("remove")
+  async removeTest() {
+    const voteSession = await this.voteConnection.startSession();
+    await tryMultiTransaction(async () => {
+      await this.mongoVoteDeleteService.deleteVoteById(
+        { voteId: "" },
+        voteSession,
+      );
+    }, [voteSession]);
+    return;
+  }
 
   /**
    * @deprecated

@@ -16,6 +16,7 @@ import {
   ResearchUserDocument,
 } from "src/Schema";
 import {
+  AlreadyParticipatedResearchException,
   NotResearchAuthorException,
   ResearchNotFoundException,
   UnableToDeleteResearchException,
@@ -37,6 +38,25 @@ export class MongoResearchFindService {
     @InjectModel(ResearchUser.name)
     private readonly ResearchUser: Model<ResearchUserDocument>,
   ) {}
+
+  /**
+   * 유저가 이미 리서치에 참여한 적이 있는지 확인합니다.
+   * 참여한 적이 있는 경우, 에러를 발생시킵니다.
+   * @author 현웅
+   */
+  async isUserAlreadyParticipatedResearch(param: {
+    userId: string;
+    researchId: string;
+  }) {
+    const researchParticipation = await this.ResearchParticipation.findOne({
+      userId: param.userId,
+      researchId: param.researchId,
+    })
+      .select({ _id: 1 })
+      .lean();
+    if (researchParticipation) throw new AlreadyParticipatedResearchException();
+    return;
+  }
 
   /**
    * 인자로 받은 유저 _id 가 리서치 작성자 _id 와 일치하는지 확인합니다.
