@@ -283,7 +283,8 @@ export class ResearchPatchController {
     //* 리서치 끌올에 필요한 크레딧 계산
     const requiredCredit =
       RESEARCH_PULLUP_CREDIT +
-      (body.extraCredit * body.extraCreditReceiverNum -
+      ((body.extraCredit ? body.extraCredit : 0) *
+        (body.extraCreditReceiverNum ? body.extraCreditReceiverNum : 0) -
         previousResearch.extraCreditReceiverNum * previousResearch.extraCredit);
 
     //* 리서치 끌올을 위한 크레딧이 부족한 경우: 에러
@@ -294,7 +295,7 @@ export class ResearchPatchController {
     const currentISOTime = getCurrentISOTime();
     //* 끌올될 리서치 정보
     const research: Partial<Research> = {
-      ...body, // '수정 후 끌올' 인 경우, 제목/내용/마감일이 포함되어 있습니다
+      ...body, // '수정 후 끌올' 인 경우, 제목/내용/마감일/추가 증정 크레딧이 포함되어 있습니다
       pulledupAt: currentISOTime,
     };
     //* CreditHistory 정보

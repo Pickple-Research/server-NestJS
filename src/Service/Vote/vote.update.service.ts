@@ -82,6 +82,12 @@ export class VoteUpdateService {
     param: { voteId: string; voteParticipation: VoteParticipation },
     session: ClientSession,
   ) {
+    //* 유저가 이미 투표에 참여했었는지 확인
+    const checkAlreadyParticipated =
+      this.mongoVoteFindService.isUserAlreadyParticipatedVote({
+        userId: param.voteParticipation.userId,
+        voteId: param.voteId,
+      });
     //* 선택지 index가 유효한 범위 내에 있는지 확인
     const checkIndexesValid = this.mongoVoteFindService.isOptionIndexesValid(
       param.voteId,
@@ -95,12 +101,14 @@ export class VoteUpdateService {
       },
       session,
     );
-    //* 위 두 함수를 동시에 실행
-    const updatedVote = await Promise.all([checkIndexesValid, updateVote]).then(
-      ([_, updatedVote]) => {
-        return updatedVote;
-      },
-    );
+    //* 위 세 함수를 동시에 실행
+    const updatedVote = await Promise.all([
+      checkAlreadyParticipated,
+      checkIndexesValid,
+      updateVote,
+    ]).then(([_, __, updatedVote]) => {
+      return updatedVote;
+    });
 
     //* 새로운 투표 참여 정보 생성
     //! 이 함수가 종속된 session은 updateVote 함수가 종속된 session 과 동일하므로

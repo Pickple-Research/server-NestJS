@@ -16,6 +16,7 @@ import {
   VoteUserDocument,
 } from "src/Schema";
 import {
+  AlreadyParticipatedVoteException,
   NotVoteAuthorException,
   UnableToDeleteVoteException,
   SelectedOptionInvalidException,
@@ -37,6 +38,25 @@ export class MongoVoteFindService {
     @InjectModel(VoteUser.name)
     private readonly VoteUser: Model<VoteUserDocument>,
   ) {}
+
+  /**
+   * 유저가 이미 투표에 참여한 적이 있는지 확인합니다.
+   * 참여한 적이 있는 경우, 에러를 발생시킵니다.
+   * @author 현웅
+   */
+  async isUserAlreadyParticipatedVote(param: {
+    userId: string;
+    voteId: string;
+  }) {
+    const voteParticipation = await this.VoteParticipation.findOne({
+      userId: param.userId,
+      voteId: param.voteId,
+    })
+      .select({ _id: 1 })
+      .lean();
+    if (voteParticipation) throw new AlreadyParticipatedVoteException();
+    return;
+  }
 
   /**
    * 인자로 받은 유저 _id 가 투표 작성자 _id 와 일치하는지 확인합니다.

@@ -89,15 +89,28 @@ export class ResearchUpdateService {
     param: { researchId: string; researchParticipation: ResearchParticipation },
     session: ClientSession,
   ) {
+    //* 유저가 이미 리서치에 참여했었는지 확인
+    const checkAlreadyParticipated =
+      this.mongoResearchFindService.isUserAlreadyParticipatedResearch({
+        userId: param.researchParticipation.userId,
+        researchId: param.researchId,
+      });
     //* 리서치 참여자 수 1 증가
-    const updatedResearch =
-      await this.mongoResearchUpdateService.updateParticipant(
-        {
-          researchId: param.researchId,
-        },
-        session,
-      );
+    const updateResearch = this.mongoResearchUpdateService.updateParticipant(
+      { researchId: param.researchId },
+      session,
+    );
+    //* 위 두 함수를 동시에 실행
+    const updatedResearch = await Promise.all([
+      checkAlreadyParticipated,
+      updateResearch,
+    ]).then(([_, updatedResearch]) => {
+      return updatedResearch;
+    });
+
     //* 새로운 리서치 참여 정보 생성
+    //! 이 함수가 종속된 session은 updateResearch 함수가 종속된 session 과 동일하므로
+    //! 같은 Promise.all 로 동시에 실행시킬 수 없습니다.
     const newResearchParticipation =
       await this.mongoResearchCreateService.createResearchParticipation(
         {
@@ -105,8 +118,6 @@ export class ResearchUpdateService {
         },
         session,
       );
-    //* 위 두 함수를 순차적으로 시행하고 해당 결과를 반환
-    //! (두 함수는 같은 세션에 종속되어 있으므로 Promise.all 로 동시에 실행시키면 안 됩니다.)
     return { updatedResearch, newResearchParticipation };
   }
 
