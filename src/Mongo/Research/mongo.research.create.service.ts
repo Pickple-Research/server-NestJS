@@ -19,6 +19,8 @@ import {
   ResearchScrapDocument,
   ResearchUser,
   ResearchUserDocument,
+  ResearchView,
+  ResearchViewDocument,
 } from "src/Schema";
 import { BUCKET_NAME } from "src/Constant";
 
@@ -39,6 +41,8 @@ export class MongoResearchCreateService {
     private readonly ResearchScrap: Model<ResearchScrapDocument>,
     @InjectModel(ResearchUser.name)
     private readonly ResearchUser: Model<ResearchUserDocument>,
+    @InjectModel(ResearchView.name)
+    private readonly ResearchView: Model<ResearchViewDocument>,
 
     private readonly awsS3Service: AwsS3Service,
   ) {}
@@ -131,6 +135,18 @@ export class MongoResearchCreateService {
 
     //* 이 후 새로 만들어진 리서치 정보를 반환합니다.
     return newResearch.toObject();
+  }
+
+  /**
+   * 새로운 리서치 조회시: 리서치 조회 정보를 생성합니다.
+   * @return 생성된 리서치 조회 정보
+   * @author 현웅
+   */
+  async createResearchView(param: { researchView: ResearchView }) {
+    const newResearchView = await this.ResearchView.create([
+      param.researchView,
+    ]);
+    return newResearchView[0].toObject();
   }
 
   /**

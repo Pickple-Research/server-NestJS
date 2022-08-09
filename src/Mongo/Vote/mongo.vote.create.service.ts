@@ -16,6 +16,8 @@ import {
   VoteScrapDocument,
   VoteUser,
   VoteUserDocument,
+  VoteView,
+  VoteViewDocument,
 } from "src/Schema";
 import { getCurrentISOTime } from "src/Util";
 
@@ -35,6 +37,8 @@ export class MongoVoteCreateService {
     private readonly VoteScrap: Model<VoteScrapDocument>,
     @InjectModel(VoteUser.name)
     private readonly VoteUser: Model<VoteUserDocument>,
+    @InjectModel(VoteView.name)
+    private readonly VoteView: Model<VoteViewDocument>,
   ) {}
 
   /**
@@ -82,6 +86,16 @@ export class MongoVoteCreateService {
     });
 
     return newVote.toObject();
+  }
+
+  /**
+   * 새로운 투표 조회시: 투표 조회 정보를 생성합니다.
+   * @return 생성된 투표 조회 정보
+   * @author 현웅
+   */
+  async createVoteView(param: { voteView: VoteView }) {
+    const newVoteView = await this.VoteView.create([param.voteView]);
+    return newVoteView[0].toObject();
   }
 
   /**

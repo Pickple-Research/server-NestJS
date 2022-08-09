@@ -16,6 +16,7 @@ export * from "./Research/researchReply.schema";
 export * from "./Research/researchReport.schema";
 export * from "./Research/researchScrap.schema";
 export * from "./Research/researchUser.schema";
+export * from "./Research/researchView.schema";
 export * from "./Research/Embedded";
 
 // SurBay 유저 정보 스키마
@@ -39,4 +40,5 @@ export * from "./Vote/voteReply.schema";
 export * from "./Vote/voteReport.schema";
 export * from "./Vote/voteScrap.schema";
 export * from "./Vote/voteUser.schema";
+export * from "./Vote/voteView.schema";
 export * from "./Vote/Embedded";

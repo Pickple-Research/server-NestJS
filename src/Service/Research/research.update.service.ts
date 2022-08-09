@@ -6,7 +6,12 @@ import {
   MongoResearchUpdateService,
   MongoResearchDeleteService,
 } from "src/Mongo";
-import { Research, ResearchScrap, ResearchParticipation } from "src/Schema";
+import {
+  Research,
+  ResearchView,
+  ResearchScrap,
+  ResearchParticipation,
+} from "src/Schema";
 
 /**
  * 리서치 관련 데이터가 수정되는 경우
@@ -24,6 +29,32 @@ export class ResearchUpdateService {
   private readonly mongoResearchUpdateService: MongoResearchUpdateService;
   @Inject()
   private readonly mongoResearchDeleteService: MongoResearchDeleteService;
+
+  /**
+   * 리서치를 조회합니다.
+   * 유저가 이미 리서치를 조회한 적이 있는지 확인하고 조회한 적이 없다면
+   * 새로운 리서치 조회 정보를 생성하고 리서치 조회수를 1 증가시킵니다.
+   * @return 새로 생성된 리서치 조회 정보 | null
+   * @author 현웅
+   */
+  async viewResearch(param: { researchView: ResearchView }) {
+    if (
+      await this.mongoResearchFindService.isUserAlreadyViewedResearch({
+        userId: param.researchView.userId,
+        researchId: param.researchView.researchId,
+      })
+    ) {
+      return null;
+    }
+
+    await this.mongoResearchUpdateService.updateView({
+      researchId: param.researchView.researchId,
+    });
+
+    return await this.mongoResearchCreateService.createResearchView({
+      researchView: param.researchView,
+    });
+  }
 
   /**
    * 리서치를 스크랩합니다.

@@ -18,11 +18,11 @@ import {
 } from "src/Mongo";
 import {
   Research,
+  ResearchView,
   ResearchScrap,
   ResearchParticipation,
   CreditHistory,
 } from "src/Schema";
-import { Public } from "src/Security/Metadata";
 import { JwtUserInfo } from "src/Object/Type";
 import { CreditHistoryType } from "src/Object/Enum";
 import {
@@ -64,13 +64,22 @@ export class ResearchPatchController {
 
   /**
    * 리서치를 조회합니다.
+   * 리서치 조회를 요청한 유저가 이미 투표를 조회한 적이 있는 경우엔 아무 작업도 하지 않습니다.
    * @author 현웅
    */
-  @Public()
   @Patch("view/:researchId")
-  async viewResearch(@Param() param: { researchId: string }) {
-    return await this.mongoResearchUpdateService.updateView({
-      researchId: param.researchId,
+  async viewResearch(
+    @Request() req: { user: JwtUserInfo },
+    @Param("researchId") researchId: string,
+  ) {
+    const researchView: ResearchView = {
+      userId: req.user.userId,
+      researchId,
+      createdAt: getCurrentISOTime(),
+    };
+
+    return await this.researchUpdateService.viewResearch({
+      researchView,
     });
   }
 

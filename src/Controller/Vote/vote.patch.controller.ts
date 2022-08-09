@@ -10,8 +10,7 @@ import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { UserUpdateService, VoteUpdateService } from "src/Service";
 import { MongoUserUpdateService, MongoVoteUpdateService } from "src/Mongo";
-import { VoteScrap, VoteParticipation } from "src/Schema";
-import { Public } from "src/Security/Metadata";
+import { VoteView, VoteScrap, VoteParticipation } from "src/Schema";
 import { VoteParticipateBodyDto, VoteUpdateBodyDto } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
 import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
@@ -36,14 +35,21 @@ export class VotePatchController {
 
   /**
    * 투표를 조회합니다.
+   * 투표 조회를 요청한 유저가 이미 투표를 조회한 적이 있는 경우엔 아무 작업도 하지 않습니다.
    * @author 현웅
    */
-  @Public()
   @Patch("view/:voteId")
-  async viewVote(@Param() param: { voteId: string }) {
-    return await this.mongoVoteUpdateService.updateView({
-      voteId: param.voteId,
-    });
+  async viewVote(
+    @Request() req: { user: JwtUserInfo },
+    @Param("voteId") voteId: string,
+  ) {
+    const voteView: VoteView = {
+      userId: req.user.userId,
+      voteId,
+      createdAt: getCurrentISOTime(),
+    };
+
+    return await this.voteUpdateService.viewVote({ voteView });
   }
 
   /**
