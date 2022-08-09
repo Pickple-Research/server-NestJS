@@ -54,7 +54,7 @@ export class MongoVoteFindService {
     })
       .select({ _id: 1 })
       .lean();
-    if (voteView) true;
+    if (voteView) return true;
     return false;
   }
 

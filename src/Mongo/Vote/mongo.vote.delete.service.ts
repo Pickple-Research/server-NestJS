@@ -14,6 +14,8 @@ import {
   VoteScrapDocument,
   VoteUser,
   VoteUserDocument,
+  VoteView,
+  VoteViewDocument,
 } from "src/Schema";
 
 @Injectable()
@@ -30,6 +32,8 @@ export class MongoVoteDeleteService {
     private readonly VoteScrap: Model<VoteScrapDocument>,
     @InjectModel(VoteUser.name)
     private readonly VoteUser: Model<VoteUserDocument>,
+    @InjectModel(VoteView.name)
+    private readonly VoteView: Model<VoteViewDocument>,
   ) {}
 
   /**
@@ -59,6 +63,8 @@ export class MongoVoteDeleteService {
       { voteId: param.voteId },
       { session },
     );
+    //* 투표 조회 정보 삭제
+    await this.VoteView.deleteMany({ voteId: param.voteId }, { session });
     //* 투표 스크랩 정보 삭제
     await this.VoteScrap.deleteMany({ voteId: param.voteId }, { session });
     //* 댓글과 대댓글 모두 삭제

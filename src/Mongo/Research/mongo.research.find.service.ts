@@ -57,7 +57,8 @@ export class MongoResearchFindService {
     })
       .select({ _id: 1 })
       .lean();
-    if (researchView) true;
+    if (researchView) return true;
+
     return false;
   }
 
