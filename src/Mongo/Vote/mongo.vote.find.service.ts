@@ -14,6 +14,8 @@ import {
   VoteScrapDocument,
   VoteUser,
   VoteUserDocument,
+  VoteView,
+  VoteViewDocument,
 } from "src/Schema";
 import {
   AlreadyParticipatedVoteException,
@@ -37,7 +39,24 @@ export class MongoVoteFindService {
     private readonly VoteScrap: Model<VoteScrapDocument>,
     @InjectModel(VoteUser.name)
     private readonly VoteUser: Model<VoteUserDocument>,
+    @InjectModel(VoteView.name)
+    private readonly VoteView: Model<VoteViewDocument>,
   ) {}
+
+  /**
+   * 유저가 이미 투표를 조회한 적이 있는지 확인합니다.
+   * @author 현웅
+   */
+  async isUserAlreadyViewedVote(param: { userId: string; voteId: string }) {
+    const voteView = await this.VoteView.findOne({
+      userId: param.userId,
+      voteId: param.voteId,
+    })
+      .select({ _id: 1 })
+      .lean();
+    if (voteView) true;
+    return false;
+  }
 
   /**
    * 유저가 이미 투표에 참여한 적이 있는지 확인합니다.
@@ -259,6 +278,14 @@ export class MongoVoteFindService {
         voteIds.indexOf(a._id.toString()) - voteIds.indexOf(b._id.toString())
       );
     });
+  }
+
+  /**
+   * 특정 유저가 조회한 투표 조회 정보를 모두 가져옵니다.
+   * @author 현웅
+   */
+  async getUserVoteViews(userId: string) {
+    return await this.VoteView.find({ userId }).sort({ _id: -1 }).lean();
   }
 
   /**

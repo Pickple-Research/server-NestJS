@@ -1,12 +1,15 @@
 import { Controller, Inject, Request, Param, Body, Post } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { Vote, VoteComment, VoteReply } from "src/Schema";
+import { Vote, VoteComment, VoteReply, VoteCommentReport } from "src/Schema";
 import { MongoVoteFindService, MongoVoteCreateService } from "src/Mongo";
 import {
   VoteCreateBodyDto,
   VoteCommentCreateBodyDto,
+  VoteReplyCreateBodyDto,
   VoteReportBodyDto,
+  VoteCommentReportBodyDto,
+  VoteReplyReportBodyDto,
   VoteMypageBodyDto,
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
@@ -126,17 +129,58 @@ export class VotePostController {
    * 투표를 신고합니다.
    * @author 현웅
    */
-  @Post(":voteId/report")
+  @Post("report")
   async reportVote(
     @Request() req: { user: JwtUserInfo },
-    @Param("voteId") voteId: string,
     @Body() body: VoteReportBodyDto,
   ) {
     return await this.mongoVoteCreateService.createVoteReport({
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      voteId,
+      voteId: body.voteId,
       content: body.content,
+    });
+  }
+
+  /**
+   * 투표 댓글을 신고합니다.
+   * @author 현웅
+   */
+  @Post("report/comments")
+  async reportVoteComment(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteCommentReportBodyDto,
+  ) {
+    const voteCommentReport: VoteCommentReport = {
+      userId: req.user.userId,
+      userNickname: req.user.userNickname,
+      commentId: body.commentId,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+    return await this.mongoVoteCreateService.createVoteCommentReport({
+      voteCommentReport,
+    });
+  }
+
+  /**
+   * 투표 대댓글을 신고합니다.
+   * @author 현웅
+   */
+  @Post("report/replies")
+  async reportVoteReply(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteReplyReportBodyDto,
+  ) {
+    const voteCommentReport: VoteCommentReport = {
+      userId: req.user.userId,
+      userNickname: req.user.userNickname,
+      replyId: body.replyId,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+    return await this.mongoVoteCreateService.createVoteCommentReport({
+      voteCommentReport,
     });
   }
 

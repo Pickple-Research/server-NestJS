@@ -14,6 +14,8 @@ import {
   ResearchScrapDocument,
   ResearchUser,
   ResearchUserDocument,
+  ResearchView,
+  ResearchViewDocument,
 } from "src/Schema";
 import {
   AlreadyParticipatedResearchException,
@@ -37,7 +39,27 @@ export class MongoResearchFindService {
     private readonly ResearchScrap: Model<ResearchScrapDocument>,
     @InjectModel(ResearchUser.name)
     private readonly ResearchUser: Model<ResearchUserDocument>,
+    @InjectModel(ResearchView.name)
+    private readonly ResearchView: Model<ResearchViewDocument>,
   ) {}
+
+  /**
+   * 유저가 이미 리서치를 조회한 적이 있는지 확인합니다.
+   * @author 현웅
+   */
+  async isUserAlreadyViewedResearch(param: {
+    userId: string;
+    researchId: string;
+  }) {
+    const researchView = await this.ResearchView.findOne({
+      userId: param.userId,
+      researchId: param.researchId,
+    })
+      .select({ _id: 1 })
+      .lean();
+    if (researchView) true;
+    return false;
+  }
 
   /**
    * 유저가 이미 리서치에 참여한 적이 있는지 확인합니다.
@@ -261,6 +283,14 @@ export class MongoResearchFindService {
         researchIds.indexOf(b._id.toString())
       );
     });
+  }
+
+  /**
+   * 특정 유저가 조회한 리서치 조회 정보를 모두 가져옵니다.
+   * @author 현웅
+   */
+  async getUserResearchViews(userId: string) {
+    return await this.ResearchView.find({ userId }).sort({ _id: -1 }).lean();
   }
 
   /**

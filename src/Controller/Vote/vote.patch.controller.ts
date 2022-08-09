@@ -1,18 +1,14 @@
-import {
-  Controller,
-  Inject,
-  Request,
-  Body,
-  Patch,
-  Param,
-} from "@nestjs/common";
+import { Controller, Inject, Request, Body, Patch } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { UserUpdateService, VoteUpdateService } from "src/Service";
 import { MongoUserUpdateService, MongoVoteUpdateService } from "src/Mongo";
-import { VoteScrap, VoteParticipation } from "src/Schema";
-import { Public } from "src/Security/Metadata";
-import { VoteParticipateBodyDto, VoteUpdateBodyDto } from "src/Dto";
+import { VoteView, VoteScrap, VoteParticipation } from "src/Schema";
+import {
+  VoteInteractBodyDto,
+  VoteParticipateBodyDto,
+  VoteEditBodyDto,
+} from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
 import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import { MONGODB_USER_CONNECTION, MONGODB_VOTE_CONNECTION } from "src/Constant";
@@ -36,14 +32,21 @@ export class VotePatchController {
 
   /**
    * 투표를 조회합니다.
+   * 투표 조회를 요청한 유저가 이미 투표를 조회한 적이 있는 경우엔 아무 작업도 하지 않습니다.
    * @author 현웅
    */
-  @Public()
-  @Patch("view/:voteId")
-  async viewVote(@Param() param: { voteId: string }) {
-    return await this.mongoVoteUpdateService.updateView({
-      voteId: param.voteId,
-    });
+  @Patch("view")
+  async viewVote(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteInteractBodyDto,
+  ) {
+    const voteView: VoteView = {
+      userId: req.user.userId,
+      voteId: body.voteId,
+      createdAt: getCurrentISOTime(),
+    };
+
+    return await this.voteUpdateService.viewVote({ voteView });
   }
 
   /**
@@ -51,20 +54,20 @@ export class VotePatchController {
    * @return 업데이트된 투표 정보, 생성된 투표 스크랩 정보
    * @author 현웅
    */
-  @Patch("scrap/:voteId")
+  @Patch("scrap")
   async scrapVote(
     @Request() req: { user: JwtUserInfo },
-    @Param("voteId") voteId: string,
+    @Body() body: VoteInteractBodyDto,
   ) {
     const voteScrap: VoteScrap = {
       userId: req.user.userId,
-      voteId,
+      voteId: body.voteId,
       createdAt: getCurrentISOTime(),
     };
 
     const { updatedVote, newVoteScrap } =
       await this.voteUpdateService.scrapVote({
-        voteId,
+        voteId: body.voteId,
         voteScrap,
       });
     return { updatedVote, newVoteScrap };
@@ -75,14 +78,14 @@ export class VotePatchController {
    * @return 업데이트된 투표 정보
    * @author 현웅
    */
-  @Patch("unscrap/:voteId")
+  @Patch("unscrap")
   async unscrapVote(
     @Request() req: { user: JwtUserInfo },
-    @Param() param: { voteId: string },
+    @Body() body: VoteInteractBodyDto,
   ) {
     const updatedVote = await this.voteUpdateService.unscrapVote({
       userId: req.user.userId,
-      voteId: param.voteId,
+      voteId: body.voteId,
     });
     return updatedVote;
   }
@@ -93,16 +96,15 @@ export class VotePatchController {
    * @return 업데이트된 투표 정보, 생성된 투표 참여 정보
    * @author 현웅
    */
-  @Patch("participate/:voteId")
+  @Patch("participate")
   async participateVote(
     @Request() req: { user: JwtUserInfo },
-    @Param("voteId") voteId: string,
     @Body() body: VoteParticipateBodyDto,
   ) {
     //* 투표 참여 정보
     const voteParticipation: VoteParticipation = {
       userId: req.user.userId,
-      voteId,
+      voteId: body.voteId,
       selectedOptionIndexes: body.selectedOptionIndexes,
       createdAt: getCurrentISOTime(),
     };
@@ -112,7 +114,7 @@ export class VotePatchController {
     return await tryMultiTransaction(async () => {
       const { updatedVote, newVoteParticipation } =
         await this.voteUpdateService.participateVote(
-          { voteId, voteParticipation },
+          { voteId: body.voteId, voteParticipation },
           voteSession,
         );
       return { updatedVote, newVoteParticipation };
@@ -125,16 +127,16 @@ export class VotePatchController {
    * @return 마감된 투표 정보
    * @author 현웅
    */
-  @Patch("close/:voteId")
+  @Patch("close")
   async closeVote(
     @Request() req: { user: JwtUserInfo },
-    @Param("voteId") voteId: string,
+    @Body() body: VoteInteractBodyDto,
   ) {
     const voteSession = await this.voteConnection.startSession();
 
     return await tryMultiTransaction(async () => {
       const updatedVote = await this.voteUpdateService.closeVote(
-        { userId: req.user.userId, voteId },
+        { userId: req.user.userId, voteId: body.voteId },
         voteSession,
       );
       return updatedVote;
@@ -149,16 +151,15 @@ export class VotePatchController {
    * @return 수정된 투표 정보
    * @author 현웅
    */
-  @Patch(":voteId")
+  @Patch("")
   async editVote(
     @Request() req: { user: JwtUserInfo },
-    @Param("voteId") voteId: string,
-    @Body() body: VoteUpdateBodyDto,
+    @Body() body: VoteEditBodyDto,
   ) {
     const voteSession = await this.voteConnection.startSession();
 
     return await this.voteUpdateService.editVote(
-      { userId: req.user.userId, voteId, vote: body },
+      { userId: req.user.userId, voteId: body.voteId, vote: body },
       voteSession,
     );
   }

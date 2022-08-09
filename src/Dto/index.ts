@@ -8,6 +8,11 @@
 export * from "./auth.dto";
 export * from "./notice.dto";
 export * from "./partner.dto";
-export * from "./research.dto";
+
+export * from "./Research/research.patch.dto";
+export * from "./Research/research.post.dto";
+
 export * from "./user.dto";
-export * from "./vote.dto";
+
+export * from "./Vote/vote.patch.dto";
+export * from "./Vote/vote.post.dto";

@@ -3,7 +3,6 @@ import {
   IsArray,
   ValidateNested,
   IsBoolean,
-  IsNumber,
   ArrayMinSize,
 } from "class-validator";
 import { Type } from "class-transformer";
@@ -39,23 +38,28 @@ export class VoteCreateBodyDto {
 }
 
 /**
- * 투표 참여시 Body에 포함되어야 하는 정보들
- * @param selectedOptions 선택한 투표 선택지 index 배열
- * @author 현웅
- */
-export class VoteParticipateBodyDto {
-  /** 최소 하나 이상의 숫자 배열 */
-  @ArrayMinSize(1)
-  @Type(() => Number)
-  @IsNumber({}, { each: true })
-  selectedOptionIndexes: number[];
-}
-
-/**
- * 투표 (대)댓글 생성 요청시 Body에 포함되어야 하는 정보들
+ * 투표 댓글 생성 요청시 Body에 포함되어야 하는 정보들
  * @author 현웅
  */
 export class VoteCommentCreateBodyDto {
+  @IsString()
+  voteId: string;
+
+  @IsString()
+  content: string;
+}
+
+/**
+ * 투표 대댓글 생성 요청시 Body에 포함되어야 하는 정보들
+ * @author 현웅
+ */
+export class VoteReplyCreateBodyDto {
+  @IsString()
+  voteId: string;
+
+  @IsString()
+  commentId: string;
+
   @IsString()
   content: string;
 }
@@ -66,16 +70,31 @@ export class VoteCommentCreateBodyDto {
  */
 export class VoteReportBodyDto {
   @IsString()
+  voteId: string;
+
+  @IsString()
   content: string;
 }
 
 /**
- * 투표 정보 수정시 Body에 포함되어야 하는 정보들
+ * 투표 댓글 신고시 Body에 포함되어야 하는 정보들
  * @author 현웅
  */
-export class VoteUpdateBodyDto {
+export class VoteCommentReportBodyDto {
   @IsString()
-  title: string;
+  commentId: string;
+
+  @IsString()
+  content: string;
+}
+
+/**
+ * 투표 대댓글 신고시 Body에 포함되어야 하는 정보들
+ * @author 현웅
+ */
+export class VoteReplyReportBodyDto {
+  @IsString()
+  replyId: string;
 
   @IsString()
   content: string;

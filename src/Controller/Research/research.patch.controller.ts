@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Inject,
-  Request,
-  Body,
-  Patch,
-  Param,
-} from "@nestjs/common";
+import { Controller, Inject, Request, Body, Patch } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { UserUpdateService, ResearchUpdateService } from "src/Service";
@@ -18,17 +11,18 @@ import {
 } from "src/Mongo";
 import {
   Research,
+  ResearchView,
   ResearchScrap,
   ResearchParticipation,
   CreditHistory,
 } from "src/Schema";
-import { Public } from "src/Security/Metadata";
 import { JwtUserInfo } from "src/Object/Type";
 import { CreditHistoryType } from "src/Object/Enum";
 import {
+  ResearchInteractBodyDto,
   ResearchParticiateBodyDto,
   ResearchPullupBodyDto,
-  ResearchUpdateBodyDto,
+  ResearchEditBodyDto,
 } from "src/Dto";
 import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import {
@@ -64,13 +58,22 @@ export class ResearchPatchController {
 
   /**
    * 리서치를 조회합니다.
+   * 리서치 조회를 요청한 유저가 이미 투표를 조회한 적이 있는 경우엔 아무 작업도 하지 않습니다.
    * @author 현웅
    */
-  @Public()
-  @Patch("view/:researchId")
-  async viewResearch(@Param() param: { researchId: string }) {
-    return await this.mongoResearchUpdateService.updateView({
-      researchId: param.researchId,
+  @Patch("view")
+  async viewResearch(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: ResearchInteractBodyDto,
+  ) {
+    const researchView: ResearchView = {
+      userId: req.user.userId,
+      researchId: body.researchId,
+      createdAt: getCurrentISOTime(),
+    };
+
+    return await this.researchUpdateService.viewResearch({
+      researchView,
     });
   }
 
@@ -79,20 +82,20 @@ export class ResearchPatchController {
    * @return 업데이트된 리서치 정보, 생성된 리서치 스크랩 정보
    * @author 현웅
    */
-  @Patch("scrap/:researchId")
+  @Patch("scrap")
   async scrapResearch(
     @Request() req: { user: JwtUserInfo },
-    @Param("researchId") researchId: string,
+    @Body() body: ResearchInteractBodyDto,
   ) {
     const researchScrap: ResearchScrap = {
       userId: req.user.userId,
-      researchId,
+      researchId: body.researchId,
       createdAt: getCurrentISOTime(),
     };
 
     const { updatedResearch, newResearchScrap } =
       await this.researchUpdateService.scrapResearch({
-        researchId,
+        researchId: body.researchId,
         researchScrap,
       });
     return { updatedResearch, newResearchScrap };
@@ -103,14 +106,14 @@ export class ResearchPatchController {
    * @return 업데이트된 리서치 정보
    * @author 현웅
    */
-  @Patch("unscrap/:researchId")
+  @Patch("unscrap")
   async unscrapResearch(
     @Request() req: { user: JwtUserInfo },
-    @Param() param: { researchId: string },
+    @Body() body: ResearchInteractBodyDto,
   ) {
     const updatedResearch = await this.researchUpdateService.unscrapResearch({
       userId: req.user.userId,
-      researchId: param.researchId,
+      researchId: body.researchId,
     });
     return updatedResearch;
   }
@@ -125,17 +128,18 @@ export class ResearchPatchController {
   @Patch("participate/:researchId")
   async participateResearch(
     @Request() req: { user: JwtUserInfo },
-    @Param("researchId") researchId: string,
     @Body() body: ResearchParticiateBodyDto,
   ) {
     //* 유저가 가진 크레딧, 리서치 정보를 가져옵니다
     const getUserCredit = this.mongoUserFindService.getUserCredit(
       req.user.userId,
     );
-    const getResearchTitle =
-      this.mongoResearchFindService.getResearchTitle(researchId);
-    const getResearchCredit =
-      this.mongoResearchFindService.getResearchCredit(researchId);
+    const getResearchTitle = this.mongoResearchFindService.getResearchTitle(
+      body.researchId,
+    );
+    const getResearchCredit = this.mongoResearchFindService.getResearchCredit(
+      body.researchId,
+    );
 
     const { userCredit, researchTitle, researchCredit } = await Promise.all([
       getUserCredit,
@@ -164,7 +168,7 @@ export class ResearchPatchController {
     const currentISOTime = getCurrentISOTime();
     //* 리서치 참여 정보
     const researchParticipation: ResearchParticipation = {
-      researchId,
+      researchId: body.researchId,
       userId: req.user.userId,
       consumedTime: body.consummedTime,
       createdAt: currentISOTime,
@@ -187,7 +191,7 @@ export class ResearchPatchController {
     return await tryMultiTransaction(async () => {
       //* 리서치 참여자 수를 증가시키고 새로운 리서치 참여 정보를 생성합니다.
       const updateResearch = this.researchUpdateService.participateResearch(
-        { researchId, researchParticipation },
+        { researchId: body.researchId, researchParticipation },
         researchSession,
       );
       //* 크레딧 변동내역 생성 및 추가
@@ -260,18 +264,18 @@ export class ResearchPatchController {
    * @return 생성된 크레딧 사용내역, 끌올된 리서치 정보
    * @author 현웅
    */
-  @Patch("pullup/:researchId")
+  @Patch("pullup")
   async pullupResearch(
     @Request() req: { user: JwtUserInfo },
-    @Param("researchId") researchId: string,
     @Body() body: ResearchPullupBodyDto,
   ) {
     //* 유저가 가진 크레딧, 리서치 정보를 가져옵니다
     const getUserCredit = this.mongoUserFindService.getUserCredit(
       req.user.userId,
     );
-    const getResearch =
-      this.mongoResearchFindService.getResearchById(researchId);
+    const getResearch = this.mongoResearchFindService.getResearchById(
+      body.researchId,
+    );
 
     const { userCredit, previousResearch } = await Promise.all([
       getUserCredit,
@@ -325,7 +329,7 @@ export class ResearchPatchController {
       const updateResearch = this.researchUpdateService.pullupResearch(
         {
           userId: req.user.userId,
-          researchId,
+          researchId: body.researchId,
           research,
         },
         researchSession,
@@ -348,18 +352,18 @@ export class ResearchPatchController {
    * @return 수정된 리서치 정보 (생성된 크레딧 사용내역)?
    * @author 현웅
    */
-  @Patch(":researchId")
+  @Patch("")
   async editResearch(
     @Request() req: { user: JwtUserInfo },
-    @Param("researchId") researchId: string,
-    @Body() body: ResearchUpdateBodyDto,
+    @Body() body: ResearchEditBodyDto,
   ) {
     //* 유저가 가진 크레딧, 리서치 정보를 가져옵니다
     const getUserCredit = this.mongoUserFindService.getUserCredit(
       req.user.userId,
     );
-    const getResearch =
-      this.mongoResearchFindService.getResearchById(researchId);
+    const getResearch = this.mongoResearchFindService.getResearchById(
+      body.researchId,
+    );
 
     const { userCredit, previousResearch } = await Promise.all([
       getUserCredit,
@@ -391,7 +395,7 @@ export class ResearchPatchController {
 
       return await this.editResearchWithExtraCredit({
         userId: req.user.userId,
-        researchId,
+        researchId: body.researchId,
         research: body,
         creditHistory,
       });
@@ -404,7 +408,7 @@ export class ResearchPatchController {
       const updatedResearch = await this.researchUpdateService.editResearch(
         {
           userId: req.user.userId,
-          researchId,
+          researchId: body.researchId,
           research: body,
         },
         researchSession,
@@ -464,16 +468,16 @@ export class ResearchPatchController {
    * TODO: 추가 크레딧이 걸린 리서치인 경우 분배
    * @author 현웅
    */
-  @Patch("close/:researchId")
+  @Patch("close")
   async closeResearch(
     @Request() req: { user: JwtUserInfo },
-    @Param("researchId") researchId: string,
+    @Body() body: ResearchInteractBodyDto,
   ) {
     const researchSession = await this.researchConnection.startSession();
 
     return await tryMultiTransaction(async () => {
       return await this.researchUpdateService.closeResearch(
-        { userId: req.user.userId, researchId },
+        { userId: req.user.userId, researchId: body.researchId },
         researchSession,
       );
     }, [researchSession]);

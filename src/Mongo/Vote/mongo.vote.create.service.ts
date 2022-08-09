@@ -6,6 +6,8 @@ import {
   VoteDocument,
   VoteComment,
   VoteCommentDocument,
+  VoteCommentReport,
+  VoteCommentReportDocument,
   VoteParticipation,
   VoteParticipationDocument,
   VoteReply,
@@ -16,6 +18,8 @@ import {
   VoteScrapDocument,
   VoteUser,
   VoteUserDocument,
+  VoteView,
+  VoteViewDocument,
 } from "src/Schema";
 import { getCurrentISOTime } from "src/Util";
 
@@ -25,6 +29,8 @@ export class MongoVoteCreateService {
     @InjectModel(Vote.name) private readonly Vote: Model<VoteDocument>,
     @InjectModel(VoteComment.name)
     private readonly VoteComment: Model<VoteCommentDocument>,
+    @InjectModel(VoteCommentReport.name)
+    private readonly VoteCommentReport: Model<VoteCommentReportDocument>,
     @InjectModel(VoteParticipation.name)
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
     @InjectModel(VoteReply.name)
@@ -35,6 +41,8 @@ export class MongoVoteCreateService {
     private readonly VoteScrap: Model<VoteScrapDocument>,
     @InjectModel(VoteUser.name)
     private readonly VoteUser: Model<VoteUserDocument>,
+    @InjectModel(VoteView.name)
+    private readonly VoteView: Model<VoteViewDocument>,
   ) {}
 
   /**
@@ -82,6 +90,16 @@ export class MongoVoteCreateService {
     });
 
     return newVote.toObject();
+  }
+
+  /**
+   * 새로운 투표 조회시: 투표 조회 정보를 생성합니다.
+   * @return 생성된 투표 조회 정보
+   * @author 현웅
+   */
+  async createVoteView(param: { voteView: VoteView }) {
+    const newVoteView = await this.VoteView.create([param.voteView]);
+    return newVoteView[0].toObject();
   }
 
   /**
@@ -219,5 +237,15 @@ export class MongoVoteCreateService {
     ]);
 
     return;
+  }
+
+  /**
+   * 투표 (대)댓글 신고 정보를 생성합니다.
+   * @author 현웅
+   */
+  async createVoteCommentReport(param: {
+    voteCommentReport: VoteCommentReport;
+  }) {
+    await this.VoteCommentReport.create([param.voteCommentReport]);
   }
 }

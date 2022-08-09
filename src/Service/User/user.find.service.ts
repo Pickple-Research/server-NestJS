@@ -16,7 +16,7 @@ export class UserFindService {
   /**
    * 로그인 시 실행됩니다. 아래 정보들을 찾아서 반환합니다:
    * 1. 유저의 크레딧 사용내역, 유저 알림, (CreditHistories, Notifications)
-   * 2. 리서치 스크랩/참여 정보, 투표 스크랩/참여 정보,
+   * 2. 리서치 조회/스크랩/참여 정보, 투표 조회/스크랩/참여 정보,
    *   (ResearchScraps, ResearchParticipations, VoteScraps, VoteParticipations)
    * 3. 스크랩/참여한 리서치와 투표의 실제 정보 (2. 정보를 바탕으로 검색)
    * 4. 유저가 업로드한 리서치와 투표 정보
@@ -29,12 +29,18 @@ export class UserFindService {
     // const getNotifications = this.mongoUserFindService.getNotifications(
     //   param.userId,
     // );
+    const getResearchViews = this.mongoResearchFindService.getUserResearchViews(
+      param.userId,
+    );
     const getResearchScraps =
       this.mongoResearchFindService.getUserResearchScraps(param.userId);
     const getResearchParticipations =
       this.mongoResearchFindService.getUserResearchParticipations(param.userId);
     const getUploadedResearches =
       this.mongoResearchFindService.getUploadedResearches(param.userId);
+    const getVoteViews = this.mongoVoteFindService.getUserVoteViews(
+      param.userId,
+    );
     const getVoteScraps = this.mongoVoteFindService.getUserVoteScraps(
       param.userId,
     );
@@ -46,17 +52,21 @@ export class UserFindService {
 
     const [
       creditHistories,
+      researchViews,
       researchScraps,
       researchParticipations,
       uploadedResearches,
+      voteViews,
       voteScraps,
       voteParticipations,
       uploadedVotes,
     ] = await Promise.all([
       getCreditHistories,
+      getResearchViews,
       getResearchScraps,
       getResearchParticipations,
       getUploadedResearches,
+      getVoteViews,
       getVoteScraps,
       getVoteParticipations,
       getUploadedVotes,
@@ -91,11 +101,13 @@ export class UserFindService {
 
     return {
       creditHistories,
+      researchViews,
       researchScraps,
       researchParticipations,
       scrappedResearches,
       participatedResearches,
       uploadedResearches,
+      voteViews,
       voteScraps,
       voteParticipations,
       scrappedVotes,

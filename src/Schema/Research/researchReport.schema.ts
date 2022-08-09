@@ -20,7 +20,7 @@ export class ResearchReport {
   researchTitle: string;
 
   @Prop() // 신고 타입
-  type: string;
+  type?: string;
 
   @Prop() // 신고 내용
   content: string;

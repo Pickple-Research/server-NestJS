@@ -12,6 +12,8 @@ import {
   ResearchSchema,
   ResearchComment,
   ResearchCommentSchema,
+  ResearchCommentReport,
+  ResearchCommentReportSchema,
   ResearchParticipation,
   ResearchParticipationSchema,
   ResearchReply,
@@ -22,6 +24,8 @@ import {
   ResearchScrapSchema,
   ResearchUser,
   ResearchUserSchema,
+  ResearchView,
+  ResearchViewSchema,
 } from "src/Schema";
 import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
 
@@ -42,6 +46,10 @@ import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
           schema: ResearchCommentSchema,
         },
         {
+          name: ResearchCommentReport.name,
+          schema: ResearchCommentReportSchema,
+        },
+        {
           name: ResearchParticipation.name,
           schema: ResearchParticipationSchema,
         },
@@ -60,6 +68,10 @@ import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
         {
           name: ResearchUser.name,
           schema: ResearchUserSchema,
+        },
+        {
+          name: ResearchView.name,
+          schema: ResearchViewSchema,
         },
       ],
       MONGODB_RESEARCH_CONNECTION,

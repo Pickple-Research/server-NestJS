@@ -6,7 +6,7 @@ import {
   MongoVoteUpdateService,
   MongoVoteDeleteService,
 } from "src/Mongo";
-import { Vote, VoteScrap, VoteParticipation } from "src/Schema";
+import { Vote, VoteView, VoteScrap, VoteParticipation } from "src/Schema";
 
 @Injectable()
 export class VoteUpdateService {
@@ -20,6 +20,32 @@ export class VoteUpdateService {
   private readonly mongoVoteUpdateService: MongoVoteUpdateService;
   @Inject()
   private readonly mongoVoteDeleteService: MongoVoteDeleteService;
+
+  /**
+   * 투표를 조회합니다.
+   * 유저가 이미 투표를 조회한 적이 있는지 확인하고 조회한 적이 없다면
+   * 새로운 투표 조회 정보를 생성하고 투표 조회수를 1 증가시킵니다.
+   * @return 새로 생성된 투표 조회 정보 | null
+   * @author 현웅
+   */
+  async viewVote(param: { voteView: VoteView }) {
+    if (
+      await this.mongoVoteFindService.isUserAlreadyViewedVote({
+        userId: param.voteView.userId,
+        voteId: param.voteView.voteId,
+      })
+    ) {
+      return null;
+    }
+
+    await this.mongoVoteUpdateService.updateView({
+      voteId: param.voteView.voteId,
+    });
+
+    return await this.mongoVoteCreateService.createVoteView({
+      voteView: param.voteView,
+    });
+  }
 
   /**
    * 투표를 스크랩합니다.
