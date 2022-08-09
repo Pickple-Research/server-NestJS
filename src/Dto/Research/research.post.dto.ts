@@ -1,9 +1,4 @@
-import {
-  IsString,
-  IsNumber,
-  IsNumberString,
-  IsOptional,
-} from "class-validator";
+import { IsString, IsNumberString, IsOptional } from "class-validator";
 
 /**
  * 리서치 생성 요청시 Body에 포함되어야 하는 정보들입니다.
@@ -73,85 +68,71 @@ export class ResearchCreateBodyDto {
 }
 
 /**
- * 리서치 참여시 Body에 포함되어야 하는 정보들입니다.
- * @param consummedTime 리서치 참여 소요시간
- * @param title 리서치 제목 (리서치 참여 도중 삭제 시 대비)
- * @param credit 리서치 참여시 수령 크레딧 (리서치 참여 도중 삭제 시 대비)
- * @author 현웅
- */
-export class ResearchParticiateBodyDto {
-  @IsNumber()
-  consummedTime: number;
-
-  @IsString()
-  title: string;
-
-  @IsNumber()
-  credit: number;
-}
-
-/**
- * 리서치 (대)댓글 생성 요청시 Body에 포함되어야 하는 정보들
+ * 리서치 댓글 생성 요청시 Body에 포함되어야 하는 정보들
  * @param content
  * @author 현웅
  */
 export class ResearchCommentCreateBodyDto {
   @IsString()
+  researchId: string;
+
+  @IsString()
   content: string;
 }
 
 /**
- * 리서치 및 리서치 (대)댓글 신고시 Body에 포함되어야 하는 정보들
+ * 리서치 대댓글 생성 요청시 Body에 포함되어야 하는 정보들
+ * @param content
+ * @author 현웅
+ */
+export class ResearchReplyCreateBodyDto {
+  @IsString()
+  researchId: string;
+
+  @IsString()
+  commentId: string;
+
+  @IsString()
+  content: string;
+}
+
+/**
+ * 리서치 신고시 Body에 포함되어야 하는 정보들
  * @param content
  * @author 현웅
  */
 export class ResearchReportBodyDto {
   @IsString()
+  researchId: string;
+
+  @IsString()
   content: string;
 }
 
 /**
- * 리서치 수정시 Body에 포함되어야 하는 정보들
+ * 리서치 댓글 신고시 Body에 포함되어야 하는 정보들
+ * @param content
  * @author 현웅
  */
-export class ResearchUpdateBodyDto {
+export class ResearchCommentReportBodyDto {
   @IsString()
-  title: string;
+  commentId: string;
 
   @IsString()
   content: string;
-
-  @IsNumberString() // 참여시 추가 제공 크레딧 (추첨자에게만 제공)
-  extraCredit: number;
-
-  @IsNumberString() // 추가 제공 크레딧 추첨 수령자 수
-  extraCreditReceiverNum: number;
 }
 
 /**
- * 리서치 끌올시 Body에 포함되어야 하는 정보들
+ * 리서치 대댓글 신고시 Body에 포함되어야 하는 정보들
+ * @param content
  * @author 현웅
  */
-export class ResearchPullupBodyDto {
+export class ResearchReplyReportBodyDto {
   @IsString()
-  @IsOptional()
-  title: string;
+  replyId: string;
 
   @IsString()
-  @IsOptional()
   content: string;
-
-  @IsString()
-  @IsOptional()
-  deadline: string;
-
-  @IsNumberString() // 참여시 추가 제공 크레딧 (추첨자에게만 제공)
-  @IsOptional()
-  extraCredit: number;
-
-  @IsNumberString() // 추가 제공 크레딧 추첨 수령자 수
-  @IsOptional()
-  extraCreditReceiverNum: number;
 }
 
 /**

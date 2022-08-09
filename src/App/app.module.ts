@@ -33,7 +33,11 @@ import {
   UserModule,
   VoteModule,
 } from "src/Module";
-import { MongoResearchModule, MongoVoteModule } from "src/Mongo";
+import {
+  MongoNoticeModule,
+  MongoResearchModule,
+  MongoVoteModule,
+} from "src/Mongo";
 import {
   // MongoDB
   MONGODB_USER_CONNECTION,
@@ -129,6 +133,7 @@ import {
     VoteModule,
 
     //* MongoDB 모듈
+    MongoNoticeModule,
     MongoResearchModule,
     MongoVoteModule,
   ],

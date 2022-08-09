@@ -32,7 +32,10 @@ import {
 import {
   ResearchCreateBodyDto,
   ResearchCommentCreateBodyDto,
+  ResearchReplyCreateBodyDto,
   ResearchReportBodyDto,
+  ResearchCommentReportBodyDto,
+  ResearchReplyReportBodyDto,
   ResearchMypageBodyDto,
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
@@ -201,14 +204,13 @@ export class ResearchPostController {
    * @return 생성된 리서치 댓글
    * @author 현웅
    */
-  @Post(":researchId/comments")
+  @Post("comments")
   async uploadResearchComment(
     @Request() req: { user: JwtUserInfo },
-    @Param("researchId") researchId: string,
     @Body() body: ResearchCommentCreateBodyDto,
   ) {
     const comment: ResearchComment = {
-      researchId,
+      researchId: body.researchId,
       authorId: req.user.userId,
       content: body.content,
       createdAt: getCurrentISOTime(),
@@ -233,16 +235,14 @@ export class ResearchPostController {
    * @return 생성된 리서치 대댓글
    * @author 현웅
    */
-  @Post(":researchId/comments/:commentId/replies")
+  @Post("comments/replies")
   async uploadResearchReply(
     @Request() req: { user: JwtUserInfo },
-    @Param("researchId") researchId: string,
-    @Param("commentId") commentId: string,
-    @Body() body: ResearchCommentCreateBodyDto,
+    @Body() body: ResearchReplyCreateBodyDto,
   ) {
     const reply: ResearchReply = {
-      researchId,
-      commentId,
+      researchId: body.researchId,
+      commentId: body.commentId,
       authorId: req.user.userId,
       content: body.content,
       createdAt: getCurrentISOTime(),
@@ -265,16 +265,15 @@ export class ResearchPostController {
    * 리서치를 신고합니다.
    * @author 현웅
    */
-  @Post(":researchId/report")
+  @Post("report")
   async reportResearch(
     @Request() req: { user: JwtUserInfo },
-    @Param("researchId") researchId: string,
     @Body() body: ResearchReportBodyDto,
   ) {
     return await this.mongoResearchCreateService.createResearchReport({
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      researchId,
+      researchId: body.researchId,
       content: body.content,
     });
   }
@@ -283,16 +282,15 @@ export class ResearchPostController {
    * 리서치 댓글을 신고합니다.
    * @author 현웅
    */
-  @Post("report/comments/:commentId")
+  @Post("report/comments")
   async reportResearchComment(
     @Request() req: { user: JwtUserInfo },
-    @Param("commentId") commentId: string,
-    @Body() body: ResearchReportBodyDto,
+    @Body() body: ResearchCommentReportBodyDto,
   ) {
     const researchCommentReport: ResearchCommentReport = {
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      commentId,
+      commentId: body.commentId,
       content: body.content,
       createdAt: getCurrentISOTime(),
     };
@@ -305,16 +303,15 @@ export class ResearchPostController {
    * 리서치 대댓글을 신고합니다.
    * @author 현웅
    */
-  @Post("report/replies/:replyId")
+  @Post("report/replies")
   async reportResearchReply(
     @Request() req: { user: JwtUserInfo },
-    @Param("replyId") replyId: string,
-    @Body() body: ResearchReportBodyDto,
+    @Body() body: ResearchReplyReportBodyDto,
   ) {
     const researchCommentReport: ResearchCommentReport = {
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      replyId,
+      replyId: body.replyId,
       content: body.content,
       createdAt: getCurrentISOTime(),
     };

@@ -6,7 +6,10 @@ import { MongoVoteFindService, MongoVoteCreateService } from "src/Mongo";
 import {
   VoteCreateBodyDto,
   VoteCommentCreateBodyDto,
+  VoteReplyCreateBodyDto,
   VoteReportBodyDto,
+  VoteCommentReportBodyDto,
+  VoteReplyReportBodyDto,
   VoteMypageBodyDto,
 } from "src/Dto";
 import { JwtUserInfo } from "src/Object/Type";
@@ -126,16 +129,15 @@ export class VotePostController {
    * 투표를 신고합니다.
    * @author 현웅
    */
-  @Post(":voteId/report")
+  @Post("report")
   async reportVote(
     @Request() req: { user: JwtUserInfo },
-    @Param("voteId") voteId: string,
     @Body() body: VoteReportBodyDto,
   ) {
     return await this.mongoVoteCreateService.createVoteReport({
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      voteId,
+      voteId: body.voteId,
       content: body.content,
     });
   }
@@ -144,16 +146,15 @@ export class VotePostController {
    * 투표 댓글을 신고합니다.
    * @author 현웅
    */
-  @Post("report/comments/:commentId")
+  @Post("report/comments")
   async reportVoteComment(
     @Request() req: { user: JwtUserInfo },
-    @Param("commentId") commentId: string,
-    @Body() body: VoteReportBodyDto,
+    @Body() body: VoteCommentReportBodyDto,
   ) {
     const voteCommentReport: VoteCommentReport = {
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      commentId,
+      commentId: body.commentId,
       content: body.content,
       createdAt: getCurrentISOTime(),
     };
@@ -166,16 +167,15 @@ export class VotePostController {
    * 투표 대댓글을 신고합니다.
    * @author 현웅
    */
-  @Post("report/replies/:replyId")
+  @Post("report/replies")
   async reportVoteReply(
     @Request() req: { user: JwtUserInfo },
-    @Param("replyId") replyId: string,
-    @Body() body: VoteReportBodyDto,
+    @Body() body: VoteReplyReportBodyDto,
   ) {
     const voteCommentReport: VoteCommentReport = {
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      replyId,
+      replyId: body.replyId,
       content: body.content,
       createdAt: getCurrentISOTime(),
     };

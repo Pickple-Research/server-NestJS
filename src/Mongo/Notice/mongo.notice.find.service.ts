@@ -10,6 +10,18 @@ export class MongoNoticeFindService {
   ) {}
 
   /**
+   * 모든 공지사항을 가져옵니다.
+   * @author 현웅
+   */
+  async getAllNotices() {
+    return await this.Notice.find({
+      hidden: false, // 숨기지 않은 공지사항 중
+    })
+      .sort({ _id: -1 }) // 최신순 정렬 후
+      .lean(); // data만 뽑아서 반환
+  }
+
+  /**
    * 최신 공지사항을 가져옵니다. 인자가 주어지지 않으면 20개를 가져옵니다.
    * @author 현웅
    */

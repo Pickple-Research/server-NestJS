@@ -1,12 +1,17 @@
 import { Controller, Inject, Get } from "@nestjs/common";
 import { AppService } from "./app.service";
 import { Public } from "src/Security/Metadata";
-import { MongoResearchFindService, MongoVoteFindService } from "src/Mongo";
+import {
+  MongoNoticeFindService,
+  MongoResearchFindService,
+  MongoVoteFindService,
+} from "src/Mongo";
 
 @Controller("")
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
+  @Inject() private readonly mongoNoticeFindService: MongoNoticeFindService;
   @Inject() private readonly mongoResearchFindService: MongoResearchFindService;
   @Inject() private readonly mongoVoteFindService: MongoVoteFindService;
 
@@ -17,7 +22,7 @@ export class AppController {
   @Public()
   @Get("release")
   async test() {
-    return "2022-08-03 1627 release";
+    return "2022-08-09 1842 release";
   }
 
   /**
@@ -37,12 +42,13 @@ export class AppController {
   @Public()
   @Get("bootstrap")
   async bootstrap() {
+    const getNotices = this.mongoNoticeFindService.getAllNotices();
     const getResearches = this.mongoResearchFindService.getRecentResearches();
     const getVotes = this.mongoVoteFindService.getRecentVotes();
 
-    return await Promise.all([getResearches, getVotes]).then(
-      ([researches, votes]) => {
-        return { researches, votes };
+    return await Promise.all([getNotices, getResearches, getVotes]).then(
+      ([notices, researches, votes]) => {
+        return { notices, researches, votes };
       },
     );
   }
