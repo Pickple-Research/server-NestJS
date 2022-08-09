@@ -4,7 +4,6 @@ import {
   UseInterceptors,
   UploadedFiles,
   Request,
-  Param,
   Body,
   Post,
 } from "@nestjs/common";
