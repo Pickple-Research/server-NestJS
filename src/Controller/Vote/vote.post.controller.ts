@@ -1,7 +1,7 @@
 import { Controller, Inject, Request, Param, Body, Post } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
-import { Vote, VoteComment, VoteReply } from "src/Schema";
+import { Vote, VoteComment, VoteReply, VoteCommentReport } from "src/Schema";
 import { MongoVoteFindService, MongoVoteCreateService } from "src/Mongo";
 import {
   VoteCreateBodyDto,
@@ -137,6 +137,50 @@ export class VotePostController {
       userNickname: req.user.userNickname,
       voteId,
       content: body.content,
+    });
+  }
+
+  /**
+   * 투표 댓글을 신고합니다.
+   * @author 현웅
+   */
+  @Post("report/comments/:commentId")
+  async reportVoteComment(
+    @Request() req: { user: JwtUserInfo },
+    @Param("commentId") commentId: string,
+    @Body() body: VoteReportBodyDto,
+  ) {
+    const voteCommentReport: VoteCommentReport = {
+      userId: req.user.userId,
+      userNickname: req.user.userNickname,
+      commentId,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+    return await this.mongoVoteCreateService.createVoteCommentReport({
+      voteCommentReport,
+    });
+  }
+
+  /**
+   * 투표 대댓글을 신고합니다.
+   * @author 현웅
+   */
+  @Post("report/replies/:replyId")
+  async reportVoteReply(
+    @Request() req: { user: JwtUserInfo },
+    @Param("replyId") replyId: string,
+    @Body() body: VoteReportBodyDto,
+  ) {
+    const voteCommentReport: VoteCommentReport = {
+      userId: req.user.userId,
+      userNickname: req.user.userNickname,
+      replyId,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+    return await this.mongoVoteCreateService.createVoteCommentReport({
+      voteCommentReport,
     });
   }
 

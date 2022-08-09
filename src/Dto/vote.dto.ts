@@ -61,7 +61,7 @@ export class VoteCommentCreateBodyDto {
 }
 
 /**
- * 투표 신고시 Body에 포함되어야 하는 정보들
+ * 투표 및 투표 (대)댓글 신고시 Body에 포함되어야 하는 정보들
  * @author 현웅
  */
 export class VoteReportBodyDto {

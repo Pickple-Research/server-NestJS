@@ -11,6 +11,7 @@ export * from "./Partner/partnerProduct.schema";
 // 리서치 관련 정보 스키마
 export * from "./Research/research.schema";
 export * from "./Research/researchComment.schema";
+export * from "./Research/researchCommentReport.schema";
 export * from "./Research/researchParticipation.schema";
 export * from "./Research/researchReply.schema";
 export * from "./Research/researchReport.schema";
@@ -35,6 +36,7 @@ export * from "./User/userSecurity.schema";
 // 투표 관련 정보 스키마
 export * from "./Vote/vote.schema";
 export * from "./Vote/voteComment.schema";
+export * from "./Vote/voteCommentReport.schema";
 export * from "./Vote/voteParticipation.schema";
 export * from "./Vote/voteReply.schema";
 export * from "./Vote/voteReport.schema";

@@ -101,7 +101,7 @@ export class ResearchCommentCreateBodyDto {
 }
 
 /**
- * 리서치 신고시 Body에 포함되어야 하는 정보들
+ * 리서치 및 리서치 (대)댓글 신고시 Body에 포함되어야 하는 정보들
  * @param content
  * @author 현웅
  */

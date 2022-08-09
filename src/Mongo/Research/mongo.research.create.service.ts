@@ -9,6 +9,8 @@ import {
   ResearchDocument,
   ResearchComment,
   ResearchCommentDocument,
+  ResearchCommentReport,
+  ResearchCommentReportDocument,
   ResearchParticipation,
   ResearchParticipationDocument,
   ResearchReply,
@@ -31,6 +33,8 @@ export class MongoResearchCreateService {
     private readonly Research: Model<ResearchDocument>,
     @InjectModel(ResearchComment.name)
     private readonly ResearchComment: Model<ResearchCommentDocument>,
+    @InjectModel(ResearchCommentReport.name)
+    private readonly ResearchCommentReport: Model<ResearchCommentReportDocument>,
     @InjectModel(ResearchParticipation.name)
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
     @InjectModel(ResearchReply.name)
@@ -288,5 +292,15 @@ export class MongoResearchCreateService {
       },
     ]);
     return;
+  }
+
+  /**
+   * 리서치 (대)댓글 신고 정보를 생성합니다.
+   * @author 현웅
+   */
+  async createResearchCommentReport(param: {
+    researchCommentReport: ResearchCommentReport;
+  }) {
+    await this.ResearchCommentReport.create([param.researchCommentReport]);
   }
 }

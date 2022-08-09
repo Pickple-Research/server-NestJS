@@ -6,6 +6,8 @@ import {
   VoteDocument,
   VoteComment,
   VoteCommentDocument,
+  VoteCommentReport,
+  VoteCommentReportDocument,
   VoteParticipation,
   VoteParticipationDocument,
   VoteReply,
@@ -27,6 +29,8 @@ export class MongoVoteCreateService {
     @InjectModel(Vote.name) private readonly Vote: Model<VoteDocument>,
     @InjectModel(VoteComment.name)
     private readonly VoteComment: Model<VoteCommentDocument>,
+    @InjectModel(VoteCommentReport.name)
+    private readonly VoteCommentReport: Model<VoteCommentReportDocument>,
     @InjectModel(VoteParticipation.name)
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
     @InjectModel(VoteReply.name)
@@ -233,5 +237,15 @@ export class MongoVoteCreateService {
     ]);
 
     return;
+  }
+
+  /**
+   * 투표 (대)댓글 신고 정보를 생성합니다.
+   * @author 현웅
+   */
+  async createVoteCommentReport(param: {
+    voteCommentReport: VoteCommentReport;
+  }) {
+    await this.VoteCommentReport.create([param.voteCommentReport]);
   }
 }

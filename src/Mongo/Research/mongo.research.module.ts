@@ -12,6 +12,8 @@ import {
   ResearchSchema,
   ResearchComment,
   ResearchCommentSchema,
+  ResearchCommentReport,
+  ResearchCommentReportSchema,
   ResearchParticipation,
   ResearchParticipationSchema,
   ResearchReply,
@@ -42,6 +44,10 @@ import { MONGODB_RESEARCH_CONNECTION } from "src/Constant";
         {
           name: ResearchComment.name,
           schema: ResearchCommentSchema,
+        },
+        {
+          name: ResearchCommentReport.name,
+          schema: ResearchCommentReportSchema,
         },
         {
           name: ResearchParticipation.name,

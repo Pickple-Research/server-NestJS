@@ -15,6 +15,7 @@ import {
   Research,
   ResearchComment,
   ResearchReply,
+  ResearchCommentReport,
   CreditHistory,
 } from "src/Schema";
 import {
@@ -275,6 +276,50 @@ export class ResearchPostController {
       userNickname: req.user.userNickname,
       researchId,
       content: body.content,
+    });
+  }
+
+  /**
+   * 리서치 댓글을 신고합니다.
+   * @author 현웅
+   */
+  @Post("report/comments/:commentId")
+  async reportResearchComment(
+    @Request() req: { user: JwtUserInfo },
+    @Param("commentId") commentId: string,
+    @Body() body: ResearchReportBodyDto,
+  ) {
+    const researchCommentReport: ResearchCommentReport = {
+      userId: req.user.userId,
+      userNickname: req.user.userNickname,
+      commentId,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+    return await this.mongoResearchCreateService.createResearchCommentReport({
+      researchCommentReport,
+    });
+  }
+
+  /**
+   * 리서치 대댓글을 신고합니다.
+   * @author 현웅
+   */
+  @Post("report/replies/:replyId")
+  async reportResearchReply(
+    @Request() req: { user: JwtUserInfo },
+    @Param("replyId") replyId: string,
+    @Body() body: ResearchReportBodyDto,
+  ) {
+    const researchCommentReport: ResearchCommentReport = {
+      userId: req.user.userId,
+      userNickname: req.user.userNickname,
+      replyId,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+    return await this.mongoResearchCreateService.createResearchCommentReport({
+      researchCommentReport,
     });
   }
 
