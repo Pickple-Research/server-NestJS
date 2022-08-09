@@ -15,6 +15,8 @@ import {
   ResearchScrapDocument,
   ResearchUser,
   ResearchUserDocument,
+  ResearchView,
+  ResearchViewDocument,
 } from "src/Schema";
 import { BUCKET_NAME } from "src/Constant";
 
@@ -33,6 +35,8 @@ export class MongoResearchDeleteService {
     private readonly ResearchScrap: Model<ResearchScrapDocument>,
     @InjectModel(ResearchUser.name)
     private readonly ResearchUser: Model<ResearchUserDocument>,
+    @InjectModel(ResearchView.name)
+    private readonly ResearchView: Model<ResearchViewDocument>,
 
     private readonly awsS3Service: AwsS3Service,
   ) {}
@@ -65,6 +69,11 @@ export class MongoResearchDeleteService {
     await this.Research.findByIdAndDelete(param.researchId, { session });
     //* 리서치 참여 정보 삭제
     await this.ResearchParticipation.deleteMany(
+      { researchId: param.researchId },
+      { session },
+    );
+    //* 리서치 조회 정보 삭제
+    await this.ResearchView.deleteMany(
       { researchId: param.researchId },
       { session },
     );
