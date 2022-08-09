@@ -1,6 +1,7 @@
 import {
   IsString,
   IsArray,
+  IsOptional,
   ValidateNested,
   IsBoolean,
   ArrayMinSize,
@@ -43,7 +44,8 @@ export class VoteCreateBodyDto {
  */
 export class VoteCommentCreateBodyDto {
   @IsString()
-  voteId: string;
+  @IsOptional() //TODO: 추후 변경
+  voteId?: string;
 
   @IsString()
   content: string;
@@ -55,10 +57,12 @@ export class VoteCommentCreateBodyDto {
  */
 export class VoteReplyCreateBodyDto {
   @IsString()
-  voteId: string;
+  @IsOptional() //TODO: 추후 변경
+  voteId?: string;
 
   @IsString()
-  commentId: string;
+  @IsOptional() //TODO: 추후 변경
+  commentId?: string;
 
   @IsString()
   content: string;

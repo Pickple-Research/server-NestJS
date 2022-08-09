@@ -1,4 +1,4 @@
-import { IsString, IsNumber, ArrayMinSize } from "class-validator";
+import { IsString, IsNumber, IsOptional, ArrayMinSize } from "class-validator";
 import { Type } from "class-transformer";
 
 /**
@@ -7,7 +7,8 @@ import { Type } from "class-transformer";
  */
 export class VoteInteractBodyDto {
   @IsString()
-  voteId: string;
+  @IsOptional() //TODO: 추후 삭제
+  voteId?: string;
 }
 
 /**
@@ -17,7 +18,8 @@ export class VoteInteractBodyDto {
  */
 export class VoteParticipateBodyDto {
   @IsString()
-  voteId: string;
+  @IsOptional() //TODO: 추후 삭제
+  voteId?: string;
 
   /** 최소 하나 이상의 숫자 배열 */
   @ArrayMinSize(1)
@@ -32,7 +34,8 @@ export class VoteParticipateBodyDto {
  */
 export class VoteEditBodyDto {
   @IsString()
-  voteId: string;
+  @IsOptional() //TODO: 추후 삭제
+  voteId?: string;
 
   @IsString()
   title: string;
