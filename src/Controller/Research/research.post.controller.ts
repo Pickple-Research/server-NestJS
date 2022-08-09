@@ -234,7 +234,7 @@ export class ResearchPostController {
    * @return 생성된 리서치 대댓글
    * @author 현웅
    */
-  @Post("comments/replies")
+  @Post("replies")
   async uploadResearchReply(
     @Request() req: { user: JwtUserInfo },
     @Body() body: ResearchReplyCreateBodyDto,
