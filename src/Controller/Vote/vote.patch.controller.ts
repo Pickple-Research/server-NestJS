@@ -130,7 +130,7 @@ export class VotePatchController {
     return await tryMultiTransaction(async () => {
       const { updatedVote, newVoteParticipation } =
         await this.voteUpdateService.participateVote(
-          { voteId: body.voteId, voteParticipation },
+          { voteId, voteParticipation },
           voteSession,
         );
       return { updatedVote, newVoteParticipation };
