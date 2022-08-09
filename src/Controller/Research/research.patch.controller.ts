@@ -125,7 +125,7 @@ export class ResearchPatchController {
    * @return (업데이트 된 리서치 정보, 생성된 리서치 참여 정보, 생성된 크레딧 변동내역 ) | 크레딧 변동내역
    * @author 현웅
    */
-  @Patch("participate/:researchId")
+  @Patch("participate")
   async participateResearch(
     @Request() req: { user: JwtUserInfo },
     @Body() body: ResearchParticiateBodyDto,
