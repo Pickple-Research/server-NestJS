@@ -4,11 +4,25 @@ import { JwtUserInfo } from "src/Object/Type";
 import { Public } from "src/Security/Metadata";
 import { ResearchNotFoundException } from "src/Exception";
 
+import { ResearchUpdateService } from "src/Service";
+
 @Controller("researches")
 export class ResearchGetController {
-  constructor() {}
+  constructor(private readonly researchUpdateService: ResearchUpdateService) {}
 
   @Inject() private readonly mongoResearchFindService: MongoResearchFindService;
+
+  @Public()
+  @Get("test/:researchId")
+  async getResearchParticipations(@Param("researchId") researchId: string) {
+    await this.researchUpdateService.distributeCredit({
+      researchId,
+      researchTitle: "창조 리서치",
+      extraCredit: 3,
+      extraCreditReceiverNum: 5,
+    });
+    return;
+  }
 
   /**
    * pulledupAt을 기준으로 최신 리서치를 원하는만큼 찾고 반환합니다.

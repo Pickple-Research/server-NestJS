@@ -29,6 +29,9 @@ export class User {
   @Prop({ default: 1 }) // 등급
   grade?: number;
 
+  @Prop() // 서비스 정보 수신 동의 여부
+  agreeReceiveServiceInfo: boolean;
+
   @Prop({ default: false }) // 계정 정지 여부
   blocked?: boolean;
 

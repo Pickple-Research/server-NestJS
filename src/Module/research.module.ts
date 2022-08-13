@@ -12,6 +12,7 @@ import {
   ResearchCreateService,
   ResearchUpdateService,
 } from "src/Service";
+import { FirebaseService } from "src/Firebase";
 import { AwsS3Service } from "src/AWS";
 import { MongoUserModule, MongoResearchModule } from "src/Mongo";
 
@@ -23,6 +24,7 @@ import { MongoUserModule, MongoResearchModule } from "src/Mongo";
     ResearchDeleteController,
   ],
   providers: [
+    FirebaseService,
     AwsS3Service,
     UserUpdateService,
     ResearchDeleteService,

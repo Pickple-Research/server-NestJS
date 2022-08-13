@@ -73,19 +73,16 @@ export class AuthService {
 
     //* userId 대신 email 이 주어진 경우 (일반 로그인)
     if ("email" in param) {
-      const userId = await this.mongoUserFindService.getUserIdByEmail(
-        param.email,
-      );
-      await this.mongoUserUpdateService.updateFcmToken({
-        userId,
-        fcmToken: param.fcmToken,
+      await this.mongoUserUpdateService.updateUser({
+        userEmail: param.email,
+        user: { fcmToken: param.fcmToken },
       });
       return;
     }
     //* userId 가 주어진 경우 (자동 로그인)
-    await this.mongoUserUpdateService.updateFcmToken({
+    await this.mongoUserUpdateService.updateUser({
       userId: param.userId,
-      fcmToken: param.fcmToken,
+      user: { fcmToken: param.fcmToken },
     });
   }
 
@@ -125,9 +122,9 @@ export class AuthService {
       userSecurity.salt,
     );
     //* 비밀번호 업데이트
-    await this.mongoUserUpdateService.changePassword({
+    await this.mongoUserUpdateService.updateUserSecurity({
       userId: param.userId,
-      newPassword: newHashedPassword,
+      userSecurity: { password: newHashedPassword },
     });
   }
 
@@ -152,11 +149,13 @@ export class AuthService {
       code: param.authCode,
     });
     //* 인증번호 업데이트
-    const updateAuthCode = this.mongoUserUpdateService.updateAuthCode(
+    const updateAuthCode = this.mongoUserUpdateService.updateUserSecurity(
       {
         userId,
-        authCode: param.authCode,
-        codeExpiredAt: param.codeExpiredAt,
+        userSecurity: {
+          authCode: param.authCode,
+          codeExpiredAt: param.codeExpiredAt,
+        },
       },
       session,
     );
@@ -183,7 +182,10 @@ export class AuthService {
       throw new AuthCodeExpiredException();
     }
     //* 인증번호가 일치하는 경우, verified 플래그를 true 로 업데이트
-    await this.mongoUserUpdateService.updateVerifiedFlag(userSecurity._id);
+    await this.mongoUserUpdateService.updateUserSecurity({
+      userId: userSecurity._id,
+      userSecurity: { verified: true },
+    });
   }
 
   /**
@@ -207,9 +209,9 @@ export class AuthService {
       userSecurity.salt,
     );
     //* 비밀번호 업데이트 (* verified 플래그를 false 로 변경)
-    await this.mongoUserUpdateService.resetPassword({
+    await this.mongoUserUpdateService.updateUserSecurity({
       userId: userSecurity._id,
-      newPassword: newHashedPassword,
+      userSecurity: { password: newHashedPassword, verified: false },
     });
   }
 }

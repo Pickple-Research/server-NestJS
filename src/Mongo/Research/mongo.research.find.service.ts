@@ -226,19 +226,24 @@ export class MongoResearchFindService {
 
   /**
    * 주어진 _id를 통해 리서치를 찾고 반환합니다.
+   * selectQuery 를 사용하여 원하는 속성만 지정할 수도 있습니다.
    * @author 현웅
    */
-  async getResearchById(researchId: string) {
+  async getResearchById(
+    researchId: string,
+    selectQuery?: Partial<Record<keyof Research, boolean>>,
+  ) {
     return await this.Research.findById(researchId)
       .populate({
         path: "author",
         model: this.ResearchUser,
       })
+      .select(selectQuery)
       .lean();
   }
 
   /**
-   * 리서치 댓글을 모두 가져옵니다.
+   * 특정 리서치의 (대)댓글을 모두 가져옵니다.
    * @author 현웅
    */
   async getResearchComments(researchId: string) {
@@ -309,6 +314,20 @@ export class MongoResearchFindService {
   async getUserResearchParticipations(userId: string) {
     return await this.ResearchParticipation.find({ userId })
       .sort({ _id: -1 })
+      .lean();
+  }
+
+  /**
+   * 특정 리서치 참여 정보를 모두 가져옵니다.
+   * selectQuery 를 이용하여 원하는 속성만 지정할 수도 있습니다.
+   * @author 현웅
+   */
+  async getResearchParticipations(
+    researchId: string,
+    selectQuery?: Partial<Record<keyof ResearchParticipation, boolean>>,
+  ) {
+    return await this.ResearchParticipation.find({ researchId })
+      .select(selectQuery)
       .lean();
   }
 

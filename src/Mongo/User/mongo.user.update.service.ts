@@ -70,69 +70,49 @@ export class MongoUserUpdateService {
   }
 
   /**
-   * 인자로 주어진 userId 를 사용하는 유저의 Fcm 토큰을 업데이트합니다.
+   * User 스키마에 해당하는 값들을 업데이트하고 반환합니다.
+   * @return 업데이트된 User 도큐먼트
    * @author 현웅
    */
-  async updateFcmToken(param: { userId: string; fcmToken?: string }) {
-    if (!param.fcmToken) return;
-    return await this.User.findByIdAndUpdate(param.userId, {
-      $set: { fcmToken: param.fcmToken },
-    });
-  }
-
-  /**
-   * 기존 비밀번호를 통해 비밀번호를 변경합니다.
-   * @author 현웅
-   */
-  async changePassword(param: { userId: string; newPassword: string }) {
-    await this.UserSecurity.findByIdAndUpdate(param.userId, {
-      $set: { password: param.newPassword },
-    });
-    return;
-  }
-
-  /**
-   * 기존 비밀번호를 잊어버린 경우)
-   * 비밀번호 재설정 인증 코드를 업데이트합니다.
-   * @author 현웅
-   */
-  async updateAuthCode(
-    param: { userId: string; authCode: string; codeExpiredAt: string },
-    session: ClientSession,
+  async updateUser(
+    param:
+      | { userId: string; user: Partial<User> }
+      | { userEmail: string; user: Partial<User> },
   ) {
-    return await this.UserSecurity.findByIdAndUpdate(
-      param.userId,
-      {
-        $set: {
-          verified: false,
-          authCode: param.authCode,
-          codeExpiredAt: param.codeExpiredAt,
+    if ("userId" in param) {
+      return await this.User.findByIdAndUpdate(
+        param.userId,
+        {
+          $set: param.user,
         },
-      },
+        { returnOriginal: false },
+      );
+    }
+    if ("userEmail" in param) {
+      return await this.User.findOneAndUpdate(
+        { email: param.userEmail },
+        { $set: param.user },
+        { returnOriginal: false },
+      );
+    }
+  }
+
+  /**
+   * UserSecurity 스키마에 해당하는 값들을 업데이트합니다.
+   * @author 현웅
+   */
+  async updateUserSecurity(
+    param: {
+      userId: string;
+      userSecurity: Partial<UserSecurity>;
+    },
+    session?: ClientSession,
+  ) {
+    await this.UserSecurity.findByIdAndUpdate(
+      param.userId,
+      { $set: param.userSecurity },
       { session },
     );
-  }
-
-  /**
-   * 기존 비밀번호를 잊어버린 경우)
-   * 비밀번호 재설정 인증 코드가 검증되었음을 설정합니다.
-   * @author 현웅
-   */
-  async updateVerifiedFlag(userId: string) {
-    return await this.UserSecurity.findByIdAndUpdate(userId, {
-      $set: { verified: true },
-    });
-  }
-
-  /**
-   * 기존 비밀번호를 잊어버린 경우)
-   * 이메일 인증 후 비밀번호를 재설정하고, 이메일 인증 완료 플래그를 false 로 설정합니다.
-   * @author 현웅
-   */
-  async resetPassword(param: { userId: string; newPassword: string }) {
-    await this.UserSecurity.findByIdAndUpdate(param.userId, {
-      $set: { password: param.newPassword, verified: false },
-    });
     return;
   }
 

@@ -60,7 +60,7 @@ export class AuthController {
       },
     );
 
-    //* Fcm 토큰 업데이트
+    //* 인자로 Fcm 토큰이 주어진 경우 업데이트
     const updateFcmToken = this.authService.updateFcmToken({
       email: body.email,
       fcmToken: body.fcmToken,

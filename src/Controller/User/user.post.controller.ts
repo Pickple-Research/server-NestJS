@@ -127,11 +127,11 @@ export class UserPostController {
       accountType: AccountType.EMAIL,
       email: body.email,
       nickname: body.nickname,
+      agreeReceiveServiceInfo: body.agreeReceiveServiceInfo,
       createdAt: getCurrentISOTime(),
     };
     const userPrivacy = { lastName: body.lastName, name: body.name };
     const userProperty = {
-      agreeReceiveServiceInfo: body.agreeReceiveServiceInfo,
       gender: body.gender,
       birthday: birthday.toISOString(),
     };
@@ -202,12 +202,12 @@ export class UserPostController {
       accountType: AccountType.EMAIL,
       email: body.email,
       nickname: body.nickname,
+      agreeReceiveServiceInfo: body.agreeReceiveServiceInfo,
       createdAt: getCurrentISOTime(),
     };
 
     const userPrivacy = { lastName: body.lastName, name: body.name };
     const userProperty = {
-      agreeReceiveServiceInfo: body.agreeReceiveServiceInfo,
       gender: body.gender,
       birthday: birthday.toISOString(),
     };
