@@ -45,6 +45,52 @@ export class MongoUserFindService {
   ) {}
 
   /**
+   * _id, 혹은 email 인자를 받아 해당 조건에 맞는 User 정보를 찾고 반환합니다.
+   * selectQuery 를 이용하여 원하는 속성만 골라 반환할 수도 있습니다.
+   * 조건에 맞는 User 정보가 없는 경우 null 을 반환합니다.
+   * @author 현웅
+   */
+  async getUser(
+    param:
+      | { userId: string; selectQuery?: Partial<Record<keyof User, boolean>> }
+      | {
+          userEmail: string;
+          selectQuery: Partial<Record<keyof User, boolean>>;
+        },
+  ) {
+    if ("userId" in param) {
+      const user = await this.User.findById(
+        param.userId,
+        param.selectQuery,
+      ).lean();
+      if (user) return user;
+      return null;
+    }
+
+    const user = await this.User.findOne(
+      { email: param.userEmail },
+      param.selectQuery,
+    ).lean();
+    if (user) return user;
+    return null;
+  }
+
+  /**
+   * 인자로 받은 userId 를 사용하는 유저들의 정보를 반환합니다.
+   * selectQuery 를 통해 원하는 속성만 골라 반환할 수도 있습니다.
+   * @author 현웅
+   */
+  async getUsersById(param: {
+    userIds: string[];
+    selectQuery?: Partial<Record<keyof User, boolean>>;
+  }) {
+    return await this.User.find(
+      { _id: { $in: param.userIds } },
+      param.selectQuery,
+    ).lean();
+  }
+
+  /**
    * 주어진 이메일을 사용하는 유저의 _id 를 반환합니다
    * @author 현웅
    */
@@ -118,12 +164,11 @@ export class MongoUserFindService {
    * 존재하지 않는다면 null을 반환합니다.
    * @author 현웅
    */
-  async getUserById(_id: string) {
-    const user = await this.User.findOne({
-      _id,
-    })
-      .select({ _id: 1 })
-      .lean();
+  async getUserById(
+    userId: string,
+    selectQuery?: Partial<Record<keyof User, boolean>>,
+  ) {
+    const user = await this.User.findById(userId).select(selectQuery).lean();
 
     if (user) return user;
     return null;
@@ -240,49 +285,5 @@ export class MongoUserFindService {
       .sort({ _id: -1 })
       .limit(20)
       .lean();
-  }
-
-  //TODO: mongo.user.find 가 아니라 mongo.research.find 에서 처리하는 게 더 적절해 보임
-  /**
-   * 유저가 리서치에 참여한 적이 있는지 확인합니다.
-   * 유저 정보가 존재하지 않거나 리서치에 참여한 적이 있는 경우 에러를 일으킵니다.
-   * @param userId 유저 _id
-   * @param researchId 리서치 _id
-   * @author 현웅
-   */
-  async didUserParticipatedResearch(param: {
-    userId: string;
-    researchId: string;
-  }) {
-    //* ResearchParticipation 정보가 존재하는 경우
-    // if (
-    //   userResearch.participatedResearchInfos.some((researchInfo) => {
-    //     return researchInfo.researchId === param.researchId;
-    //   })
-    // ) {
-    //   throw new AlreadyParticipatedResearchException();
-    // }
-    return;
-  }
-
-  //TODO: mongo.user.find 가 아니라 mongo.vote.find 에서 처리하는 게 더 적절해 보임
-  /**
-   * 유저가 투표에 참여한 적이 있는지 확인합니다.
-   * 참여한 적이 있는 경우, 에러를 발생시킵니다.
-   * @param userId 유저 _id
-   * @param voteId 투표 _id
-   * @author 현웅
-   */
-  async didUserParticipatedVote(param: { userId: string; voteId: string }) {
-    //* ResearchParticipation 정보가 존재하는 경우
-    // if (
-    //   userVote.participatedVoteInfos.some((voteInfo) => {
-    //     return voteInfo.voteId === param.voteId;
-    //   })
-    // ) {
-    //   throw new AlreadyParticipatedVoteException();
-    // }
-
-    return;
   }
 }

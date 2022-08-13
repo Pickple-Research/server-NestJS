@@ -465,7 +465,7 @@ export class ResearchPatchController {
   /**
    * @Transaction
    * 리서치를 마감합니다.
-   * TODO: 추가 크레딧이 걸린 리서치인 경우 분배
+   * @return 업데이트된 리서치 정보
    * @author 현웅
    */
   @Patch("close")
@@ -475,11 +475,13 @@ export class ResearchPatchController {
   ) {
     const researchSession = await this.researchConnection.startSession();
 
-    return await tryMultiTransaction(async () => {
+    const updatedResearch = await tryMultiTransaction(async () => {
       return await this.researchUpdateService.closeResearch(
         { userId: req.user.userId, researchId: body.researchId },
         researchSession,
       );
     }, [researchSession]);
+
+    return updatedResearch;
   }
 }
