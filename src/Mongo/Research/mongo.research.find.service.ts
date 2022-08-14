@@ -146,6 +146,7 @@ export class MongoResearchFindService {
   }
 
   /**
+   * @deprecated
    * 리서치 제목을 반환합니다.
    * 리서치가 존재하지 않는 경우 null 을 반환합니다.
    * @author 현웅
@@ -159,6 +160,7 @@ export class MongoResearchFindService {
   }
 
   /**
+   * @deprecated
    * 리서치 참여시 제공 크레딧을 반환합니다.
    * 리서치가 존재하지 않는 경우 null 을 반환합니다.
    * @author 현웅
@@ -184,6 +186,30 @@ export class MongoResearchFindService {
         model: this.ResearchUser,
       })
       // .select({})  //TODO: 원하는 property만
+      .lean(); // data만 뽑아서 반환
+  }
+
+  /**
+   * 추천 리서치 7개를 반환합니다.
+   * 우선 순위는 참여자가 하나도 없는 리서치
+   * > 마감일이 임박한 리서치 입니다.
+   * @author 현웅
+   */
+  async getRecommendResearches() {
+    return await this.Research.find({
+      // 마감일이 존재하고 마감되지 않은 리서치만 뽑은 후
+      closed: false,
+      deadline: { $gt: new Date().toISOString() },
+    })
+      .sort({
+        participantsNum: 1, // 참여자 오름차순,
+        deadline: 1, // 마감일 임박순으로 정렬하여
+      })
+      .limit(7) // 7개 추출
+      .populate({
+        path: "author",
+        model: this.ResearchUser,
+      })
       .lean(); // data만 뽑아서 반환
   }
 

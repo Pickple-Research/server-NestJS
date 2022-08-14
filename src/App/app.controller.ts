@@ -22,7 +22,7 @@ export class AppController {
   @Public()
   @Get("release")
   async test() {
-    return "2022-08-10 0000 release";
+    return "2022-08-14 1550 release";
   }
 
   /**
@@ -36,7 +36,8 @@ export class AppController {
   }
 
   /**
-   * 앱을 처음 시작할 때 호출합니다. 최신 리서치, 투표를 가져옵니다.
+   * 앱을 처음 시작할 때 호출합니다.
+   * 모든 공지사항, 최신 리서치, 추천 리서치, 최신 투표, HOT 투표를 가져옵니다.
    * @author 현웅
    */
   @Public()
@@ -44,12 +45,19 @@ export class AppController {
   async bootstrap() {
     const getNotices = this.mongoNoticeFindService.getAllNotices();
     const getResearches = this.mongoResearchFindService.getRecentResearches();
+    const getRecommendResearches =
+      this.mongoResearchFindService.getRecommendResearches();
     const getVotes = this.mongoVoteFindService.getRecentVotes();
+    const getHotVote = this.mongoVoteFindService.getHotVote();
 
-    return await Promise.all([getNotices, getResearches, getVotes]).then(
-      ([notices, researches, votes]) => {
-        return { notices, researches, votes };
-      },
-    );
+    return await Promise.all([
+      getNotices,
+      getResearches,
+      getRecommendResearches,
+      getVotes,
+      getHotVote,
+    ]).then(([notices, researches, recommendResearches, votes, hotVote]) => {
+      return { notices, researches, recommendResearches, votes, hotVote };
+    });
   }
 }
