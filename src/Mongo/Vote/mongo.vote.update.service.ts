@@ -47,7 +47,13 @@ export class MongoVoteUpdateService {
       })
       .lean();
 
-    return updatedVote;
+    // return updatedVote;
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    if (updatedVote.category !== "GREEN_LIGHT") return updatedVote;
+    return {
+      ...updatedVote,
+      author: { ...updatedVote.author, nickname: "익명" },
+    };
   }
 
   /**
@@ -77,7 +83,13 @@ export class MongoVoteUpdateService {
     ]).then(([updatedVote, _]) => {
       return updatedVote;
     });
-    return updatedVote;
+    // return updatedVote;
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    if (updatedVote.category !== "GREEN_LIGHT") return updatedVote;
+    return {
+      ...updatedVote,
+      author: { ...updatedVote.author, nickname: "익명" },
+    };
   }
 
   /**
@@ -112,7 +124,13 @@ export class MongoVoteUpdateService {
       })
       .lean();
 
-    return updatedVote;
+    // return updatedVote;
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    if (updatedVote.category !== "GREEN_LIGHT") return updatedVote;
+    return {
+      ...updatedVote,
+      author: { ...updatedVote.author, nickname: "익명" },
+    };
   }
 
   /**
@@ -122,7 +140,18 @@ export class MongoVoteUpdateService {
    * @author 현웅
    */
   async closeVote(param: { voteId: string }, session?: ClientSession) {
-    return await this.Vote.findByIdAndUpdate(
+    // return await this.Vote.findByIdAndUpdate(
+    //   param.voteId,
+    //   { $set: { closed: true } },
+    //   { session, returnOriginal: false },
+    // )
+    //   .populate({
+    //     path: "author",
+    //     model: this.VoteUser,
+    //   })
+    //   .lean();
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    const updatedVote = await this.Vote.findByIdAndUpdate(
       param.voteId,
       { $set: { closed: true } },
       { session, returnOriginal: false },
@@ -132,6 +161,11 @@ export class MongoVoteUpdateService {
         model: this.VoteUser,
       })
       .lean();
+    if (updatedVote.category !== "GREEN_LIGHT") return updatedVote;
+    return {
+      ...updatedVote,
+      author: { ...updatedVote.author, nickname: "익명" },
+    };
   }
 
   /**
@@ -148,14 +182,26 @@ export class MongoVoteUpdateService {
 
     const updatedVote = { ...vote, ...param.vote };
 
-    return await this.Vote.findByIdAndUpdate(param.voteId, updatedVote, {
-      session,
-      returnOriginal: false,
-    })
+    const editedVote = await this.Vote.findByIdAndUpdate(
+      param.voteId,
+      updatedVote,
+      {
+        session,
+        returnOriginal: false,
+      },
+    )
       .populate({
         path: "author",
         model: this.VoteUser,
       })
       .lean();
+
+    // return editedVote;
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    if (editedVote.category !== "GREEN_LIGHT") return editedVote;
+    return {
+      ...editedVote,
+      author: { ...editedVote.author, nickname: "익명" },
+    };
   }
 }
