@@ -36,7 +36,7 @@ export class VoteGetController {
    * @author 현웅
    */
   @Public()
-  @Get("/newer/:voteId")
+  @Get("newer/:voteId")
   async getNewerVotes(@Param("voteId") voteId: string) {
     return await this.mongoVoteFindService.getNewerVotes(voteId);
   }
@@ -46,7 +46,7 @@ export class VoteGetController {
    * @author 현웅
    */
   @Public()
-  @Get("/older/:voteId")
+  @Get("older/:voteId")
   async getOlderVotes(@Param("voteId") voteId: string) {
     return await this.mongoVoteFindService.getOlderVotes(voteId);
   }

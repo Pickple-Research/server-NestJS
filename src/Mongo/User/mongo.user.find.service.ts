@@ -271,6 +271,23 @@ export class MongoUserFindService {
 
   /**
    * 인자로 받은 userId 의 크레딧 사용내역 중
+   * 인자로 받은 creditHistoryId 보다 최신의 크레딧 사용내역을 모두 가져옵니다.
+   * @author 현웅
+   */
+  async getNewerCreditHisories(param: {
+    userId: string;
+    creditHistoryId: string;
+  }) {
+    return await this.CreditHistory.find({
+      _id: { $gt: param.creditHistoryId },
+      userId: param.userId,
+    })
+      .sort({ _id: -1 })
+      .lean();
+  }
+
+  /**
+   * 인자로 받은 userId 의 크레딧 사용내역 중
    * 인자로 받은 creditHistoryId 보다 오래된 크레딧 사용내역을 20개 가져옵니다.
    * @author 현웅
    */

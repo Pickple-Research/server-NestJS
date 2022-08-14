@@ -10,7 +10,18 @@ export class UserGetController {
 
   @Inject() private readonly mongoUserFindService: MongoUserFindService;
 
-  @Get("credit/:creditHistoryId")
+  @Get("credit/newer/:creditHistoryId")
+  async getNewerCreditHistories(
+    @Request() req: { user: JwtUserInfo },
+    @Param("creditHistoryId") creditHistoryId: string,
+  ) {
+    return await this.mongoUserFindService.getNewerCreditHisories({
+      userId: req.user.userId,
+      creditHistoryId,
+    });
+  }
+
+  @Get("credit/older/:creditHistoryId")
   async getOlderCreditHistories(
     @Request() req: { user: JwtUserInfo },
     @Param("creditHistoryId") creditHistoryId: string,

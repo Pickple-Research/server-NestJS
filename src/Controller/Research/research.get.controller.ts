@@ -36,6 +36,16 @@ export class ResearchGetController {
   }
 
   /**
+   * 추천 리서치를 반환합니다
+   * @author 현웅
+   */
+  @Public()
+  @Get("recommend")
+  async getRecommendResearches() {
+    return await this.mongoResearchFindService.getRecommendResearches();
+  }
+
+  /**
    * 주어진 리서치 pulledupAt 을 기준으로 하여 더 최근의 리서치 모두 찾고 반환합니다.
    * @author 현웅
    */
