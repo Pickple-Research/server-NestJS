@@ -142,7 +142,17 @@ export class MongoVoteFindService {
    * @author 현웅
    */
   async getRecentVotes(limit: number = 20) {
-    return await this.Vote.find()
+    // return await this.Vote.find({ hidden: false, blocked: false })
+    //   .sort({ _id: -1 })
+    //   .limit(limit)
+    //   .populate({
+    //     path: "author",
+    //     model: this.VoteUser,
+    //   })
+    //   .lean();
+
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    const votes = await this.Vote.find({ hidden: false, blocked: false })
       .sort({ _id: -1 })
       .limit(limit)
       .populate({
@@ -150,6 +160,10 @@ export class MongoVoteFindService {
         model: this.VoteUser,
       })
       .lean();
+    return votes.map((vote) => {
+      if (vote.category !== "GREEN_LIGHT") return vote;
+      return { ...vote, author: { ...vote.author, nickname: "익명" } };
+    });
   }
 
   /**
@@ -181,7 +195,6 @@ export class MongoVoteFindService {
       }
     }
     voteIdOccurrences.sort((a, b) => b.occur - a.occur);
-
     return await this.getVoteById(voteIdOccurrences[0].voteId);
   }
 
@@ -190,14 +203,31 @@ export class MongoVoteFindService {
    * @author 현웅
    */
   async getNewerVotes(voteId: string) {
-    return await this.Vote.find({
-      hidden: false, // 숨겼거나
-      blocked: false, // 차단되지 않은 투표 중
-      _id: { $gt: voteId }, // 주어진 voteId 보다 더 나중에 업로드된 투표 중에서
+    // return await this.Vote.find({
+    //   hidden: false, // 숨겼거나
+    //   blocked: false, // 차단되지 않은 투표 중
+    //   _id: { $gt: voteId }, // 주어진 voteId 보다 더 나중에 업로드된 투표 중에서
+    // })
+    //   .sort({ _id: -1 }) // 최신순 정렬 후
+    //   .populate({ path: "author", model: this.VoteUser })
+    //   .lean(); // data만 뽑아서 반환
+
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    const votes = await this.Vote.find({
+      hidden: false,
+      blocked: false,
+      _id: { $gt: voteId },
     })
-      .sort({ _id: -1 }) // 최신순 정렬 후
-      .populate({ path: "author", model: this.VoteUser })
-      .lean(); // data만 뽑아서 반환
+      .sort({ _id: -1 })
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
+      .lean();
+    return votes.map((vote) => {
+      if (vote.category !== "GREEN_LIGHT") return vote;
+      return { ...vote, author: { ...vote.author, nickname: "익명" } };
+    });
   }
 
   /**
@@ -205,7 +235,18 @@ export class MongoVoteFindService {
    * @author 현웅
    */
   async getOlderVotes(voteId: string, limit: number = 20) {
-    return await this.Vote.find({
+    // return await this.Vote.find({
+    //   hidden: false, // 숨겼거나
+    //   blocked: false, // 차단되지 않은 투표 중
+    //   _id: { $lt: voteId }, // 주어진 voteId 보다 먼저 업로드된 투표 중에서
+    // })
+    //   .sort({ _id: -1 }) // 최신순 정렬 후
+    //   .limit(limit) // 20개를 가져오고
+    //   .populate({ path: "author", model: this.VoteUser })
+    //   .lean(); // data만 뽑아서 반환
+
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    const votes = await this.Vote.find({
       hidden: false, // 숨겼거나
       blocked: false, // 차단되지 않은 투표 중
       _id: { $lt: voteId }, // 주어진 voteId 보다 먼저 업로드된 투표 중에서
@@ -214,12 +255,28 @@ export class MongoVoteFindService {
       .limit(limit) // 20개를 가져오고
       .populate({ path: "author", model: this.VoteUser })
       .lean(); // data만 뽑아서 반환
+    return votes.map((vote) => {
+      if (vote.category !== "GREEN_LIGHT") return vote;
+      return { ...vote, author: { ...vote.author, nickname: "익명" } };
+    });
   }
 
-  async getVoteById(voteId: string) {
-    return await this.Vote.findById(voteId)
+  async getVoteById(
+    voteId: string,
+    selectQuery?: Partial<Record<keyof Vote, boolean>>,
+  ) {
+    // return await this.Vote.findById(voteId)
+    //   .populate({ path: "author", model: this.VoteUser })
+    //   .select(selectQuery)
+    //   .lean();
+
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    const vote = await this.Vote.findById(voteId)
       .populate({ path: "author", model: this.VoteUser })
+      .select(selectQuery)
       .lean();
+    if (vote.category !== "GREEN_LIGHT") return vote;
+    return { ...vote, author: { ...vote.author, nickname: "익명" } };
   }
 
   /**
@@ -227,7 +284,26 @@ export class MongoVoteFindService {
    * @author 현웅
    */
   async getVoteComments(voteId: string) {
-    return await this.VoteComment.find({ voteId })
+    // return await this.VoteComment.find({ voteId })
+    //   .populate([
+    //     {
+    //       path: "author",
+    //       model: this.VoteUser,
+    //     },
+    //     {
+    //       path: "replies",
+    //       model: this.VoteReply,
+    //       populate: {
+    //         path: "author",
+    //         model: this.VoteUser,
+    //       },
+    //     },
+    //   ])
+    //   .sort({ _id: 1 })
+    //   .lean();
+
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    const comments = await this.VoteComment.find({ voteId })
       .populate([
         {
           path: "author",
@@ -244,6 +320,30 @@ export class MongoVoteFindService {
       ])
       .sort({ _id: 1 })
       .lean();
+
+    const vote = await this.getVoteById(voteId, { category: true });
+    if (vote.category !== "GREEN_LIGHT") return comments;
+
+    const userIdsSet = new Set();
+    comments.forEach((comment) => {
+      userIdsSet.add(comment.authorId);
+      comment.replies.forEach((reply) => {
+        userIdsSet.add(reply.authorId);
+      });
+    });
+
+    const userIds = Array.from(userIdsSet);
+    const anonymizedComments = [];
+    comments.forEach((comment, commentIndex) => {
+      comment.author.nickname = `익명 ${userIds.indexOf(comment.authorId) + 1}`;
+      anonymizedComments.push(comment);
+      comment.replies.forEach((reply, replyIndex) => {
+        anonymizedComments[commentIndex].replies[
+          replyIndex
+        ].author.nickname = `익명 ${userIds.indexOf(reply.authorId) + 1}`;
+      });
+    });
+    return anonymizedComments;
   }
 
   /**
@@ -273,11 +373,22 @@ export class MongoVoteFindService {
       .populate({ path: "author", model: this.VoteUser })
       .lean();
 
-    return votes.sort((a, b) => {
-      return (
-        voteIds.indexOf(a._id.toString()) - voteIds.indexOf(b._id.toString())
-      );
-    });
+    // return votes.sort((a, b) => {
+    //   return (
+    //     voteIds.indexOf(a._id.toString()) - voteIds.indexOf(b._id.toString())
+    //   );
+    // });
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    return votes
+      .sort((a, b) => {
+        return (
+          voteIds.indexOf(a._id.toString()) - voteIds.indexOf(b._id.toString())
+        );
+      })
+      .map((vote) => {
+        if (vote.category !== "GREEN_LIGHT") return vote;
+        return { ...vote, author: { ...vote.author, nickname: "익명" } };
+      });
   }
 
   /**
@@ -311,11 +422,22 @@ export class MongoVoteFindService {
    * @author 현웅
    */
   async getUploadedVotes(userId: string) {
-    return await this.Vote.find({ authorId: userId })
+    // return await this.Vote.find({ authorId: userId })
+    //   .sort({ _id: -1 })
+    //   .limit(20)
+    //   .populate({ path: "author", model: this.VoteUser })
+    //   .lean();
+
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    const votes = await this.Vote.find({ authorId: userId })
       .sort({ _id: -1 })
       .limit(20)
       .populate({ path: "author", model: this.VoteUser })
       .lean();
+    return votes.map((vote) => {
+      if (vote.category !== "GREEN_LIGHT") return vote;
+      return { ...vote, author: { ...vote.author, nickname: "익명" } };
+    });
   }
 
   /**
@@ -324,7 +446,19 @@ export class MongoVoteFindService {
    * @author 현웅
    */
   async getOlderUploadedVotes(param: { userId: string; voteId: string }) {
-    return await this.Vote.find({
+    // return await this.Vote.find({
+    //   _id: { $lt: param.voteId },
+    //   authorId: param.userId,
+    // })
+    //   .sort({ _id: -1 })
+    //   .limit(20)
+    //   .populate({
+    //     path: "author",
+    //     model: this.VoteUser,
+    //   })
+    //   .lean();
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    const votes = await this.Vote.find({
       _id: { $lt: param.voteId },
       authorId: param.userId,
     })
@@ -335,5 +469,9 @@ export class MongoVoteFindService {
         model: this.VoteUser,
       })
       .lean();
+    return votes.map((vote) => {
+      if (vote.category !== "GREEN_LIGHT") return vote;
+      return { ...vote, author: { ...vote.author, nickname: "익명" } };
+    });
   }
 }

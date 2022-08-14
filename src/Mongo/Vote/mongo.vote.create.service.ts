@@ -89,7 +89,11 @@ export class MongoVoteCreateService {
       model: this.VoteUser,
     });
 
-    return newVote.toObject();
+    // return newVote.toObject();
+
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    if (newVote.category !== "GREEN_LIGHT") return newVote;
+    return { ...newVote, author: { ...newVote.author, nickname: "익명" } };
   }
 
   /**
@@ -166,7 +170,18 @@ export class MongoVoteCreateService {
       model: this.VoteUser,
     });
 
-    return { updatedVote, newComment: newComment.toObject() };
+    // return { updatedVote, newComment: newComment.toObject() };
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    if (updatedVote.category !== "GREEN_LIGHT")
+      return { updatedVote, newComment: newComment.toObject() };
+    const newCommentObject = newComment.toObject();
+    return {
+      updatedVote,
+      newComment: {
+        ...newCommentObject,
+        author: { ...newCommentObject.author, nickname: "익명" },
+      },
+    };
   }
 
   /**
@@ -206,7 +221,18 @@ export class MongoVoteCreateService {
       model: this.VoteUser,
     });
 
-    return { updatedVote, newReply: newReply.toObject() };
+    // return { updatedVote, newReply: newReply.toObject() };
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    if (updatedVote.category !== "GREEN_LIGHT")
+      return { updatedVote, newReply: newReply.toObject() };
+    const newReplyObject = newReply.toObject();
+    return {
+      updatedVote,
+      newReply: {
+        ...newReplyObject,
+        author: { ...newReplyObject.author, nickname: "익명" },
+      },
+    };
   }
 
   /**
