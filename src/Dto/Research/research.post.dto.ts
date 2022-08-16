@@ -1,4 +1,10 @@
-import { IsString, IsNumberString, IsOptional } from "class-validator";
+import {
+  IsString,
+  IsNumberString,
+  IsOptional,
+  ValidateNested,
+} from "class-validator";
+import { Type } from "class-transformer";
 
 /**
  * 리서치 생성 요청시 Body에 포함되어야 하는 정보들입니다.
@@ -110,15 +116,44 @@ export class ResearchReportBodyDto {
 }
 
 /**
+ * 리서치 댓글 신고시 리서치 댓글 Type
+ * @author 현웅
+ */
+class ResearchComment {
+  @IsString()
+  @IsOptional() // 댓글 _id
+  _id: string;
+
+  @IsString()
+  @IsOptional() // 댓글 내용
+  content: string;
+}
+
+/**
  * 리서치 댓글 신고시 Body에 포함되어야 하는 정보들
  * @param content
  * @author 현웅
  */
 export class ResearchCommentReportBodyDto {
-  @IsString()
-  commentId: string;
+  @ValidateNested({ each: true })
+  @Type(() => ResearchComment)
+  comment: ResearchComment;
 
   @IsString()
+  content: string;
+}
+
+/**
+ * 리서치 대댓글 신고시 리서치 대댓글 Type
+ * @author 현웅
+ */
+class ResearchReply {
+  @IsString()
+  @IsOptional() // 대댓글 _id
+  _id: string;
+
+  @IsString()
+  @IsOptional() // 대댓글 내용
   content: string;
 }
 
@@ -128,8 +163,9 @@ export class ResearchCommentReportBodyDto {
  * @author 현웅
  */
 export class ResearchReplyReportBodyDto {
-  @IsString()
-  replyId: string;
+  @ValidateNested({ each: true })
+  @Type(() => ResearchReply)
+  reply: ResearchReply;
 
   @IsString()
   content: string;

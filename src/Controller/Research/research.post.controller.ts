@@ -140,7 +140,7 @@ export class ResearchPostController {
     //* 리서치 생성에 필요한 크레딧
     const requiredCredit =
       //* 소요시간에 필요한 크레딧
-      CREDIT_PER_MINUTE * param.body.estimatedTime +
+      CREDIT_PER_MINUTE(param.body.estimatedTime) +
       //* 추가 리서치 지급에 필요한 크레딧
       param.body.extraCredit * param.body.extraCreditReceiverNum +
       //* 연령 스크리닝에 필요한 크레딧
@@ -155,7 +155,7 @@ export class ResearchPostController {
     const research: Research = {
       ...param.body,
       authorId: param.userId,
-      credit: CREDIT_PER_MINUTE * param.body.estimatedTime,
+      credit: CREDIT_PER_MINUTE(param.body.estimatedTime),
       pulledupAt: currentTime,
       createdAt: currentTime,
     };
@@ -289,7 +289,7 @@ export class ResearchPostController {
     const researchCommentReport: ResearchCommentReport = {
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      commentId: body.commentId,
+      comment: body.comment,
       content: body.content,
       createdAt: getCurrentISOTime(),
     };
@@ -310,7 +310,7 @@ export class ResearchPostController {
     const researchCommentReport: ResearchCommentReport = {
       userId: req.user.userId,
       userNickname: req.user.userNickname,
-      replyId: body.replyId,
+      reply: body.reply,
       content: body.content,
       createdAt: getCurrentISOTime(),
     };

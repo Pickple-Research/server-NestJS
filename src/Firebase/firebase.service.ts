@@ -21,10 +21,10 @@ export class FirebaseService {
    * 인자로 주어진 내용을 푸쉬 알람 형태로 유저에게 전송합니다.
    * @author 현웅
    */
-  async sendPushAlarm(notification: { title: string; body: string }) {
+  async sendPushAlarm() {
     const message = {
       token:
-        "eG-GgBynS6ubvv6gmvk_2h:APA91bHSc440P_sRVIGJJOnyNpb9SUrShWIEp6XQ56KY3iPNDfcxNSMyvtBHEjls0K9lNvoE0jmSkkMMnmU0vsLDAF0usfwT_l3y3r9ceo2eR6sihG5bdmB7PpAhW15LegY4kB9grz6v",
+        "dm5Wo57tkU2hoUcga8YfeT:APA91bHfnJ6Ygaj39aOSM89I5Z4TpoNSVYJmzRvmTQF2WQM2XOK0saxAWNsRDmeoI5m7G-txyjqbA4Xq866I-BD0XzDogHneayyAmqRE1NltFx6dJzjIOl9dwtYIZU9hYzRI0SWMWABK",
       notification: {
         title: "서버 공지 제목",
         body: "서버 공지 내용",

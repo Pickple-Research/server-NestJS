@@ -19,10 +19,7 @@ export class AdminController {
 
   @Public()
   @Post("alarm")
-  async sendPushAlarm(@Body() body: { title: string; body: string }) {
-    // const pushAlarm = body
-    const pushAlarm = { title: "제목", body: "내용" };
-
-    return this.firebaseService.sendPushAlarm(pushAlarm);
+  async sendPushAlarm() {
+    return this.firebaseService.sendPushAlarm();
   }
 }

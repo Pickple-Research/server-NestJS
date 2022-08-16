@@ -81,14 +81,43 @@ export class VoteReportBodyDto {
 }
 
 /**
+ * 투표 댓글 신고시 투표 댓글 Type
+ * @author 현웅
+ */
+class VoteComment {
+  @IsString()
+  @IsOptional() // 댓글 _id
+  _id: string;
+
+  @IsString()
+  @IsOptional() // 댓글 내용
+  content: string;
+}
+
+/**
  * 투표 댓글 신고시 Body에 포함되어야 하는 정보들
  * @author 현웅
  */
 export class VoteCommentReportBodyDto {
-  @IsString()
-  commentId: string;
+  @ValidateNested({ each: true })
+  @Type(() => VoteComment)
+  comment: VoteComment;
 
   @IsString()
+  content: string;
+}
+
+/**
+ * 투표 대댓글 신고시 투표 대댓글 Type
+ * @author 현웅
+ */
+class VoteReply {
+  @IsString()
+  @IsOptional() // 대댓글 _id
+  _id: string;
+
+  @IsString()
+  @IsOptional() // 대댓글 내용
   content: string;
 }
 
@@ -97,8 +126,9 @@ export class VoteCommentReportBodyDto {
  * @author 현웅
  */
 export class VoteReplyReportBodyDto {
-  @IsString()
-  replyId: string;
+  @ValidateNested({ each: true })
+  @Type(() => VoteReply)
+  reply: VoteReply;
 
   @IsString()
   content: string;

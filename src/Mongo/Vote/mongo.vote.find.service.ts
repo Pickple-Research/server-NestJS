@@ -17,6 +17,7 @@ import {
   VoteView,
   VoteViewDocument,
 } from "src/Schema";
+import { AllVoteCategory } from "src/Object/Enum";
 import {
   AlreadyParticipatedVoteException,
   NotVoteAuthorException,
@@ -196,6 +197,28 @@ export class MongoVoteFindService {
     }
     voteIdOccurrences.sort((a, b) => b.occur - a.occur);
     return await this.getVoteById(voteIdOccurrences[0].voteId);
+  }
+
+  /**
+   * 각 카테고리별 최신 투표를 하나씩 가져옵니다
+   * @author 현웅
+   */
+  async getRecentCategoryVotes() {
+    const votes = await Promise.all(
+      AllVoteCategory.map((category) => {
+        return this.Vote.findOne({ category })
+          .sort({ _id: -1 })
+          .populate({ path: "author", model: this.VoteUser })
+          .lean();
+      }),
+    );
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    return votes
+      .filter((vote) => vote !== null)
+      .map((vote) => {
+        if (vote.category !== "GREEN_LIGHT") return vote;
+        return { ...vote, author: { ...vote.author, nickname: "익명" } };
+      });
   }
 
   /**
@@ -415,6 +438,17 @@ export class MongoVoteFindService {
     return await this.VoteParticipation.find({ userId })
       .sort({ _id: -1 })
       .lean();
+  }
+
+  /**
+   * 주어진 userId 와 voteId 를 기반으로 투표 참여 정보를 하나 가져옵니다.
+   * @author 현웅
+   */
+  async getVoteParticipation(param: { userId: string; voteId: string }) {
+    return await this.VoteParticipation.find({
+      userId: param.userId,
+      voteId: param.voteId,
+    }).lean();
   }
 
   /**
