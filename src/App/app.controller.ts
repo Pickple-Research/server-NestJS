@@ -37,7 +37,7 @@ export class AppController {
 
   /**
    * 앱을 처음 시작할 때 호출합니다.
-   * 모든 공지사항, 최신 리서치, 추천 리서치, 최신 투표, HOT 투표를 가져옵니다.
+   * 모든 공지사항, 최신 리서치, 추천 리서치, 최신 투표, HOT 투표, 카테고리별 최신 투표를 가져옵니다.
    * @author 현웅
    */
   @Public()
@@ -49,6 +49,8 @@ export class AppController {
       this.mongoResearchFindService.getRecommendResearches();
     const getVotes = this.mongoVoteFindService.getRecentVotes();
     const getHotVote = this.mongoVoteFindService.getHotVote();
+    const getRecentCategoryVotes =
+      this.mongoVoteFindService.getRecentCategoryVotes();
 
     return await Promise.all([
       getNotices,
@@ -56,8 +58,25 @@ export class AppController {
       getRecommendResearches,
       getVotes,
       getHotVote,
-    ]).then(([notices, researches, recommendResearches, votes, hotVote]) => {
-      return { notices, researches, recommendResearches, votes, hotVote };
-    });
+      getRecentCategoryVotes,
+    ]).then(
+      ([
+        notices,
+        researches,
+        recommendResearches,
+        votes,
+        hotVote,
+        recentCategoryVotes,
+      ]) => {
+        return {
+          notices,
+          researches,
+          recommendResearches,
+          votes,
+          hotVote,
+          recentCategoryVotes,
+        };
+      },
+    );
   }
 }
