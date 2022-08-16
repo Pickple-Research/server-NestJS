@@ -62,13 +62,58 @@ export class VotePostController {
   }
 
   /**
+   * ? (대)댓글 작성 API 주소 변경 전까지 순서를 잠시 앞으로 두고 사용합니다.
+   * 투표 댓글을 신고합니다.
+   * @author 현웅
+   */
+  @Post("report/comments")
+  async reportVoteComment(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteCommentReportBodyDto,
+  ) {
+    const voteCommentReport: VoteCommentReport = {
+      userId: req.user.userId,
+      userNickname: req.user.userNickname,
+      comment: body.comment,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+    return await this.mongoVoteCreateService.createVoteCommentReport({
+      voteCommentReport,
+    });
+  }
+
+  /**
+   * ? (대)댓글 작성 API 주소 변경 전까지 순서를 잠시 앞으로 두고 사용합니다.
+   * 투표 대댓글을 신고합니다.
+   * @author 현웅
+   */
+  @Post("report/replies")
+  async reportVoteReply(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteReplyReportBodyDto,
+  ) {
+    const voteCommentReport: VoteCommentReport = {
+      userId: req.user.userId,
+      userNickname: req.user.userNickname,
+      reply: body.reply,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+    return await this.mongoVoteCreateService.createVoteCommentReport({
+      voteCommentReport,
+    });
+  }
+
+  /**
+   * @deprecated
    * @Transaction
    * 투표 댓글을 작성합니다.
    * @return 업데이트된 투표 정보와 생성된 투표 댓글
    * @author 현웅
    */
   @Post(":voteId/comments")
-  async uploadVoteComment(
+  async uploadVoteCommentOld(
     @Request() req: { user: JwtUserInfo },
     @Param("voteId") voteId: string,
     @Body() body: VoteCommentCreateBodyDto,
@@ -93,13 +138,14 @@ export class VotePostController {
   }
 
   /**
+   * @deprecated
    * @Transaction
    * 투표 대댓글을 작성합니다.
    * @return 업데이트된 투표 정보와 생성된 투표 대댓글
    * @author 현웅
    */
   @Post(":voteId/comments/:commentId/replies")
-  async uploadVoteReply(
+  async uploadVoteReplyOld(
     @Request() req: { user: JwtUserInfo },
     @Param("voteId") voteId: string,
     @Param("commentId") commentId: string,
@@ -110,6 +156,67 @@ export class VotePostController {
     const reply: VoteReply = {
       voteId,
       commentId,
+      authorId: req.user.userId,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+
+    return await tryTransaction(async () => {
+      const { updatedVote, newReply } =
+        await this.mongoVoteCreateService.createVoteReply(
+          { reply },
+          voteSession,
+        );
+      return { updatedVote, newReply };
+    }, voteSession);
+  }
+
+  /**
+   * @Transaction
+   * 새로운 투표 댓글을 작성합니다.
+   * @return 업데이트된 투표 정보와 생성된 투표 댓글
+   * @author 현웅
+   */
+  @Post("comments")
+  async uploadVoteComment(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteCommentCreateBodyDto,
+  ) {
+    const voteSession = await this.voteConnection.startSession();
+
+    const comment: VoteComment = {
+      voteId: body.voteId,
+      authorId: req.user.userId,
+      content: body.content,
+      createdAt: getCurrentISOTime(),
+    };
+
+    return await tryTransaction(async () => {
+      const { updatedVote, newComment } =
+        await this.mongoVoteCreateService.createVoteComment(
+          { comment },
+          voteSession,
+        );
+      return { updatedVote, newComment };
+    }, voteSession);
+  }
+
+  /**
+   * @Transaction
+   * 새로운 투표 대댓글을 작성합니다.
+   * @return 업데이트된 투표 정보와 생성된 투표 대댓글
+   * @author 현웅
+   */
+  @Post("replies")
+  async uploadVoteReply(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteReplyCreateBodyDto,
+  ) {
+    const voteSession = await this.voteConnection.startSession();
+
+    const reply: VoteReply = {
+      voteId: body.voteId,
+      commentId: body.commentId,
       authorId: req.user.userId,
       content: body.content,
       createdAt: getCurrentISOTime(),
@@ -139,48 +246,6 @@ export class VotePostController {
       userNickname: req.user.userNickname,
       voteId: body.voteId,
       content: body.content,
-    });
-  }
-
-  /**
-   * 투표 댓글을 신고합니다.
-   * @author 현웅
-   */
-  @Post("report/comments")
-  async reportVoteComment(
-    @Request() req: { user: JwtUserInfo },
-    @Body() body: VoteCommentReportBodyDto,
-  ) {
-    const voteCommentReport: VoteCommentReport = {
-      userId: req.user.userId,
-      userNickname: req.user.userNickname,
-      commentId: body.commentId,
-      content: body.content,
-      createdAt: getCurrentISOTime(),
-    };
-    return await this.mongoVoteCreateService.createVoteCommentReport({
-      voteCommentReport,
-    });
-  }
-
-  /**
-   * 투표 대댓글을 신고합니다.
-   * @author 현웅
-   */
-  @Post("report/replies")
-  async reportVoteReply(
-    @Request() req: { user: JwtUserInfo },
-    @Body() body: VoteReplyReportBodyDto,
-  ) {
-    const voteCommentReport: VoteCommentReport = {
-      userId: req.user.userId,
-      userNickname: req.user.userNickname,
-      replyId: body.replyId,
-      content: body.content,
-      createdAt: getCurrentISOTime(),
-    };
-    return await this.mongoVoteCreateService.createVoteCommentReport({
-      voteCommentReport,
     });
   }
 

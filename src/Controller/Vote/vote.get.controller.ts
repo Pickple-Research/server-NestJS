@@ -32,6 +32,16 @@ export class VoteGetController {
   }
 
   /**
+   * 각 카테고리별 최신 투표를 하나씩 가져옵니다
+   * @author 현웅
+   */
+  @Public()
+  @Get("category")
+  async getRecentCategoryVotes() {
+    return await this.mongoVoteFindService.getRecentCategoryVotes();
+  }
+
+  /**
    * 주어진 투표 _id을 기준으로 하여 더 최근의 투표를 모두 찾고 반환합니다.
    * @author 현웅
    */
@@ -52,7 +62,7 @@ export class VoteGetController {
   }
 
   /**
-   * 더 예전에 업로드한 투표를 20개 찾고 반환합니다
+   * 요청한 유저가 더 예전에 업로드한 투표를 20개 찾고 반환합니다
    * @author 현웅
    */
   @Get("uploaded/older/:voteId")
@@ -80,9 +90,28 @@ export class VoteGetController {
     return vote;
   }
 
+  /**
+   * 특정 투표의 (대)댓글을 모두 가져옵니다.
+   * @author 현웅
+   */
   @Public()
   @Get(":voteId/comments")
   async getVoteComments(@Param("voteId") voteId: string) {
     return await this.mongoVoteFindService.getVoteComments(voteId);
+  }
+
+  /**
+   * 특정 투표에 대한 요청 유저의 참여 정보를 가져옵니다.
+   * @author 현웅
+   */
+  @Get(":voteId/participation")
+  async getUserVoteParticipation(
+    @Request() req: { user: JwtUserInfo },
+    @Param("voteId") voteId: string,
+  ) {
+    return await this.mongoVoteFindService.getVoteParticipation({
+      userId: req.user.userId,
+      voteId,
+    });
   }
 }
