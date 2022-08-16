@@ -53,6 +53,12 @@ export class Vote {
   @Prop({ type: [Number] }) // 투표 결과. 각 인덱스의 값은 투표 선택지가 얼마나 선택되었는지 알려줍니다.
   result?: number[];
 
+  @Prop({ default: 0 }) // 비회원 참여자 수
+  nonMemberParticipantsNum?: number;
+
+  @Prop({ type: [Number] }) // 비회원 투표 결과. 각 인덱스의 값은 투표 선택지가 얼마나 선택되었는지 알려줍니다.
+  nonMemeberResult?: number[];
+
   @Prop({ default: 0 }) // 댓글 수
   commentsNum?: number;
 

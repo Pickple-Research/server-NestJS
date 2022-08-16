@@ -67,20 +67,9 @@ export class MongoVoteCreateService {
    * @return 생성된 투표 정보
    * @author 현웅
    */
-  async createVote(
-    param: {
-      vote: Vote;
-    },
-    session: ClientSession,
-  ) {
+  async createVote(param: { vote: Vote }, session: ClientSession) {
     const newVotes = await this.Vote.create(
-      [
-        {
-          ...param.vote,
-          author: param.vote.authorId,
-          result: Array(param.vote.options.length).fill(0),
-        },
-      ],
+      [{ ...param.vote, author: param.vote.authorId }],
       { session },
     );
 

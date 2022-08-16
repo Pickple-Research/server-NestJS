@@ -49,6 +49,8 @@ export class VotePostController {
     const vote: Vote = {
       ...body,
       authorId: req.user.userId,
+      result: Array(body.options.length).fill(0),
+      nonMemeberResult: Array(body.options.length).fill(0),
       createdAt: getCurrentISOTime(),
     };
 

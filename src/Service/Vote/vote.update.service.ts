@@ -97,6 +97,35 @@ export class VoteUpdateService {
   }
 
   /**
+   * (비회원) 투표에 참여합니다.
+   * @author 현웅
+   */
+  async nonMemberParticipateVote(
+    param: { voteId: string; selectedOptionIndexes: number[] },
+    session: ClientSession,
+  ) {
+    //* 선택지 index가 유효한 범위 내에 있는지 확인
+    const checkIndexesValid = this.mongoVoteFindService.isOptionIndexesValid(
+      param.voteId,
+      param.selectedOptionIndexes,
+    );
+    //* 비회원 투표 참여자 수 1 증가, 비회원 투표 결과값 반영
+    const updateVote = this.mongoVoteUpdateService.updateNonMemberParticipant(
+      {
+        voteId: param.voteId,
+        selectedOptionIndexes: param.selectedOptionIndexes,
+      },
+      session,
+    );
+    //* 위 두 함수를 동시에 실행
+    return await Promise.all([checkIndexesValid, updateVote]).then(
+      ([_, updatedVote]) => {
+        return updatedVote;
+      },
+    );
+  }
+
+  /**
    * @Transaction
    * 투표에 참여합니다.
    * 참여 정보가 유효한지 (선택지 인덱스가 유효한지) 확인하고,

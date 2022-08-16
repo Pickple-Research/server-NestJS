@@ -11,6 +11,7 @@ import { Connection } from "mongoose";
 import { UserUpdateService, VoteUpdateService } from "src/Service";
 import { MongoUserUpdateService, MongoVoteUpdateService } from "src/Mongo";
 import { VoteView, VoteScrap, VoteParticipation } from "src/Schema";
+import { Public } from "src/Security/Metadata";
 import {
   VoteInteractBodyDto,
   VoteParticipateBodyDto,
@@ -19,8 +20,6 @@ import {
 import { JwtUserInfo } from "src/Object/Type";
 import { getCurrentISOTime, tryMultiTransaction } from "src/Util";
 import { MONGODB_USER_CONNECTION, MONGODB_VOTE_CONNECTION } from "src/Constant";
-
-import { Public } from "src/Security/Metadata";
 
 @Controller("votes")
 export class VotePatchController {
@@ -44,7 +43,7 @@ export class VotePatchController {
    * 투표 조회를 요청한 유저가 이미 투표를 조회한 적이 있는 경우엔 아무 작업도 하지 않습니다.
    * @author 현웅
    */
-  @Public()
+  @Public() // 추후엔 view 도 삭제
   @Patch("view/:voteId")
   // @Patch("view")
   async viewVote(
@@ -101,6 +100,28 @@ export class VotePatchController {
       voteId: body.voteId,
     });
     return updatedVote;
+  }
+
+  /**
+   * (비회원) 투표에 참여합니다.
+   * @return 업데이트된 투표 정보
+   * @author 현웅
+   */
+  @Public()
+  @Patch("participate/public")
+  async nonMemberParticipateVote(@Body() body: VoteParticipateBodyDto) {
+    const voteSession = await this.voteConnection.startSession();
+
+    return await tryMultiTransaction(async () => {
+      const updatedVote = await this.voteUpdateService.nonMemberParticipateVote(
+        {
+          voteId: body.voteId,
+          selectedOptionIndexes: body.selectedOptionIndexes,
+        },
+        voteSession,
+      );
+      return updatedVote;
+    }, [voteSession]);
   }
 
   /**
