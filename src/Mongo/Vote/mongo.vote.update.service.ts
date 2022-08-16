@@ -93,6 +93,42 @@ export class MongoVoteUpdateService {
   }
 
   /**
+   * (비회원) 투표 참여
+   * 비회원 투표 참여자값을 1 증가시키고 투표 결과값을 업데이트합니다.
+   * @return 업데이트된 투표 정보
+   * @author 현웅
+   */
+  async updateNonMemberParticipant(
+    param: { voteId: string; selectedOptionIndexes: number[] },
+    session?: ClientSession,
+  ) {
+    //* $inc 쿼리를 동적으로 생성합니다.
+    const incQuery = {};
+    param.selectedOptionIndexes.forEach((optionIndex) => {
+      incQuery[`nonMemeberResult.${optionIndex}`] = 1;
+    });
+
+    const updatedVote = await this.Vote.findByIdAndUpdate(
+      param.voteId,
+      { $inc: { nonMemberParticipantsNum: 1, ...incQuery } },
+      { session, returnOriginal: false, upsert: true },
+    )
+      .populate({
+        path: "author",
+        model: this.VoteUser,
+      })
+      .lean();
+
+    // return updatedVote;
+    //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
+    if (updatedVote.category !== "GREEN_LIGHT") return updatedVote;
+    return {
+      ...updatedVote,
+      author: { ...updatedVote.author, nickname: "익명" },
+    };
+  }
+
+  /**
    * 투표 참여자 값을 1 증가시키고 투표 결과값을 업데이트합니다.
    *
    * @see https://stackoverflow.com/questions/21035603/mongo-node-syntax-for-inc-when-number-is-associated-with-dynamic-field-name
