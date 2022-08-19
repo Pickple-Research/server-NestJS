@@ -22,8 +22,6 @@ import {
   NicknameDuplicateException,
   UserNotFoundException,
   EmailNotAuthorizedException,
-  AlreadyParticipatedResearchException,
-  AlreadyParticipatedVoteException,
 } from "src/Exception";
 
 @Injectable()

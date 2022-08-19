@@ -170,8 +170,8 @@ export class ResearchPatchController {
     const researchParticipation: ResearchParticipation = {
       researchId: body.researchId,
       userId: req.user.userId,
-      consumedTime: body.consummedTime,
-      createdAt: currentISOTime,
+      consumedTime: body.consumedTime,
+      createdAt: body.createdAt ? body.createdAt : currentISOTime,
     };
     //* 크레딧 변동내역 정보
     const creditHistory: CreditHistory = {
@@ -181,7 +181,7 @@ export class ResearchPatchController {
       scale: researchCredit,
       isIncome: true,
       balance: userCredit + researchCredit,
-      createdAt: currentISOTime,
+      createdAt: body.createdAt ? body.createdAt : currentISOTime,
     };
 
     //* User DB, Research DB에 대한 Session을 시작합니다.
