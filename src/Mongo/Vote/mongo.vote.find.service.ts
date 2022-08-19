@@ -200,6 +200,37 @@ export class MongoVoteFindService {
   }
 
   /**
+   * 최근 n일간 가장 참여가 많았던 투표를 가져옵니다.
+   * @author 현웅
+   */
+  async getLastDayHotVote(day: number = 5) {
+    const lastDay = new Date(new Date().getTime() - 1000 * 60 * 60 * 24 * day);
+    lastDay.setHours(0, 0, 0, 0);
+    const recentParticipations = await this.VoteParticipation.find({
+      createdAt: { $gte: lastDay.toISOString() },
+    }).lean();
+
+    const voteIds = recentParticipations.map(
+      (participation) => participation.voteId,
+    );
+
+    const voteIdOccurrences: { voteId: string; occur: number }[] = [];
+
+    for (const voteId of voteIds) {
+      const idIndex = voteIdOccurrences.findIndex(
+        (occur) => occur.voteId === voteId,
+      );
+      if (idIndex === -1) {
+        voteIdOccurrences.push({ voteId, occur: 1 });
+      } else {
+        voteIdOccurrences[idIndex].occur++;
+      }
+    }
+    voteIdOccurrences.sort((a, b) => b.occur - a.occur);
+    return await this.getVoteById(voteIdOccurrences[0].voteId);
+  }
+
+  /**
    * 각 카테고리별 최신 투표를 하나씩 가져옵니다
    * @author 현웅
    */

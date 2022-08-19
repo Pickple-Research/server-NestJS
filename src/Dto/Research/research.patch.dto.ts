@@ -16,14 +16,16 @@ export class ResearchInteractBodyDto {
 
 /**
  * 리서치 참여시 Body에 포함되어야 하는 정보들입니다.
- * @param consummedTime 리서치 참여 소요시간
+ * @param consumedTime 리서치 참여 소요시간
+ * @param researchId 리서치 _id
  * @param title 리서치 제목 (리서치 참여 도중 삭제 시 대비)
  * @param credit 리서치 참여시 수령 크레딧 (리서치 참여 도중 삭제 시 대비)
+ * @param createdAt 참여 일시 (리서치에 처음 참여했을 때 서버 에러가 난 경우, 로컬에서 참여한 시각을 대신 받습니다.)
  * @author 현웅
  */
 export class ResearchParticiateBodyDto {
   @IsNumber()
-  consummedTime: number;
+  consumedTime: number;
 
   @IsString()
   researchId: string;
@@ -33,6 +35,10 @@ export class ResearchParticiateBodyDto {
 
   @IsNumber()
   credit: number;
+
+  @IsString()
+  @IsOptional()
+  createdAt?: string;
 }
 
 /**

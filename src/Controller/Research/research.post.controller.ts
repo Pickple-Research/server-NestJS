@@ -340,40 +340,50 @@ export class ResearchPostController {
   //     num: 56,
   //   });
 
-  //   for (const dummyResearch of dummyResearches) {
-  //     const userCredit = await this.mongoUserFindService.getUserCredit(
-  //       req.user.userId,
-  //     );
-  //     const requiredCredit = CREDIT_PER_MINUTE * dummyResearch.estimatedTime;
-  //     const currentTime = getCurrentISOTime();
+  //   const researchSession = await this.researchConnection.startSession();
 
-  //     const research: Research = {
-  //       ...dummyResearch,
-  //       createdAt: currentTime,
-  //       pulledupAt: currentTime,
-  //     };
+  //   return await tryMultiTransaction(async () => {
+  //     for (const dummyResearch of dummyResearches) {
+  //       const user = await this.mongoUserFindService.getUser({
+  //         userId: req.user.userId,
+  //         selectQuery: { credit: true },
+  //       });
+  //       const userCredit = user.credit;
+  //       const requiredCredit = CREDIT_PER_MINUTE(dummyResearch.estimatedTime);
+  //       const currentTime = getCurrentISOTime();
 
-  //     const creditHistory: CreditHistory = {
-  //       userId: req.user.userId,
-  //       reason: dummyResearch.title,
-  //       type: "리서치 작성",
-  //       scale: -1 * requiredCredit,
-  //       balance: userCredit + -1 * requiredCredit,
-  //       isIncome: false,
-  //       createdAt: currentTime,
-  //     };
+  //       const research: Research = {
+  //         ...dummyResearch,
+  //         createdAt: currentTime,
+  //         pulledupAt: currentTime,
+  //       };
 
-  //     await this.mongoResearchCreateService.createResearch({
-  //       research,
-  //       files: {},
-  //     });
+  //       const creditHistory: CreditHistory = {
+  //         userId: req.user.userId,
+  //         reason: dummyResearch.title,
+  //         type: "리서치 작성",
+  //         scale: -1 * requiredCredit,
+  //         balance: userCredit + -1 * requiredCredit,
+  //         isIncome: false,
+  //         createdAt: currentTime,
+  //       };
 
-  //     await this.mongoUserCreateService.createCreditHistory({
-  //       userId: req.user.userId,
-  //       creditHistory,
-  //     });
-  //   }
+  //       await this.mongoResearchCreateService.createResearch(
+  //         {
+  //           research,
+  //           files: {},
+  //         },
+  //         researchSession,
+  //       );
 
-  //   return;
+  //       await this.mongoUserCreateService.createCreditHistory(
+  //         {
+  //           userId: req.user.userId,
+  //           creditHistory,
+  //         },
+  //         researchSession,
+  //       );
+  //     }
+  //   }, [researchSession]);
   // }
 }

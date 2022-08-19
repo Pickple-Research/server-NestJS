@@ -32,6 +32,16 @@ export class VoteGetController {
   }
 
   /**
+   * 최근 n일을 기준으로 HOT 투표를 가져옵니다.
+   * @author 현웅
+   */
+  @Public()
+  @Get("hot/day")
+  async getLastDayHotVote() {
+    return await this.mongoVoteFindService.getLastDayHotVote(6);
+  }
+
+  /**
    * 각 카테고리별 최신 투표를 하나씩 가져옵니다
    * @author 현웅
    */
