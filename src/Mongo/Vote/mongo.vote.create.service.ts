@@ -165,7 +165,10 @@ export class MongoVoteCreateService {
       return { updatedVote, newComment: newComment.toObject() };
     const newCommentObject = newComment.toObject();
     return {
-      updatedVote,
+      updatedVote: {
+        ...updatedVote,
+        author: { ...updatedVote.author, nickname: "익명" },
+      },
       newComment: {
         ...newCommentObject,
         author: { ...newCommentObject.author, nickname: "익명" },
@@ -216,7 +219,10 @@ export class MongoVoteCreateService {
       return { updatedVote, newReply: newReply.toObject() };
     const newReplyObject = newReply.toObject();
     return {
-      updatedVote,
+      updatedVote: {
+        ...updatedVote,
+        author: { ...updatedVote.author, nickname: "익명" },
+      },
       newReply: {
         ...newReplyObject,
         author: { ...newReplyObject.author, nickname: "익명" },
