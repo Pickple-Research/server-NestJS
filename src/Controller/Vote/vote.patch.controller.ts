@@ -43,7 +43,6 @@ export class VotePatchController {
    * 투표 조회를 요청한 유저가 이미 투표를 조회한 적이 있는 경우엔 아무 작업도 하지 않습니다.
    * @author 현웅
    */
-  @Public()
   @Patch("view")
   async viewVote(
     @Request() req: { user: JwtUserInfo },
