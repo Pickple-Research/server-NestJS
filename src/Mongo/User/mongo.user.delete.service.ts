@@ -57,6 +57,15 @@ export class MongoUserDeleteService {
   }
 
   /**
+   * 인자로 받은 미인증 유저 _id 리스트에 포함된
+   * 미인증 유저 데이터를 삭제합니다.
+   * @author 현웅
+   */
+  async deleteUnauthorizedUsersById(userIds: string[]) {
+    await this.UnauthorizedUser.deleteMany({ _id: { $in: userIds } });
+  }
+
+  /**
    * 인자로 받은 _id를 사용하는 유저의 모든 데이터를 삭제합니다.
    * UserNotice, UserPrivacy, UserSecurity 및 크레딧 내역과 알림을 모두 삭제하되,
    * UserProperty는 데이터 분석을 위해 남겨둡니다.

@@ -84,11 +84,19 @@ export class MongoResearchFindService {
   /**
    * 인자로 받은 유저 _id 가 리서치 작성자 _id 와 일치하는지 확인합니다.
    * 일치하지 않는 경우, 에러를 발생시킵니다.
+   * 단, skipValidate 가 true 인 경우 반드시 검증을 통과합니다.
    * @author 현웅
    */
-  async isResearchAuthor(param: { userId: string; researchId: string }) {
+  async isResearchAuthor(param: {
+    userId: string;
+    researchId: string;
+    skipValidate?: boolean;
+  }) {
+    if (param.skipValidate === true) return;
+
     const research = await this.Research.findById(param.researchId)
       .select({ authorId: 1 })
+      .sort({ _id: -1 })
       .lean();
 
     if (!research) throw new ResearchNotFoundException();
@@ -143,34 +151,6 @@ export class MongoResearchFindService {
       throw new UnableToDeleteResearchException();
     }
     return;
-  }
-
-  /**
-   * @deprecated
-   * 리서치 제목을 반환합니다.
-   * 리서치가 존재하지 않는 경우 null 을 반환합니다.
-   * @author 현웅
-   */
-  async getResearchTitle(researchId: string) {
-    const research = await this.Research.findById(researchId)
-      .select({ title: 1 })
-      .lean();
-    if (!research) return null;
-    return research.title;
-  }
-
-  /**
-   * @deprecated
-   * 리서치 참여시 제공 크레딧을 반환합니다.
-   * 리서치가 존재하지 않는 경우 null 을 반환합니다.
-   * @author 현웅
-   */
-  async getResearchCredit(researchId: string) {
-    const research = await this.Research.findById(researchId)
-      .select({ credit: 1 })
-      .lean();
-    if (!research) return null;
-    return research.credit;
   }
 
   /**
@@ -255,17 +235,19 @@ export class MongoResearchFindService {
    * selectQuery 를 사용하여 원하는 속성만 지정할 수도 있습니다.
    * @author 현웅
    */
-  async getResearchById(
-    researchId: string,
-    selectQuery?: Partial<Record<keyof Research, boolean>>,
-  ) {
-    return await this.Research.findById(researchId)
+  async getResearchById(param: {
+    researchId: string;
+    selectQuery?: Partial<Record<keyof Research, boolean>>;
+  }) {
+    const research = await this.Research.findById(param.researchId)
       .populate({
         path: "author",
         model: this.ResearchUser,
       })
-      .select(selectQuery)
+      .select(param.selectQuery)
       .lean();
+    if (research) return research;
+    return null;
   }
 
   /**
@@ -293,10 +275,25 @@ export class MongoResearchFindService {
   }
 
   /**
+   * (리서치 모듈이 시작될 때 사용됩니다)
+   * 마감일이 존재하면서 아직 마감되지 않은 모든 리서치들의 _id 와 마감일 정보를 가져옵니다.
+   * @author 현웅
+   */
+  async getAllOpenedResearchWithDeadline() {
+    return await this.Research.find({
+      closed: false,
+      deadline: { $ne: "" },
+    })
+      .sort({ _id: 1 })
+      .select({ deadline: true })
+      .lean();
+  }
+
+  /**
    * 인자로 받은 researchIds 로 리서치를 모두 찾고 반환합니다.
    * @author 현웅
    */
-  async getResearches(researchIds: string[]) {
+  async getResearchesById(researchIds: string[]) {
     //* Mongoose 의 $in 을 사용하면 입력 순서가 보장되지 않고 _id 를 기준으로 오름차순하여 반환되므로
     //* 아래 답변을 참고하여 최초로 주어진 _id 를 기준으로 정렬한 후 반환
     //* https://stackoverflow.com/questions/35538509/sort-an-array-of-objects-based-on-another-array-of-ids

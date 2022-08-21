@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common";
-import { MongoUserModule } from "../Mongo";
+import { MongoUserModule } from "src/Mongo";
 import { CronService } from "./cron.service";
 
 /**

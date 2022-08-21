@@ -73,11 +73,12 @@ export class UserFindService {
     ]);
 
     //* ResearchScraps, ResearchParticipations, VoteScraps, VoteParticipations 는 실제 정보로 다시 반환
-    const getScrappedResearches = this.mongoResearchFindService.getResearches(
-      researchScraps.slice(0, 20).map((info) => info.researchId),
-    );
+    const getScrappedResearches =
+      this.mongoResearchFindService.getResearchesById(
+        researchScraps.slice(0, 20).map((info) => info.researchId),
+      );
     const getParticipatedResearches =
-      this.mongoResearchFindService.getResearches(
+      this.mongoResearchFindService.getResearchesById(
         researchParticipations.slice(0, 20).map((info) => info.researchId),
       );
     const getScrappedVotes = this.mongoVoteFindService.getVotes(

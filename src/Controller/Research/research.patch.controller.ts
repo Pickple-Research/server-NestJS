@@ -131,33 +131,30 @@ export class ResearchPatchController {
     @Body() body: ResearchParticiateBodyDto,
   ) {
     //* 유저가 가진 크레딧, 리서치 정보를 가져옵니다
-    const getUserCredit = this.mongoUserFindService.getUserCredit(
-      req.user.userId,
-    );
-    const getResearchTitle = this.mongoResearchFindService.getResearchTitle(
-      body.researchId,
-    );
-    const getResearchCredit = this.mongoResearchFindService.getResearchCredit(
-      body.researchId,
-    );
-
-    const { userCredit, researchTitle, researchCredit } = await Promise.all([
-      getUserCredit,
-      getResearchTitle,
-      getResearchCredit,
-    ]).then(([userCredit, researchTitle, researchCredit]) => {
-      return { userCredit, researchTitle, researchCredit };
+    const getUser = this.mongoUserFindService.getUser({
+      userId: req.user.userId,
+      selectQuery: { credit: true },
     });
+    const getResearch = this.mongoResearchFindService.getResearchById({
+      researchId: body.researchId,
+      selectQuery: { title: true, credit: true },
+    });
+
+    const { user, research } = await Promise.all([getUser, getResearch]).then(
+      ([user, research]) => {
+        return { user, research };
+      },
+    );
 
     /**
      * 참여하는 동안 리서치가 삭제된 경우,
      * 해당 상황을 처리하는 함수를 호출해 응답합니다.
      * @return 새로운 크레딧 변동내역
      */
-    if (researchTitle === null || researchCredit === null) {
+    if (research === null) {
       const newCreditHistory = await this.participateDeletedResearch({
         userId: req.user.userId,
-        userCredit,
+        userCredit: user.credit,
         researchTitle: body.title,
         researchCredit: body.credit,
       });
@@ -176,11 +173,11 @@ export class ResearchPatchController {
     //* 크레딧 변동내역 정보
     const creditHistory: CreditHistory = {
       userId: req.user.userId,
-      reason: researchTitle,
+      reason: research.title,
       type: CreditHistoryType.RESEARCH_PARTICIPATE,
-      scale: researchCredit,
+      scale: research.credit,
       isIncome: true,
-      balance: userCredit + researchCredit,
+      balance: user.credit + research.credit,
       createdAt: body.createdAt ? body.createdAt : currentISOTime,
     };
 
@@ -270,18 +267,25 @@ export class ResearchPatchController {
     @Body() body: ResearchPullupBodyDto,
   ) {
     //* 유저가 가진 크레딧, 리서치 정보를 가져옵니다
-    const getUserCredit = this.mongoUserFindService.getUserCredit(
-      req.user.userId,
-    );
-    const getResearch = this.mongoResearchFindService.getResearchById(
-      body.researchId,
-    );
+    const getUser = this.mongoUserFindService.getUser({
+      userId: req.user.userId,
+      selectQuery: { credit: true },
+    });
+    const getResearch = this.mongoResearchFindService.getResearchById({
+      researchId: body.researchId,
+      selectQuery: {
+        title: true,
+        deadline: true,
+        extraCredit: true,
+        extraCreditReceiverNum: true,
+      },
+    });
 
-    const { userCredit, previousResearch } = await Promise.all([
-      getUserCredit,
+    const { user, previousResearch } = await Promise.all([
+      getUser,
       getResearch,
-    ]).then(([userCredit, previousResearch]) => {
-      return { userCredit, previousResearch };
+    ]).then(([user, previousResearch]) => {
+      return { user, previousResearch };
     });
 
     //* 리서치 끌올에 필요한 크레딧 계산
@@ -292,7 +296,7 @@ export class ResearchPatchController {
         previousResearch.extraCreditReceiverNum * previousResearch.extraCredit);
 
     //* 리서치 끌올을 위한 크레딧이 부족한 경우: 에러
-    if (userCredit < requiredCredit) throw new NotEnoughCreditException();
+    if (user.credit < requiredCredit) throw new NotEnoughCreditException();
 
     //* 필요한 데이터 형태를 미리 만들어둡니다.
     //* 현재 시간 (끌올 일시, 크레딧 사용내역 생성 일시)
@@ -309,7 +313,7 @@ export class ResearchPatchController {
       type: CreditHistoryType.RESEARCH_PULLUP,
       scale: -1 * requiredCredit,
       isIncome: false,
-      balance: userCredit - requiredCredit,
+      balance: user.credit - requiredCredit,
       createdAt: currentISOTime,
     };
 
@@ -342,6 +346,20 @@ export class ResearchPatchController {
         return { newCreditHistory, updatedResearch };
       });
 
+      //* 이 때, 끌올 이전의 리서치가 마감일을 가질 경우 해당 자동 마감 CronJob 을 삭제합니다.
+      if (Boolean(previousResearch.deadline)) {
+        this.researchUpdateService.deleteResearchAutoCloseCronJob({
+          researchId: previousResearch._id,
+        });
+      }
+      //* 끌올 이후의 리서치가 마감일을 가질 경우 자동 마감 CronJob 을 추가합니다.
+      if (Boolean(updatedResearch.deadline)) {
+        this.researchUpdateService.addResearchAutoCloseCronJob({
+          researchId: updatedResearch._id,
+          deadline: updatedResearch.deadline,
+        });
+      }
+
       return { newCreditHistory, updatedResearch };
     }, [userSession, researchSession]);
   }
@@ -358,18 +376,19 @@ export class ResearchPatchController {
     @Body() body: ResearchEditBodyDto,
   ) {
     //* 유저가 가진 크레딧, 리서치 정보를 가져옵니다
-    const getUserCredit = this.mongoUserFindService.getUserCredit(
-      req.user.userId,
-    );
-    const getResearch = this.mongoResearchFindService.getResearchById(
-      body.researchId,
-    );
+    const getUser = this.mongoUserFindService.getUser({
+      userId: req.user.userId,
+      selectQuery: { credit: true },
+    });
+    const getResearch = this.mongoResearchFindService.getResearchById({
+      researchId: body.researchId,
+    });
 
-    const { userCredit, previousResearch } = await Promise.all([
-      getUserCredit,
+    const { user, previousResearch } = await Promise.all([
+      getUser,
       getResearch,
-    ]).then(([userCredit, previousResearch]) => {
-      return { userCredit, previousResearch };
+    ]).then(([user, previousResearch]) => {
+      return { user, previousResearch };
     });
 
     //* 리서치 수정에 필요한 크레딧 계산
@@ -378,7 +397,7 @@ export class ResearchPatchController {
       previousResearch.extraCreditReceiverNum * previousResearch.extraCredit;
 
     //* 리서치 수정을 위한 크레딧이 부족한 경우: 에러
-    if (userCredit < requiredCredit) throw new NotEnoughCreditException();
+    if (user.credit < requiredCredit) throw new NotEnoughCreditException();
 
     //* 만약 리서치 수정에 추가로 크레딧이 소모되는 경우,
     //* 크레딧 사용내역을 추가로 생성하여 반환합니다.
@@ -389,7 +408,7 @@ export class ResearchPatchController {
         type: CreditHistoryType.RESEARCH_EDIT,
         scale: -1 * requiredCredit,
         isIncome: false,
-        balance: userCredit - requiredCredit,
+        balance: user.credit - requiredCredit,
         createdAt: getCurrentISOTime(),
       };
 
