@@ -17,7 +17,7 @@ export class JwtAuthStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       //TODO: Jwt 만료시간 설정하고 만료된 경우 Access Token으로 갱신 요청 (auth.server.ts의 login() 참조)
-      ignoreExpiration: false,
+      ignoreExpiration: true,
       secretOrKey: process.env.JWT_SECRET,
     });
   }

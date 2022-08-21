@@ -53,7 +53,7 @@ export class MongoUserFindService {
       | { userId: string; selectQuery?: Partial<Record<keyof User, boolean>> }
       | {
           userEmail: string;
-          selectQuery: Partial<Record<keyof User, boolean>>;
+          selectQuery?: Partial<Record<keyof User, boolean>>;
         },
   ) {
     if ("userId" in param) {
@@ -86,6 +86,18 @@ export class MongoUserFindService {
       { _id: { $in: param.userIds } },
       param.selectQuery,
     ).lean();
+  }
+
+  /**
+   * 이메일이 인증되지 않은 모든 미인증 유저들의 정보를 반환합니다.
+   * @author 현웅
+   */
+  async getAllUnauthorizedUser(param: {
+    selectQuery?: Partial<Record<keyof UnauthorizedUser, boolean>>;
+  }) {
+    return await this.UnauthorizedUser.find({ authorized: false })
+      .select(param.selectQuery)
+      .lean();
   }
 
   /**
@@ -155,21 +167,6 @@ export class MongoUserFindService {
         };
       },
     );
-  }
-
-  /**
-   * 인자로 받은 _id를 사용하는 유저를 찾고 반환합니다.
-   * 존재하지 않는다면 null을 반환합니다.
-   * @author 현웅
-   */
-  async getUserById(
-    userId: string,
-    selectQuery?: Partial<Record<keyof User, boolean>>,
-  ) {
-    const user = await this.User.findById(userId).select(selectQuery).lean();
-
-    if (user) return user;
-    return null;
   }
 
   /**
@@ -245,15 +242,6 @@ export class MongoUserFindService {
     if (!user) throw new UserNotFoundException();
 
     return await this.UserSecurity.findById(user._id).lean();
-  }
-
-  /**
-   * 유저 잔여 크레딧을 반환합니다.
-   * @author 현웅
-   */
-  async getUserCredit(userId: string) {
-    const user = await this.User.findById(userId).select({ credit: 1 }).lean();
-    return user.credit;
   }
 
   /**

@@ -8,10 +8,7 @@ import { MongoUserFindService, MongoUserDeleteService } from "../Mongo";
  */
 @Injectable()
 export class CronService {
-  // constructor(
-  //   private readonly mongoUserFindService: MongoUserFindService,
-  //   private readonly mongoUserDeleteService: MongoUserDeleteService,
-  // ) {}
+  constructor() {}
 
   @Inject(MongoUserFindService)
   private readonly mongoUserFindService: MongoUserFindService;
@@ -41,16 +38,29 @@ export class CronService {
   //
 
   /**
-   * 생성된지 일주일이 지난 미인증 유저 데이터를 삭제합니다.
+   * 생성된지 하루가 지나고 이메일이 인증되지 않은 미인증 유저 데이터를 삭제합니다.
    * @author 현웅
    */
-  @Cron("0 0 10 * * *", { timeZone: "Asia/Seoul" }) // 매일 10시마다
-  async deleteWeekPassedUnauthorizedUser() {
-    // const weekPassedUnauthorizedUsers = this.mongoUserFindService.getWeekPassedUnauthorizedUsers()
-    // weekPassedUnauthorizedUsers.forEach(user=>{
-    //   this.mongoUserDeleteService.deleteUnauthorizedUser(user.email);
-    // })
-    // await this.mongoUserDeleteService.deleteUnauthorizedUser({""});
+  @Cron("0 0 10 * * *", { timeZone: "Asia/Seoul" }) // 한국 시간으로 매일 오전 10시마다
+  async deleteDayPassedUnauthorizedUser() {
+    //* 인증되지 않은 미인증 유저 데이터를 가져옵니다.
+    const unauthorizedUsers =
+      await this.mongoUserFindService.getAllUnauthorizedUser({
+        selectQuery: { createdAt: true },
+      });
+    unauthorizedUsers.filter((user) => {
+      const createdAt = new Date(user.createdAt);
+      const now = new Date();
+      //* 생성된지 하루가 지난 유저 데이터만 추출
+      return now.getTime() - createdAt.getTime() > 1000 * 60 * 60 * 24;
+    });
+
+    const userIds = unauthorizedUsers.map((user) => {
+      //* 데이터에서 _id 만 추출
+      return user._id;
+    });
+    await this.mongoUserDeleteService.deleteUnauthorizedUsersById(userIds);
+
     return;
   }
 }

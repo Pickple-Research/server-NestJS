@@ -10,6 +10,7 @@ import {
 import { InjectConnection } from "@nestjs/mongoose";
 import { Connection } from "mongoose";
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
+import { ResearchUpdateService } from "src/Service";
 import {
   Research,
   ResearchComment,
@@ -50,6 +51,8 @@ import { NotEnoughCreditException } from "src/Exception";
 @Controller("researches")
 export class ResearchPostController {
   constructor(
+    private readonly researchUpdateService: ResearchUpdateService,
+
     @InjectConnection(MONGODB_USER_CONNECTION)
     private readonly userConnection: Connection,
     @InjectConnection(MONGODB_RESEARCH_CONNECTION)
@@ -133,9 +136,10 @@ export class ResearchPostController {
     };
   }) {
     //* 유저가 가진 credit 을 가져옵니다
-    const userCredit = await this.mongoUserFindService.getUserCredit(
-      param.userId,
-    );
+    const user = await this.mongoUserFindService.getUser({
+      userId: param.userId,
+      selectQuery: { credit: true },
+    });
     //* 필요한 데이터 형태를 미리 만들어둡니다.
     //* 리서치 생성에 필요한 크레딧
     const requiredCredit =
@@ -147,7 +151,7 @@ export class ResearchPostController {
       (param.body.targetAgeGroups.length !== 0 ? 5 : 0);
 
     //* 이 때, 유저의 크레딧이 충분한지 확인하고 충분하지 않으면 에러를 일으킵니다.
-    if (userCredit < requiredCredit) throw new NotEnoughCreditException();
+    if (user.credit < requiredCredit) throw new NotEnoughCreditException();
 
     //* 현재 시간
     const currentTime = getCurrentISOTime();
@@ -166,7 +170,7 @@ export class ResearchPostController {
       type: CreditHistoryType.RESEARCH_UPLOAD,
       scale: -1 * requiredCredit,
       isIncome: false,
-      balance: userCredit + -1 * requiredCredit,
+      balance: user.credit + -1 * requiredCredit,
       createdAt: currentTime,
     };
 
@@ -188,12 +192,23 @@ export class ResearchPostController {
           userSession,
         );
 
-      return await Promise.all([
+      const { newResearch, newCreditHistory } = await Promise.all([
         createNewResearch,
         createNewCreditHistory,
       ]).then(([newResearch, newCreditHistory]) => {
         return { newResearch, newCreditHistory };
       });
+
+      //* 이 때, 리서치에 마감일이 설정되어 있는 경우
+      //* ScheduleRegistry 에 리서치 자동 마감 CronJob 을 등록합니다.
+      if (Boolean(newResearch.deadline)) {
+        this.researchUpdateService.addResearchAutoCloseCronJob({
+          researchId: newResearch._id,
+          deadline: newResearch.deadline,
+        });
+      }
+
+      return { newResearch, newCreditHistory };
     }, [userSession, researchSession]);
   }
 
@@ -326,7 +341,9 @@ export class ResearchPostController {
    */
   @Post("mypage")
   async getMypageResearches(@Body() body: ResearchMypageBodyDto) {
-    return await this.mongoResearchFindService.getResearches(body.researchIds);
+    return await this.mongoResearchFindService.getResearchesById(
+      body.researchIds,
+    );
   }
 
   // /**

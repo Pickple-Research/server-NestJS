@@ -77,6 +77,7 @@ export function getISOTimeAfterGivenDays(days: number = 3) {
 }
 
 /**
+ * @NotUsed
  * 날짜와 일 수를 인자로 받아,
  * 해당 날짜로부터 주어진 일 수만큼의 미래 시간을 ISO 타입으로 반환합니다.
  * 일 수 인자가 주어지지 않으면 2일 뒤의 시간을 반환합니다.

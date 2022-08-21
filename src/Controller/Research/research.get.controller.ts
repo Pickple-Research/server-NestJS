@@ -74,9 +74,9 @@ export class ResearchGetController {
   @Public()
   @Get(":researchId")
   async getResearchById(@Param("researchId") researchId: string) {
-    const research = await this.mongoResearchFindService.getResearchById(
+    const research = await this.mongoResearchFindService.getResearchById({
       researchId,
-    );
+    });
 
     if (!research) throw new ResearchNotFoundException();
     return research;

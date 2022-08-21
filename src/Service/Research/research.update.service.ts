@@ -1,6 +1,8 @@
 import { Injectable, Inject } from "@nestjs/common";
 import { InjectConnection } from "@nestjs/mongoose";
+import { SchedulerRegistry } from "@nestjs/schedule";
 import { Connection, ClientSession } from "mongoose";
+import { CronJob } from "cron";
 import { FirebaseService } from "src/Firebase";
 import { TokenMessage } from "firebase-admin/lib/messaging/messaging-api";
 import {
@@ -24,6 +26,7 @@ import { tryMultiTransaction, getCurrentISOTime } from "src/Util";
 import {
   MONGODB_USER_CONNECTION,
   MONGODB_RESEARCH_CONNECTION,
+  RESEARCH_AUTO_CLOSE_CRONJOB_NAME,
   WIN_EXTRA_CREDIT_ALARM_TITLE,
   WIN_EXTRA_CREDIT_ALARM_CONTENT,
 } from "src/Constant";
@@ -41,6 +44,7 @@ export class ResearchUpdateService {
     private readonly researchConnection: Connection,
 
     private readonly firebaseService: FirebaseService,
+    private readonly schedulerRegistry: SchedulerRegistry,
   ) {}
 
   @Inject()
@@ -252,13 +256,14 @@ export class ResearchUpdateService {
    * @author 현웅
    */
   async closeResearch(
-    param: { userId: string; researchId: string },
-    session: ClientSession,
+    param: { userId: string; researchId: string; skipValidate?: boolean },
+    session?: ClientSession,
   ) {
     //* 리서치 마감을 요청한 유저가 리서치 작성자인지 확인
     const checkIsAuthor = this.mongoResearchFindService.isResearchAuthor({
       userId: param.userId,
       researchId: param.researchId,
+      skipValidate: param.skipValidate,
     });
     //* 리서치 마감
     const closeResearch = this.mongoResearchUpdateService.closeResearch(
@@ -272,6 +277,12 @@ export class ResearchUpdateService {
     ]).then(([_, updatedResearch]) => {
       return updatedResearch;
     });
+
+    //* 마감한 리서치에 마감일이 지정되어 있던 경우,
+    //* ScheduleRegistry 에 등록된 리서치 자동 마감 CronJob 을 삭제합니다.
+    if (Boolean(updatedResearch.deadline)) {
+      this.deleteResearchAutoCloseCronJob(updatedResearch._id);
+    }
 
     //* 마감한 리서치에 추가 크레딧이 걸려있는 경우, 추가 크레딧을 증정합니다.
     //! (await 를 걸지 않고 실행합니다. 즉, 업데이트 된 리서치 정보를 반환한 후 독립적으로 서버에서 시행됩니다.)
@@ -379,14 +390,93 @@ export class ResearchUpdateService {
       });
 
       //* 1명 이상의 알림 대상자가 있는 경우, 푸시 알림을 보냅니다.
-      //* (알림 대상자가 없을 때 알람을 보내면 Firebase 가 에러를 일으킵니다.)
       //TODO: 실제 배포 전까지 주석처리 합니다.
-      // if (notications.length) {
+      // if (notications.length) { //* (알림 대상자가 없을 때 알람을 보내면 Firebase 가 에러를 일으키므로 length 조건문을 답니다.)
       //   await this.firebaseService.sendMultiplePushAlarm(notications);
       // }
 
       //TODO: 리서치의 creditDistributed 플래그를 true로 설정
     }, [userSession, researchSession]);
     return;
+  }
+
+  /**
+   * 마감일이 지정된 리서치가 새로 등록되거나,
+   * 끌올하는 과정에서 마감일이 지정된 경우
+   * 리서치 자동 마감 CronJob 을 만들고 ScheduleRegistry 에 등록합니다.
+   *
+   * ! 이 때, ScheduleRegistry 에 CronJob 을 등록할 때 에러가 나면 서버가 터지므로 반드시 try catch 를 사용합니다.
+   * (ex. Job 이름이 겹치는 경우, Job 을 삭제할 때 해당 이름의 Job 이 없는 경우 등)
+   * @author 현웅
+   */
+  addResearchAutoCloseCronJob(param: { researchId: string; deadline: string }) {
+    //* 만약 마감일이 지정되지 않은 경우라면 바로 return 합니다.
+    //* (이 함수에 도달하기 전에 여러번 검증을 거치지만 그래도 더 안전하게)
+    if (!Boolean(param.deadline)) return;
+
+    //* 리서치 마감 CronJob 의 이름이 겹치지 않도록 만들어줍니다.
+    const cronJobName = RESEARCH_AUTO_CLOSE_CRONJOB_NAME(param.researchId);
+
+    //* 리서치 마감일은 모두 GMT+0 기준으로 설정되어 있으므로, 이를 한국시간으로 바꿔줍니다.
+    //TODO: 서버 시간이 한국시간이면, new Date() 가 ISO 시간을 한국 시간에 알아서 맞춰줍니다.
+    const GMT9Deadline = new Date(param.deadline);
+    // GMT9Deadline.setHours(GMT9Deadline.getHours() + 9);
+
+    //* 리서치 마감 시간에 리서치 마감 함수를 호출하고
+    //* 스스로를 삭제하는 자동 마감 CronJob 을 만듭니다.
+    const researchCloseCronJob = new CronJob(
+      //? 첫번째 인자(CronTime): 함수를 실행할 시각
+      `0 ${GMT9Deadline.getMinutes()} ${GMT9Deadline.getHours()} ${GMT9Deadline.getDate()} ${
+        GMT9Deadline.getMonth() + 1
+      } *`,
+      //? 두번째 인자(onTick): 지정된 시각에 실행할 함수
+      async () => {
+        await this.closeResearch({
+          userId: "",
+          researchId: param.researchId,
+          skipValidate: true,
+        });
+      },
+      //? 세번째 인자(onComplete): 함수 실행 완료 후 실행할 함수
+      () => {
+        //TODO: 리서치 마감 완료 후 Logger 남기기
+      },
+      //? 네번째 인자(start): 해당 시각에 함수를 실행할지 여부
+      true,
+      //? 다섯번째 인자(onComplete): CronTime 기준 시간
+      "Asia/Seoul",
+    );
+
+    //! ScheduleRegistry 에 작업을 할 때는 반드시 try catch 를 사용합니다.
+    try {
+      //* 위에서 정의한 CronJob 을 ScheduleRegistry 에 등록합니다.
+      this.schedulerRegistry.addCronJob(cronJobName, researchCloseCronJob);
+      //TODO: CronJob 등록 후 Logger 남기기
+      console.log(
+        `리서치 ${param.researchId} 가 ${
+          GMT9Deadline.getMonth() + 1
+        }월 ${GMT9Deadline.getDate()}일 ${GMT9Deadline.getHours()}시 ${GMT9Deadline.getMinutes()}분에 마감됩니다.`,
+      );
+    } catch (error) {
+      //TODO: CronJob 등록에 실패한 경우, Logger 남기기
+      console.log(error);
+    }
+  }
+
+  /**
+   * 리서치가 마감된 경우 호출됩니다.
+   * ScheduleRegistry 에 존재하는 리서치 자동 마감 CronJob 을 삭제합니다.
+   * @author 현웅
+   */
+  async deleteResearchAutoCloseCronJob(param: { researchId: string }) {
+    //! ScheduleRegistry 에 작업을 할 때는 반드시 try catch 를 사용합니다.
+    try {
+      this.schedulerRegistry.deleteCronJob(
+        RESEARCH_AUTO_CLOSE_CRONJOB_NAME(param.researchId),
+      );
+    } catch (error) {
+      //TODO: CronJob 삭제에 실패한 경우, Logger 남기기
+      console.log(error);
+    }
   }
 }
