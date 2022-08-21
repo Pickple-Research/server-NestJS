@@ -57,6 +57,9 @@ export class ResearchModule implements OnModuleInit {
    * @author 현웅
    */
   async onModuleInit() {
+    //TODO: 서버에서 같은 Container 를 두 개 돌리고 있기 때문에, 해당 부분이 처리되기 전까지는 일단 구동되지 않게 합니다.
+    return;
+
     //* 만약 NODE_ENV 값이 프로덕션이 아니라면 리서치 자동 마감 기능을 활성화하지 않습니다.
     if (process.env.NODE_ENV !== "PROD") return;
 

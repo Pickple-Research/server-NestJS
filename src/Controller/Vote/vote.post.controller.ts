@@ -142,7 +142,6 @@ export class VotePostController {
   }
 
   /**
-   * ? (대)댓글 작성 API 주소 변경 전까지 순서를 잠시 앞으로 두고 사용합니다.
    * 투표 댓글을 신고합니다.
    * @author 현웅
    */
@@ -164,7 +163,6 @@ export class VotePostController {
   }
 
   /**
-   * ? (대)댓글 작성 API 주소 변경 전까지 순서를 잠시 앞으로 두고 사용합니다.
    * 투표 대댓글을 신고합니다.
    * @author 현웅
    */
