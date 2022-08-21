@@ -199,14 +199,15 @@ export class ResearchPostController {
         return { newResearch, newCreditHistory };
       });
 
-      //* 이 때, 리서치에 마감일이 설정되어 있는 경우
-      //* ScheduleRegistry 에 리서치 자동 마감 CronJob 을 등록합니다.
-      if (Boolean(newResearch.deadline)) {
-        this.researchUpdateService.addResearchAutoCloseCronJob({
-          researchId: newResearch._id,
-          deadline: newResearch.deadline,
-        });
-      }
+      //TODO: 서버에서 같은 Container 를 두 개 돌리고 있기 때문에, 해당 부분이 처리되기 전까지는 일단 구동되지 않게 합니다.
+      // //* 이 때, 리서치에 마감일이 설정되어 있는 경우
+      // //* ScheduleRegistry 에 리서치 자동 마감 CronJob 을 등록합니다.
+      // if (Boolean(newResearch.deadline)) {
+      //   this.researchUpdateService.addResearchAutoCloseCronJob({
+      //     researchId: newResearch._id,
+      //     deadline: newResearch.deadline,
+      //   });
+      // }
 
       return { newResearch, newCreditHistory };
     }, [userSession, researchSession]);

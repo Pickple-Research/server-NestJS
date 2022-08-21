@@ -43,21 +43,34 @@ export class VotePatchController {
    * 투표 조회를 요청한 유저가 이미 투표를 조회한 적이 있는 경우엔 아무 작업도 하지 않습니다.
    * @author 현웅
    */
-  @Public() // 추후엔 view 도 삭제
-  @Patch("view/:voteId")
-  // @Patch("view")
+  @Public()
+  @Patch("view")
   async viewVote(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteInteractBodyDto,
+  ) {
+    const voteView: VoteView = {
+      userId: req.user.userId,
+      voteId: body.voteId,
+      createdAt: getCurrentISOTime(),
+    };
+
+    return await this.voteUpdateService.viewVote({ voteView });
+  }
+
+  /**
+   * @deprecated
+   * 투표를 조회합니다.
+   * 투표 조회를 요청한 유저가 이미 투표를 조회한 적이 있는 경우엔 아무 작업도 하지 않습니다.
+   * @author 현웅
+   */
+  @Public()
+  @Patch("view/:voteId")
+  async viewVoteOld(
     @Request() req: { user: JwtUserInfo },
     @Param("voteId") voteId: string,
     @Body() body: VoteInteractBodyDto,
   ) {
-    // const voteView: VoteView = {
-    //   userId: req.user.userId,
-    //   voteId: body.voteId,
-    //   createdAt: getCurrentISOTime(),
-    // };
-
-    // return await this.voteUpdateService.viewVote({ voteView });
     return await this.mongoVoteUpdateService.updateView({ voteId });
   }
 
@@ -103,6 +116,37 @@ export class VotePatchController {
   }
 
   /**
+   * @Transaction
+   * 투표에 참여합니다.
+   * @return 업데이트된 투표 정보, 생성된 투표 참여 정보
+   * @author 현웅
+   */
+  @Patch("participate")
+  async participateVote(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteParticipateBodyDto,
+  ) {
+    //* 투표 참여 정보
+    const voteParticipation: VoteParticipation = {
+      userId: req.user.userId,
+      voteId: body.voteId,
+      selectedOptionIndexes: body.selectedOptionIndexes,
+      createdAt: getCurrentISOTime(),
+    };
+
+    const voteSession = await this.voteConnection.startSession();
+
+    return await tryMultiTransaction(async () => {
+      const { updatedVote, newVoteParticipation } =
+        await this.voteUpdateService.participateVote(
+          { voteId: body.voteId, voteParticipation },
+          voteSession,
+        );
+      return { updatedVote, newVoteParticipation };
+    }, [voteSession]);
+  }
+
+  /**
    * (비회원) 투표에 참여합니다.
    * @return 업데이트된 투표 정보
    * @author 현웅
@@ -125,6 +169,7 @@ export class VotePatchController {
   }
 
   /**
+   * @deprecated
    * @Transaction
    * 투표에 참여합니다.
    * @return 업데이트된 투표 정보, 생성된 투표 참여 정보
@@ -132,7 +177,7 @@ export class VotePatchController {
    */
   @Patch("participate/:voteId")
   // @Patch("participate")
-  async participateVote(
+  async participateVoteOld(
     @Request() req: { user: JwtUserInfo },
     @Param("voteId") voteId: string, //TODO: 나중에 삭제
     @Body() body: VoteParticipateBodyDto,
@@ -164,9 +209,32 @@ export class VotePatchController {
    * @return 마감된 투표 정보
    * @author 현웅
    */
+  @Patch("close")
+  async closeVote(
+    @Request() req: { user: JwtUserInfo },
+    @Body() body: VoteInteractBodyDto,
+  ) {
+    const voteSession = await this.voteConnection.startSession();
+
+    return await tryMultiTransaction(async () => {
+      const updatedVote = await this.voteUpdateService.closeVote(
+        { userId: req.user.userId, voteId: body.voteId },
+        voteSession,
+      );
+      return updatedVote;
+    }, [voteSession]);
+  }
+
+  /**
+   * @deprecated
+   * @Transaction
+   * 투표를 마감합니다.
+   * @return 마감된 투표 정보
+   * @author 현웅
+   */
   @Patch("close/:voteId")
   // @Patch("close")
-  async closeVote(
+  async closeVoteOld(
     @Request() req: { user: JwtUserInfo },
     @Param("voteId") voteId: string, //TODO: 나중에 삭제
     @Body() body: VoteInteractBodyDto,

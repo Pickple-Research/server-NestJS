@@ -24,6 +24,9 @@ export class ResearchComment {
   @Prop({ required: true }) // 댓글 내용
   content: string;
 
+  @Prop({ default: false }) // 블락 여부
+  blocked?: boolean;
+
   @Prop({ default: false }) // 삭제 여부
   deleted?: boolean;
 
