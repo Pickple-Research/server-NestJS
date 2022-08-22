@@ -29,6 +29,12 @@ export class User {
   @Prop({ default: 1 }) // 등급
   grade?: number;
 
+  @Prop({ default: 0 }) // 신고된 횟수
+  reportedNum?: number;
+
+  @Prop({ default: 0 }) // 경고 받은 횟수
+  warnedNum?: number;
+
   @Prop() // 서비스 정보 수신 동의 여부
   agreeReceiveServiceInfo: boolean;
 

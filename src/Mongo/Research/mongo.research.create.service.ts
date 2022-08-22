@@ -25,6 +25,7 @@ import {
   ResearchViewDocument,
 } from "src/Schema";
 import { BUCKET_NAME } from "src/Constant";
+import { ResearchNotFoundException } from "src/Exception";
 
 @Injectable()
 export class MongoResearchCreateService {
@@ -203,6 +204,7 @@ export class MongoResearchCreateService {
         model: this.ResearchUser,
       })
       .lean();
+    if (!updatedResearch) throw new ResearchNotFoundException();
 
     const newComments = await this.ResearchComment.create(
       [
@@ -242,6 +244,8 @@ export class MongoResearchCreateService {
         model: this.ResearchUser,
       })
       .lean();
+    if (!updatedResearch) throw new ResearchNotFoundException();
+
     const newReplies = await this.ResearchReply.create(
       [
         {
