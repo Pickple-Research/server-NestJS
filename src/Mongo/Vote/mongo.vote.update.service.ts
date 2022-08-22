@@ -9,6 +9,7 @@ import {
   VoteUser,
   VoteUserDocument,
 } from "src/Schema";
+import { VoteNotFoundException } from "src/Exception";
 
 @Injectable()
 export class MongoVoteUpdateService {
@@ -118,6 +119,7 @@ export class MongoVoteUpdateService {
         model: this.VoteUser,
       })
       .lean();
+    if (!updatedVote) throw new VoteNotFoundException();
 
     // return updatedVote;
     //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.
@@ -159,6 +161,7 @@ export class MongoVoteUpdateService {
         model: this.VoteUser,
       })
       .lean();
+    if (!updatedVote) throw new VoteNotFoundException();
 
     // return updatedVote;
     //! 그린라이트 투표는 게시자를 익명으로 바꿔서 반환합니다.

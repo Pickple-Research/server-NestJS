@@ -22,6 +22,7 @@ import {
   VoteViewDocument,
 } from "src/Schema";
 import { getCurrentISOTime } from "src/Util";
+import { VoteNotFoundException } from "src/Exception";
 
 @Injectable()
 export class MongoVoteCreateService {
@@ -143,6 +144,7 @@ export class MongoVoteCreateService {
         model: this.VoteUser,
       })
       .lean();
+    if (!updatedVote) throw new VoteNotFoundException();
 
     const newComments = await this.VoteComment.create(
       [
@@ -193,6 +195,8 @@ export class MongoVoteCreateService {
         model: this.VoteUser,
       })
       .lean();
+    if (!updatedVote) throw new VoteNotFoundException();
+
     const newReplies = await this.VoteReply.create(
       [
         {

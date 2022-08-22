@@ -329,6 +329,7 @@ export class MongoVoteFindService {
       .populate({ path: "author", model: this.VoteUser })
       .select(selectQuery)
       .lean();
+    if (!vote) throw new VoteNotFoundException();
     if (vote.category !== "GREEN_LIGHT") return vote;
     return { ...vote, author: { ...vote.author, nickname: "익명" } };
   }
@@ -375,6 +376,8 @@ export class MongoVoteFindService {
       .sort({ _id: 1 })
       .lean();
 
+    if (!Boolean(comments.length)) return [];
+
     const vote = await this.getVoteById(voteId, { category: true });
     if (vote.category !== "GREEN_LIGHT") return comments;
 
@@ -407,9 +410,7 @@ export class MongoVoteFindService {
   async isOptionIndexesValid(voteId: string, selectedOptionIndexes: number[]) {
     const vote = await this.Vote.findById(voteId).select({ options: 1 }).lean();
 
-    if (!vote) {
-      throw new VoteNotFoundException();
-    }
+    if (!vote) throw new VoteNotFoundException();
 
     if (Math.max(...selectedOptionIndexes) >= vote.options.length) {
       throw new SelectedOptionInvalidException();

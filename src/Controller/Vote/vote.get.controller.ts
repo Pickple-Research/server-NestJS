@@ -2,7 +2,6 @@ import { Controller, Inject, Request, Param, Get } from "@nestjs/common";
 import { MongoVoteFindService } from "src/Mongo";
 import { JwtUserInfo } from "src/Object/Type";
 import { Public } from "src/Security/Metadata";
-import { VoteNotFoundException } from "src/Exception";
 
 @Controller("votes")
 export class VoteGetController {
@@ -94,10 +93,7 @@ export class VoteGetController {
   @Public()
   @Get(":voteId")
   async getVoteById(@Param("voteId") voteId: string) {
-    const vote = await this.mongoVoteFindService.getVoteById(voteId);
-
-    if (!vote) throw new VoteNotFoundException();
-    return vote;
+    return await this.mongoVoteFindService.getVoteById(voteId);
   }
 
   /**
