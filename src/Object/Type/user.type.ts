@@ -7,6 +7,7 @@
  * @author 현웅
  */
 export type JwtUserInfo = {
+  userType: string;
   userId: string;
   userNickname: string;
   userEmail?: string;

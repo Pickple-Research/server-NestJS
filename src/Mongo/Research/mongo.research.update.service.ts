@@ -4,8 +4,12 @@ import { Model, ClientSession } from "mongoose";
 import {
   Research,
   ResearchDocument,
+  ResearchComment,
+  ResearchCommentDocument,
   ResearchParticipation,
   ResearchParticipationDocument,
+  ResearchReply,
+  ResearchReplyDocument,
   ResearchUser,
   ResearchUserDocument,
 } from "src/Schema";
@@ -19,8 +23,12 @@ export class MongoResearchUpdateService {
   constructor(
     @InjectModel(Research.name)
     private readonly Research: Model<ResearchDocument>,
+    @InjectModel(ResearchComment.name)
+    private readonly ResearchComment: Model<ResearchCommentDocument>,
     @InjectModel(ResearchParticipation.name)
     private readonly ResearchParticipation: Model<ResearchParticipationDocument>,
+    @InjectModel(ResearchReply.name)
+    private readonly ResearchReply: Model<ResearchReplyDocument>,
     @InjectModel(ResearchUser.name)
     private readonly ResearchUser: Model<ResearchUserDocument>,
   ) {}
@@ -148,5 +156,38 @@ export class MongoResearchUpdateService {
         model: this.ResearchUser,
       })
       .lean();
+  }
+
+  /**
+   * 리서치를 블락처리합니다.
+   * @author 현웅
+   */
+  async blockResearch(researchId: string) {
+    await this.Research.findByIdAndUpdate(researchId, {
+      $set: { blocked: true },
+    });
+    return;
+  }
+
+  /**
+   * 리서치 댓글을 블락처리합니다.
+   * @author 현웅
+   */
+  async blockResearchComment(commentId: string) {
+    await this.ResearchComment.findByIdAndUpdate(commentId, {
+      $set: { blocked: true },
+    });
+    return;
+  }
+
+  /**
+   * 리서치 대댓글을 블락처리합니다.
+   * @author 현웅
+   */
+  async blockResearchReply(replyId: string) {
+    await this.ResearchReply.findByIdAndUpdate(replyId, {
+      $set: { blocked: true },
+    });
+    return;
   }
 }
