@@ -4,8 +4,12 @@ import { Model, ClientSession } from "mongoose";
 import {
   Vote,
   VoteDocument,
+  VoteComment,
+  VoteCommentDocument,
   VoteParticipation,
   VoteParticipationDocument,
+  VoteReply,
+  VoteReplyDocument,
   VoteUser,
   VoteUserDocument,
 } from "src/Schema";
@@ -15,8 +19,12 @@ import { VoteNotFoundException } from "src/Exception";
 export class MongoVoteUpdateService {
   constructor(
     @InjectModel(Vote.name) private readonly Vote: Model<VoteDocument>,
+    @InjectModel(VoteComment.name)
+    private readonly VoteComment: Model<VoteCommentDocument>,
     @InjectModel(VoteParticipation.name)
     private readonly VoteParticipation: Model<VoteParticipationDocument>,
+    @InjectModel(VoteReply.name)
+    private readonly VoteReply: Model<VoteReplyDocument>,
     @InjectModel(VoteUser.name)
     private readonly VoteUser: Model<VoteUserDocument>,
   ) {}
@@ -242,5 +250,36 @@ export class MongoVoteUpdateService {
       ...editedVote,
       author: { ...editedVote.author, nickname: "익명" },
     };
+  }
+
+  /**
+   * 투표를 블락처리합니다.
+   * @author 현웅
+   */
+  async blockVote(voteId: string) {
+    await this.Vote.findByIdAndUpdate(voteId, { $set: { blocked: true } });
+    return;
+  }
+
+  /**
+   * 투표 댓글을 블락처리합니다.
+   * @author 현웅
+   */
+  async blockVoteComment(commentId: string) {
+    await this.VoteComment.findByIdAndUpdate(commentId, {
+      $set: { blocked: true },
+    });
+    return;
+  }
+
+  /**
+   * 투표 대댓글을 블락처리합니다.
+   * @author 현웅
+   */
+  async blockVoteReply(replyId: string) {
+    await this.VoteReply.findByIdAndUpdate(replyId, {
+      $set: { blocked: true },
+    });
+    return;
   }
 }

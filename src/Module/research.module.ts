@@ -15,7 +15,6 @@ import {
   ResearchUpdateService,
 } from "src/Service";
 import { FirebaseService } from "src/Firebase";
-import { CronService } from "src/Cron";
 import { AwsS3Service } from "src/AWS";
 import { MongoUserModule, MongoResearchModule } from "src/Mongo";
 import { RESEARCH_AUTO_CLOSE_CRONJOB_NAME } from "src/Constant";
@@ -30,7 +29,6 @@ import { RESEARCH_AUTO_CLOSE_CRONJOB_NAME } from "src/Constant";
   providers: [
     FirebaseService,
     AwsS3Service,
-    CronService,
     UserUpdateService,
     ResearchDeleteService,
     ResearchCreateService,
@@ -38,6 +36,7 @@ import { RESEARCH_AUTO_CLOSE_CRONJOB_NAME } from "src/Constant";
     ResearchUpdateService,
   ],
   imports: [MongoUserModule, MongoResearchModule],
+  exports: [ResearchUpdateService],
 })
 export class ResearchModule implements OnModuleInit {
   constructor(

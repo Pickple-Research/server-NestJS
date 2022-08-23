@@ -5,6 +5,9 @@
  * @author 현웅
  */
 
+// Admin
+export * from "./Admin/admin.update.service";
+
 // Auth
 export * from "./Auth/auth.service";
 

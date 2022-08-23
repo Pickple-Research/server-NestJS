@@ -5,7 +5,8 @@
  */
 
 //Admin
-export * from "./Admin/admin.controller";
+export * from "./Admin/admin.patch.controller";
+export * from "./Admin/admin.post.controller";
 
 //Auth
 export * from "./Auth/auth.controller";

@@ -71,6 +71,7 @@ export class AuthController {
     });
     //* JWT 새로 발급
     const issueJwt = await this.authService.issueJWT({
+      userType: userInfo.user.userType,
       userId: userInfo.user._id,
       userNickname: userInfo.user.nickname,
       userEmail: userInfo.user.email,
@@ -116,6 +117,7 @@ export class AuthController {
     });
     //* JWT 새로 발급
     const issueJwt = this.authService.issueJWT({
+      userType: userInfo.user.userType,
       userId: userInfo.user._id,
       userNickname: userInfo.user.nickname,
       userEmail: userInfo.user.email,

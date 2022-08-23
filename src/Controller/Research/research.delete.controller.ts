@@ -52,6 +52,14 @@ export class ResearchDeleteController {
         researchSession,
       );
     }, [researchSession]);
+
+    //TODO: 서버에서 같은 Container 를 두 개 돌리고 있기 때문에, 해당 부분이 처리되기 전까지는 일단 구동되지 않게 합니다.
+    // //* 이 때, 끌올 이전의 리서치가 마감일을 가질 경우 해당 자동 마감 CronJob 을 삭제합니다.
+    // if (Boolean(previousResearch.deadline)) {
+    //   this.researchUpdateService.deleteResearchAutoCloseCronJob({
+    //     researchId: previousResearch._id,
+    //   });
+    // }
     return;
   }
 

@@ -22,7 +22,7 @@ export class AppController {
   @Public()
   @Get("release")
   async test() {
-    return "2022-08-22 1124 release";
+    return "2022-08-23 1131 release";
   }
 
   /**
