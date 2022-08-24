@@ -20,6 +20,7 @@ export class VoteGetController {
   }
 
   /**
+   * @deprecated
    * HOT 투표를 가져옵니다.
    * 기준은 최근 100건의 투표 참여 중 제일 많은 참여를 이끌어낸 투표입니다.
    * @author 현웅
@@ -28,6 +29,17 @@ export class VoteGetController {
   @Get("hot")
   async getHotVote() {
     return await this.mongoVoteFindService.getHotVote();
+  }
+
+  /**
+   * HOT 투표를 가져옵니다.
+   * 기준은 최근 100건의 투표 참여 중 제일 많은 참여를 이끌어낸 상위 3개의 투표입니다.
+   * @author 현웅
+   */
+  @Public()
+  @Get("hots")
+  async getHotVotes() {
+    return await this.mongoVoteFindService.getHotVotes();
   }
 
   /**
